@@ -36,6 +36,16 @@ yarn-error.log*
 # vercel
 .vercel
 
+# agents
+/docs
+/.agents
+.agent/
+
+# local workspace / generated artifacts
+build.log
+check.ts
+openapi.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
