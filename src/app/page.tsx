@@ -1,5 +1,7 @@
 'use client'
 
+export const runtime = 'edge';
+
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentUser } from '@/features/auth/actions'

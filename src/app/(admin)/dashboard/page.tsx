@@ -1,5 +1,7 @@
 'use client'
 
+export const runtime = 'edge';
+
 import React from 'react'
 import { useActiveUser } from '@/features/auth/context'
 import DashboardPanel from '@/features/admin/dashboard/components/dashboard-panel'
