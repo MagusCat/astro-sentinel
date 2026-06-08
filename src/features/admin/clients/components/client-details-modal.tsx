@@ -1,22 +1,20 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Modal, LoadingState, EmptyState, Toast, ToastType, ConfirmDialog } from '@/components/shared'
 import { Button } from '@/components/shared'
-import { ClientData, ClientMembershipView, GroupedClientMemberships } from '../types'
-import { AuthenticatedUser } from '@/features/auth/types'
+import { ClientData, GroupedClientMemberships } from '../types'
 import { getClientPayments, getClientMemberships } from '../queries'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '@/features/admin/memberships/mutations'
 import { MEMBERSHIP_STATUS } from '@/lib/constants'
-import { User, Phone, Mail, Share2, Calendar, CreditCard, Pause, Play, CheckCircle2, Clock, Ban } from 'lucide-react'
+import { User, Phone, Mail, Share2, Calendar, CreditCard, Pause, Play, Clock, Ban } from 'lucide-react'
 
 interface ClientDetailsModalProps {
   client: ClientData
-  activeUser: AuthenticatedUser
   onClose: () => void
 }
 
-export default function ClientDetailsModal({ client, activeUser, onClose }: ClientDetailsModalProps) {
+export default function ClientDetailsModal({ client, onClose }: ClientDetailsModalProps) {
   const [payments, setPayments] = useState<{ id: string; total_amount: number; payment_method: string; transaction_date: string }[]>([])
   const [totalPayments, setTotalPayments] = useState(0)
   const [memberships, setMemberships] = useState<GroupedClientMemberships[]>([])
@@ -26,7 +24,7 @@ export default function ClientDetailsModal({ client, activeUser, onClose }: Clie
   const [membershipToCancel, setMembershipToCancel] = useState<{ id: string, isCurrent: boolean, hasFutures: boolean } | null>(null)
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     const [paymentsRes, membershipsData] = await Promise.all([
       getClientPayments(client.id),
@@ -36,11 +34,11 @@ export default function ClientDetailsModal({ client, activeUser, onClose }: Clie
     setTotalPayments(paymentsRes.count)
     setMemberships(membershipsData)
     setLoading(false)
-  }
+  }, [client.id])
 
   useEffect(() => {
     loadData()
-  }, [client.id])
+  }, [loadData])
 
   const handleFreeze = async (membershipId: string) => {
     setFreezeLoading(membershipId)

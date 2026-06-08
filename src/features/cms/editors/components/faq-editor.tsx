@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Faq, FaqItem } from '../../core/types'
-import { Plus, Trash2, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField, TextareaField } from '@/components/shared'
 

@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { MoreVertical, Ban, Pause, Play, Search, Filter } from 'lucide-react'
+import { Ban, Pause, Play } from 'lucide-react'
 import { MembershipsTableRow, MembershipsPanelData } from '../types'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '../mutations'
-import { AuthenticatedUser } from '@/features/auth/types'
 import { DataTable, SearchInput, SelectField, ConfirmDialog, Toast, ToastType } from '@/components/shared'
 import ClassOccupancy from './class-occupancy'
 import { Button } from '@/components/shared'
@@ -12,7 +11,6 @@ import { MEMBERSHIP_STATUS } from '@/lib/constants'
 
 interface MembershipsTableProps {
   memberships: MembershipsTableRow[]
-  activeUser: AuthenticatedUser
   onReload: () => void
   occupancy?: MembershipsPanelData['classOccupancy']
 }
@@ -33,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
   [MEMBERSHIP_STATUS.TRANSFERRED]: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
 }
 
-export default function MembershipsTable({ memberships, activeUser, onReload, occupancy }: MembershipsTableProps) {
+export default function MembershipsTable({ memberships, onReload, occupancy }: MembershipsTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isProcessing, setIsProcessing] = useState(false)

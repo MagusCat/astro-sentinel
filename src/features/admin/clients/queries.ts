@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { ClientData, ClientMembershipView, ClientMembershipQueryRow, GroupedClientMemberships, ClientFilters } from './types'
+import { ClientData, ClientMembershipView, GroupedClientMemberships, ClientFilters } from './types'
 import { MEMBERSHIP_STATUS } from '@/lib/constants'
 
 export async function getClients(filters?: ClientFilters): Promise<{ data: ClientData[], count: number }> {

@@ -1,4 +1,4 @@
-import { Image, AlignLeft, Star, Calendar, Grid, Settings, Database, History, Activity } from 'lucide-react'
+import { Image, Star, Calendar, Grid, Settings, Database, History, Activity } from 'lucide-react'
 import { CmsSection } from './types'
 
 export const CMS_SECTIONS: Array<{ id: CmsSection; label: string; icon: React.ElementType }> = [

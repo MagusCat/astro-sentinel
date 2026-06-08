@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Contact, WebGlobals, SocialLink } from '../../core/types'
-import { AlignLeft, MapPin, Share2, MessageCircle, Phone, Mail, Plus, Trash2, Info } from 'lucide-react'
+import { Contact, WebGlobals } from '../../core/types'
+import { AlignLeft } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField, TextareaField } from '@/components/shared'
 
@@ -44,7 +44,8 @@ export default function ContactEditor({ value, onChange, globals, onGlobalsChang
                 value={globals?.whatsapp?.title || ''}
                 onChange={(e) => {
                   if (globals && onGlobalsChange) {
-                    onGlobalsChange({ ...globals, whatsapp: { ...(globals.whatsapp || {} as any), title: e.target.value }})
+                    const base = globals.whatsapp ?? { number: '', message: '', title: '' }
+                    onGlobalsChange({ ...globals, whatsapp: { ...base, title: e.target.value } })
                   }
                 }}
                 placeholder="Ej: Escríbenos"
@@ -55,7 +56,8 @@ export default function ContactEditor({ value, onChange, globals, onGlobalsChang
               value={globals?.whatsapp?.message || ''}
               onChange={(e) => {
                 if (globals && onGlobalsChange) {
-                  onGlobalsChange({ ...globals, whatsapp: { ...(globals.whatsapp || {} as any), message: e.target.value }})
+                  const base = globals.whatsapp ?? { number: '', message: '', title: '' }
+                  onGlobalsChange({ ...globals, whatsapp: { ...base, message: e.target.value } })
                 }
               }}
               placeholder="Hola, me gustaría más información..."

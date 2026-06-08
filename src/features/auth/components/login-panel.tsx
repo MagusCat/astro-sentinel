@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { RefreshCw, User, Lock, CheckCircle2 } from 'lucide-react'
-import { Logo, Toast, ToastType, TextField, ToggleButtonGroup, WarningAlert, LoadingState, Button } from '@/components/shared'
+import { Logo, Toast, ToastType, TextField, ToggleButtonGroup, LoadingState, Button } from '@/components/shared'
 import { authenticateUser, isDeviceAuthorized, authorizeDevice, authenticateAdmin } from '../actions'
 import { AuthenticatedUser } from '../types'
 

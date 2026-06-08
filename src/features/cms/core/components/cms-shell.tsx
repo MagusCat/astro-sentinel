@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { RefreshCw, LayoutDashboard, LogOut, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, LogOut, AlertTriangle } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { logoutUser } from '@/features/auth/actions'
 import { getRoleLabel } from '@/features/auth/components/role-badge'
@@ -149,11 +149,11 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
     })
   }
 
-  const cleanEmptyStrings = (obj: any): any => {
+  const cleanEmptyStrings = (obj: unknown): unknown => {
     if (Array.isArray(obj)) {
       return obj.map(cleanEmptyStrings)
     } else if (obj !== null && typeof obj === 'object') {
-      const cleaned: any = {}
+      const cleaned: Record<string, unknown> = {}
       for (const [key, val] of Object.entries(obj)) {
         if (val === '') {
           continue // skip empty strings
@@ -174,7 +174,7 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
 
     const cleanedDraft = cleanEmptyStrings(draft)
 
-    const res = await publishSiteContent(cleanedDraft)
+    const res = await publishSiteContent(cleanedDraft as SiteContent)
     if (res.success) {
       setContent(JSON.parse(JSON.stringify(cleanedDraft)))
       setDraft(JSON.parse(JSON.stringify(cleanedDraft)))

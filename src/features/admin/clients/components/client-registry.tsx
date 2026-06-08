@@ -278,7 +278,6 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
       {clientToDetails && (
         <ClientDetailsModal
           client={clientToDetails}
-          activeUser={activeUser}
           onClose={() => setClientToDetails(null)}
         />
       )}

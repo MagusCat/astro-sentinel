@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, UserPlus, ShoppingCart, Search, AlertCircle, ArrowRight, CreditCard, Activity, RefreshCw } from 'lucide-react'
+import { Clock, UserPlus, ShoppingCart, Search, AlertCircle, CreditCard, Activity, RefreshCw } from 'lucide-react'
 import { OverviewStats } from '@/features/admin/dashboard/types'
 import { DashboardListWidget } from '@/components/shared'
 import { ClientData } from '@/features/admin/clients/types'
@@ -10,7 +10,7 @@ import { Button } from '@/components/shared'
 import { SearchInput } from '@/components/shared'
 import { searchClients } from '@/features/admin/clients/queries'
 import { useDebounce } from '@/hooks/use-debounce'
-import { MembershipStatus } from '@/lib/constants'
+ 
 
 interface ReceptionPanelProps {
   stats: OverviewStats

@@ -58,15 +58,6 @@ export default function ScheduleEditor({ value, onChange }: Props) {
     updateClass(ci, cls)
   }
 
-  const updateSlot = (ci: number, day: DayKey, si: number, field: keyof TimeSlot, val: string) => {
-    const cls = { ...value.classes[ci] }
-    const dayData = cls.scheduleDays[day]!
-    const slots = [...dayData.slots]
-    slots[si] = { ...slots[si], [field]: val }
-    cls.scheduleDays = { ...cls.scheduleDays, [day]: { ...dayData, slots } }
-    updateClass(ci, cls)
-  }
-
   const removeSlot = (ci: number, day: DayKey, si: number) => {
     const cls = { ...value.classes[ci] }
     const dayData = cls.scheduleDays[day]!

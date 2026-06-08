@@ -1,19 +1,13 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { CreditCard, Filter, ChevronLeft, ChevronRight, RefreshCw, Search } from 'lucide-react'
+import { CreditCard, Filter } from 'lucide-react'
 import { PaymentData, PaymentFilters } from '../types'
-import { ClientData } from '@/features/admin/clients/types'
 import { DataTable, LoadingState, SearchInput, SelectField, TextField } from '@/components/shared'
-import { getRoleLabel } from '@/features/auth/components/role-badge'
 import { getPayments } from '../queries'
-import { AuthenticatedUser } from '@/features/auth/types'
 
 interface PaymentsLogProps {
   payments: PaymentData[] // initial data
-  clients: ClientData[]
-  activeUser: AuthenticatedUser
-  onReload: () => void
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -22,7 +16,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   transferencia: 'Transferencia',
 }
 
-export default function PaymentsLog({ payments: initialPayments, clients, onReload }: PaymentsLogProps) {
+export default function PaymentsLog({ payments: initialPayments }: PaymentsLogProps) {
   const [localPayments, setLocalPayments] = useState<PaymentData[]>(initialPayments)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [loading, setLoading] = useState(false)

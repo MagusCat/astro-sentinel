@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { PaymentFilters, PaymentsResponse, PaymentWithJoins } from './types'
+import { PaymentFilters, PaymentsResponse } from './types'
 
 export async function getPayments(filters?: PaymentFilters): Promise<PaymentsResponse> {
   try {

@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { OverviewStats, ClassHeadcountRow, InactiveRow, PaymentRow, ClientRow } from './types'
+import { OverviewStats, ClassHeadcountRow } from './types'
 import { APP_CONFIG } from '@/lib/constants'
 
 export async function getOverviewStats(): Promise<OverviewStats> {

@@ -19,13 +19,6 @@ interface CreateClientModalProps {
   onClose: () => void
 }
 
-const DEFAULT_FORM: CreateClientForm = {
-  full_name: '',
-  phone_number: '',
-  email: '',
-  registration_source: '',
-}
-
 export default function CreateClientModal({
   initialData,
   loading,

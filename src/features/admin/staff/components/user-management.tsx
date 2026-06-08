@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { AuthenticatedUser } from '@/features/auth/types'
-import { Plus, Edit2, Trash2, Power, PowerOff, RefreshCw, Link as LinkIcon } from 'lucide-react'
+import { Plus, Edit2, Trash2, Power, PowerOff, RefreshCw } from 'lucide-react'
 import { LocalUser } from '../types'
 import { getUsersList } from '../queries'
 import { saveNewUser, updateUserData, deleteUserData } from '../mutations'
@@ -31,8 +31,8 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
   const [actionLoading, setActionLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
 
-  const showError = (msg: string) => setToast({ message: msg, type: 'error' })
-  const showSuccess = (msg: string) => setToast({ message: msg, type: 'success' })
+  const showError = useCallback((msg: string) => setToast({ message: msg, type: 'error' }), [])
+  const showSuccess = useCallback((msg: string) => setToast({ message: msg, type: 'success' }), [])
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -50,7 +50,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
     is_active: true
   })
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
       const res = await getUsersList()
@@ -64,9 +64,9 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showError])
 
-  useEffect(() => { fetchUsers() }, [])
+  useEffect(() => { fetchUsers() }, [fetchUsers])
 
 
   const handleCreateSubmit = async (e: React.FormEvent) => {

@@ -4,15 +4,13 @@ import React from 'react'
 import MembershipsMetrics from './memberships-metrics'
 import MembershipsTable from './memberships-table'
 import { MembershipsPanelData } from '../types'
-import { AuthenticatedUser } from '@/features/auth/types'
 
 interface MembershipsPanelProps {
   data: MembershipsPanelData | null
-  activeUser: AuthenticatedUser
   onReload: () => void
 }
 
-export default function MembershipsPanel({ data, activeUser, onReload }: MembershipsPanelProps) {
+export default function MembershipsPanel({ data, onReload }: MembershipsPanelProps) {
   if (!data) return null
 
   return (
@@ -23,7 +21,6 @@ export default function MembershipsPanel({ data, activeUser, onReload }: Members
         <MembershipsTable 
           memberships={data.membershipsList} 
           occupancy={data.classOccupancy} 
-          activeUser={activeUser} 
           onReload={onReload} 
         />
       </div>

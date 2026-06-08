@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { MembershipsPanelData, MembershipsTableRow, MembershipQueryRow, OccupancyQueryRow } from './types'
+import { MembershipsPanelData, MembershipsTableRow, OccupancyQueryRow } from './types'
 
 export async function getMembershipsPanelData(): Promise<MembershipsPanelData> {
   const supabase = await createClient()

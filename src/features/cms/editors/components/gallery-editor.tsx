@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Gallery, GalleryImage } from '../../core/types'
-import { Plus, Images } from 'lucide-react'
+import { Images } from 'lucide-react'
 import { ImageCard } from '../../core/components/image-card'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField } from '@/components/shared'

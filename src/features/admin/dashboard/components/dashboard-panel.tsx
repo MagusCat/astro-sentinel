@@ -114,7 +114,6 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
         {activeTab === 'overview' && (
           <DashboardOverview
             stats={stats}
-            operatorName={activeUser.full_name || 'Operador'}
           />
         )}
 
@@ -135,7 +134,6 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
         {activeTab === 'memberships' && (
           <MembershipsPanel 
             data={membershipsData}
-            activeUser={activeUser}
             onReload={() => fetchDatabaseData('memberships')}
           />
         )}
@@ -153,12 +151,7 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
         )}
         
         {activeTab === 'payments' && (
-          <PaymentsLog 
-            payments={payments} 
-            clients={clients}
-            activeUser={activeUser}
-            onReload={() => fetchDatabaseData('payments')}
-          />
+          <PaymentsLog payments={payments} />
         )}
 
         {activeTab === 'admin_users' && (

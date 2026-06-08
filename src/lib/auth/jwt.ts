@@ -2,7 +2,9 @@
  * JWT Signing & Verification Module
  */
 
-import { SignJWT, jwtVerify } from 'jose'
+export const runtime = 'edge';
+import { SignJWT } from 'jose/jwt/sign'
+import { jwtVerify } from 'jose/jwt/verify'
 import type { AuthenticatedUser } from '@/features/auth/types'
 
 const ISSUER = process.env.JWT_ISSUER || 'sentinel:auth'

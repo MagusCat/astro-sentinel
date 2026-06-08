@@ -58,7 +58,6 @@ export async function freezeMembership(
     }
 
     const remainingDays = calcRemainingDays(membership.end_date)
-    const todayStr = getTodayStr()
 
     const { error: updateError } = await supabase
       .from('memberships')

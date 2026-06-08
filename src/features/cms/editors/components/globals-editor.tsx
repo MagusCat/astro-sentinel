@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { WebGlobals, SocialLink, Contact } from '../../core/types'
-import { Plus, Trash2, Settings, Share2, MapPin, Info } from 'lucide-react'
+import { Plus, Trash2, Settings, Share2, MapPin } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField, SelectField, TextareaField, Tooltip } from '@/components/shared'
 

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Database, Trash2, RefreshCw, Folder } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { listSiteImages, deleteSiteImage } from '../../media/actions'
@@ -98,7 +99,7 @@ export default function StorageEditor() {
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className="w-10 h-10 shrink-0 bg-muted rounded-md overflow-hidden border border-border/50 flex items-center justify-center">
                       {f.url ? (
-                        <img src={f.url} alt={f.name} className="w-full h-full object-cover" loading="lazy" />
+                        <Image src={f.url} alt={f.name} width={40} height={40} className="w-full h-full object-cover" />
                       ) : (
                         <Database className="w-4 h-4 text-muted-foreground/50" />
                       )}

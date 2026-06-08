@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { ArrowUp, ArrowDown, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react'
 import { ImageUploader, Toast, ToastType } from '@/components/shared'
 
@@ -50,10 +51,12 @@ export function ImageCard({
       <div className="flex flex-col gap-3 w-full sm:w-48 shrink-0">
         <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden border border-border/60 shadow-sm flex items-center justify-center">
           {url ? (
-            <img 
-              src={url} 
-              alt={altText} 
-              className="w-full h-full object-cover transition-all"
+            <Image
+              src={url}
+              alt={altText}
+              fill
+              className="object-cover transition-all"
+              sizes="(max-width: 768px) 100vw, 192px"
             />
           ) : (
             <span className="text-[10px] text-muted-foreground font-mono">Sin imagen</span>

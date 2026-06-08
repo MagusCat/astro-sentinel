@@ -5,17 +5,17 @@
  * Server-only — never import from client components.
  */
 
-import bcrypt from 'bcryptjs'
+import { hash, compare } from 'bcrypt-ts'
 
 const BCRYPT_ROUNDS = 12
 
 export async function hashPassword(plaintext: string): Promise<string> {
-  return bcrypt.hash(plaintext, BCRYPT_ROUNDS)
+  return hash(plaintext, BCRYPT_ROUNDS)
 }
 
 export async function verifyPassword(
   plaintext: string,
   hashFromDb: string
 ): Promise<boolean> {
-  return bcrypt.compare(plaintext, hashFromDb)
+  return compare(plaintext, hashFromDb)
 }

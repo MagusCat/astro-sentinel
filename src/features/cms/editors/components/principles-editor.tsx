@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Principles, PrincipleItem } from '../../core/types'
-import { Plus, Trash2, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField, TextareaField } from '@/components/shared'
 

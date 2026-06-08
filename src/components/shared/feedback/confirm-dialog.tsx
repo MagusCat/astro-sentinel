@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/shared"
 
 interface ConfirmDialogProps {
@@ -40,20 +39,7 @@ export function ConfirmDialog({
 
   if (!isOpen || !mounted) return null
 
-  const variantStyles = {
-    danger: {
-      confirm:
-        "bg-destructive text-white hover:bg-destructive/90",
-    },
-    warning: {
-      confirm:
-        "bg-amber-600 text-white hover:bg-amber-500",
-    },
-    neutral: {
-      confirm:
-        "bg-primary text-primary-foreground hover:bg-primary/90",
-    },
-  }
+
 
   return createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

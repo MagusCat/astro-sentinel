@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { History, Trash2, RefreshCw, UploadCloud, User } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { listContentBackups, restoreContentBackup, deleteContentBackup, getBackupAuthors } from '../../backups/actions'
@@ -22,7 +22,7 @@ export default function BackupsEditor() {
   } | null>(null)
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
 
-  const loadBackups = async () => {
+  const loadBackups = useCallback(async () => {
     setLoading(true)
     const res = await listContentBackups()
     if (res.success && res.backups) {
@@ -42,11 +42,11 @@ export default function BackupsEditor() {
       setBackups(enrichedBackups)
     }
     setLoading(false)
-  }
+  }, [])
 
   // To get the actual author, we can load it on demand or just use a specific server action.
   // For now we will fetch the content to see the author.
-  const fetchAuthors = async () => {
+  const fetchAuthors = useCallback(async () => {
     const unknownBackups = backups.filter(b => b.author === 'Desconocido')
     if (unknownBackups.length === 0) return
 
@@ -57,17 +57,17 @@ export default function BackupsEditor() {
         author: res.authors![b.name] || b.author
       })))
     }
-  }
+  }, [backups])
 
   useEffect(() => {
     loadBackups()
-  }, [])
+  }, [loadBackups])
 
   useEffect(() => {
     if (backups.length > 0 && backups[0].author === 'Desconocido') {
       fetchAuthors()
     }
-  }, [backups])
+  }, [fetchAuthors, backups])
 
   const executeAction = async () => {
     if (!confirmAction) return

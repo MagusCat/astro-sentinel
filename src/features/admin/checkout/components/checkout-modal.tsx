@@ -11,7 +11,7 @@ import { checkClientMembership } from '../queries'
 import { processCheckout } from '../mutations'
 import { useDebounce } from '@/hooks/use-debounce'
 import { MEMBERSHIP_STATUS } from '@/lib/constants'
-import { CheckCircle2, Download, CreditCard, User, CalendarDays, Coins, AlertCircle, Info, Zap } from 'lucide-react'
+import { CheckCircle2, Download, CreditCard, User, Info, Zap } from 'lucide-react'
 
 interface CheckoutModalProps {
   selectedClass: ClassData
@@ -32,7 +32,6 @@ export default function CheckoutModal({
   selectedClass,
   selectedPlan,
   clients,
-  activeUser,
   onClose,
   onSuccess
 }: CheckoutModalProps) {
@@ -272,7 +271,7 @@ export default function CheckoutModal({
                       ))
                     ) : (
                       <div className="px-4 py-4 text-sm text-muted-foreground italic text-center">
-                        No se encontraron clientes con "{clientSearch}".
+                        No se encontraron clientes con &quot;{clientSearch}&quot;.
                       </div>
                     )}
                   </div>

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthenticatedUser } from '@/features/auth/types'
 import { getCurrentUser } from '@/features/auth/actions'
 import LoginPanel from '@/features/auth/components/login-panel'
 import { SessionLoading } from '@/components/shared'
@@ -38,7 +37,7 @@ export default function LoginPage() {
     checkSession()
   }, [router])
 
-  const handleLoginSuccess = (_user: AuthenticatedUser) => {
+  const handleLoginSuccess = () => {
     if (adminEnabled) {
       router.replace('/dashboard')
     } else if (cmsEnabled) {

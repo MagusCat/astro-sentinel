@@ -1,17 +1,16 @@
 'use client'
 
 import React from 'react'
-import { Users, DollarSign, Trophy, AlertCircle, CreditCard, Clock, UserPlus } from 'lucide-react'
+import { Users, Trophy, CreditCard, Clock, UserPlus } from 'lucide-react'
 import { DashboardListWidget } from '@/components/shared'
 import { OverviewStats } from '../types'
 import { MEMBERSHIP_STATUS } from '@/lib/constants'
 
 interface DashboardOverviewProps {
   stats: OverviewStats
-  operatorName: string
 }
 
-export default function DashboardOverview({ stats, operatorName }: DashboardOverviewProps) {
+export default function DashboardOverview({ stats }: DashboardOverviewProps) {
   return (
     <div className="flex flex-col gap-4 w-full h-full flex-1 min-h-0 overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-none">

@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/shared'
 import { PlanData, ClassData } from '../types'
-import { getClassesList } from '../queries'
 import { deleteClass, deleteClassPlan } from '../mutations'
 import CreateClassModal from './create-class-modal'
 import CreatePlanModal from './create-plan-modal'

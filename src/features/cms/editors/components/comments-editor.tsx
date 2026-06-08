@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Comments, Comment } from '../../core/types'
-import { Plus, Trash2, MessageSquare } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { TextField, TextareaField } from '@/components/shared'
 

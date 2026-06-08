@@ -7,7 +7,6 @@ interface ClassOccupancyProps {
 }
 
 export default function ClassOccupancy({ occupancy }: ClassOccupancyProps) {
-  const maxStudents = Math.max(...occupancy.map((o) => o.activeStudents), 1)
 
   return (
     <div className="bg-card border border-border p-3 lg:p-4 rounded-xl flex flex-col gap-2 shadow-sm w-full lg:h-full">

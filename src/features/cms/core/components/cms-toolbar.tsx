@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Upload, RotateCcw, RefreshCw, History } from 'lucide-react'
+import { Upload, RotateCcw, RefreshCw } from 'lucide-react'
 import { PageHeader } from '@/components/shared/layout/page-header'
 
 interface CmsToolbarProps {
@@ -13,7 +13,7 @@ interface CmsToolbarProps {
   onPublish: () => void
   onDiscard: () => void
   onReload: () => void
-  onOpenBackups: () => void
+  onOpenBackups?: () => void
 }
 
 export default function CmsToolbar({
@@ -25,7 +25,6 @@ export default function CmsToolbar({
   onPublish,
   onDiscard,
   onReload,
-  onOpenBackups,
 }: CmsToolbarProps) {
   const actions = (
     <>

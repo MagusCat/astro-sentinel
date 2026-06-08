@@ -1,6 +1,6 @@
 import React from "react"
 import { cn } from "@/lib/utils"
-import { AlertTriangle, AlertCircle, Info, ShieldAlert } from "lucide-react"
+import { AlertTriangle, Info, ShieldAlert } from "lucide-react"
 
 interface WarningAlertProps {
   title?: string
