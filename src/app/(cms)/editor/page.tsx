@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge';
-
 import React, { Suspense } from 'react'
 import { useActiveUser } from '@/features/auth/context'
 import CmsShell from '@/features/cms/core/components/cms-shell'
