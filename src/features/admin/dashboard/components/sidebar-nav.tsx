@@ -7,6 +7,7 @@ import { MAIN_LINKS, ADMIN_LINKS } from '../config'
 import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared'
 import { LogOut, Power, FileEdit, Terminal } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getActiveModules } from '@/lib/modules'
 
 export default function SidebarNav({
   activeUser,
@@ -19,6 +20,7 @@ export default function SidebarNav({
   onToggleCollapse
 }: SidebarNavProps) {
   const { activeTab, transitioningTab, setTransitioningTab, navigateToAdmin, getRoleText } = useSidebarNav()
+  const { localLoginEnabled } = getActiveModules()
 
   const showAdminMenu = Roles.canManageStaff(activeUser.role)
   const showDevMenu = Roles.canAccessDeveloper(activeUser.role)
@@ -75,7 +77,7 @@ export default function SidebarNav({
           </div>
         )}
 
-        {isElevated ? (
+        {isElevated && localLoginEnabled ? (
           <div className={cn("flex w-full", isCollapsed ? "flex-col items-center gap-3" : "flex-col gap-2")}>
             <button
               onClick={onLogoutFull || onLogout}
