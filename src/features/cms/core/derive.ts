@@ -18,9 +18,7 @@ function stripAutoInjected(links: SocialLink[]): SocialLink[] {
   return links.filter(l => !isAutoInjectedItem(l))
 }
 
-function stripAutoInjectedItems(items: ContactItem[]): ContactItem[] {
-  return items.filter(i => !isAutoInjectedItem(i))
-}
+
 
 export function deriveWhatsappNumber(contactPhone: string | undefined): string {
   if (!contactPhone) return ''

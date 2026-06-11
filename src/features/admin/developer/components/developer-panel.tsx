@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Smartphone, Trash2, Cpu, ServerCog, Zap, RefreshCcw, Terminal } from 'lucide-react'
 import { ConnectedDevice } from '../types'
 import { getAuthorizedDevices, revokeDeviceById } from '../actions'
-import { Button, Toast, ToastType, ConfirmDialog, SectionCard, EmptyState, Card, MetricCard } from '@/components/shared'
+import { Button, Toast, ToastType, ConfirmDialog, SectionCard, EmptyState, MetricCard } from '@/components/shared'
 import { getActiveModules } from '@/lib/modules'
 
 export default function DeveloperPanel() {

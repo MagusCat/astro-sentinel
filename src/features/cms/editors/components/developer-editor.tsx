@@ -31,7 +31,7 @@ export default function DeveloperEditor({ onImport }: Props) {
         } else {
           alert('El archivo JSON no tiene el formato de contenido esperado (falta la clave principal "globals"). Verifica el formato.')
         }
-      } catch (err) {
+      } catch {
         alert('Error crítico: El archivo subido no es un JSON válido.')
       }
       if (fileInputRef.current) {

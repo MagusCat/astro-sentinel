@@ -28,13 +28,13 @@ export default function ContactEditor({ value, onChange }: Props) {
         <div className="flex flex-col gap-4">
           <TextField
             label="Título de la Sección"
-            value={value.heading}
+            value={value.heading || ''}
             onChange={e => onChange({ ...value, heading: e.target.value })}
           />
           <TextareaField
             label="Mensaje de Invitación"
             className="min-h-[80px] resize-y"
-            value={value.description}
+            value={value.description || ''}
             onChange={e => onChange({ ...value, description: e.target.value })}
           />
         </div>
@@ -68,7 +68,7 @@ export default function ContactEditor({ value, onChange }: Props) {
               <div className="flex-1">
                 <TextField
                   label="Enlace de Ubicación"
-                  value={value.mapLink}
+                  value={value.mapLink || ''}
                   tooltip='Abre Google Maps, busca tu negocio y comparte el enlace. Copia el enlace y pégalo aquí.'
                   onChange={e => onChange({ ...value, mapLink: e.target.value })}
                   placeholder="Ej: https://maps.app.goo.gl/..."
@@ -80,7 +80,7 @@ export default function ContactEditor({ value, onChange }: Props) {
               <div className="flex-1">
                 <TextareaField
                   label="Mapa Visible en la Página"
-                  value={value.mapEmbedUrl}
+                  value={value.mapEmbedUrl || ''}
                   tooltip='En Google Maps desde computadora, busca tu negocio, haz clic en "Compartir", elige "Insertar un mapa" y copia todo el código que aparece. Lo convertiremos automáticamente.'
                   onChange={e => {
                     const val = e.target.value

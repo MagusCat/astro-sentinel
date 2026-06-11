@@ -239,15 +239,15 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
     <DeveloperEditor 
       onImport={(data) => {
         if (!draft) return
-        const merged = JSON.parse(JSON.stringify(draft)) as Record<string, any>
+        const merged = JSON.parse(JSON.stringify(draft)) as Record<string, unknown>
         for (const key in data) {
           if (data[key as keyof SiteContent] && typeof data[key as keyof SiteContent] === 'object' && !Array.isArray(data[key as keyof SiteContent])) {
-            merged[key] = { ...merged[key], ...(data[key as keyof SiteContent] as any) }
+            merged[key] = { ...(merged[key] as Record<string, unknown>), ...(data[key as keyof SiteContent] as Record<string, unknown>) }
           } else {
             merged[key] = data[key as keyof SiteContent]
           }
         }
-        setDraft(merged as SiteContent)
+        setDraft(merged as unknown as SiteContent)
         setIsDirty(true)
         showToast('JSON cargado exitosamente en el editor. Recuerda publicar los cambios.', 'success')
       }}
