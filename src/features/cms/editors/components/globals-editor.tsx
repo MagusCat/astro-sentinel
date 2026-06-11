@@ -88,13 +88,13 @@ export default function GlobalsEditor({ value, onChange }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TextField
             label="Nombre del Sitio"
-            value={value.siteTitle}
+            value={value.siteTitle || ''}
             onChange={(e) => update('siteTitle', e.target.value)}
           />
           <TextField
             label="Descripción Corta del Sitio"
             tooltip="Este texto aparece debajo del nombre de tu página cuando alguien la comparte o la busca en Google. Debe ser breve y describir tu negocio."
-            value={value.siteDescription}
+            value={value.siteDescription || ''}
             onChange={(e) => update('siteDescription', e.target.value)}
           />
         </div>
@@ -109,13 +109,13 @@ export default function GlobalsEditor({ value, onChange }: Props) {
             <PhoneField
               label="Teléfono"
               tooltip="Este teléfono se mostrará en tu web y también se usará para el botón de WhatsApp automáticamente."
-              value={value.contactPhone}
+              value={value.contactPhone || ''}
               onChange={(val) => update('contactPhone', val)}
             />
             <TextField
               label="Correo Electrónico"
               type="email"
-              value={value.contactEmail}
+              value={value.contactEmail || ''}
               onChange={(e) => update('contactEmail', e.target.value)}
               placeholder="Ej: info@studiopower.com"
             />
@@ -124,7 +124,7 @@ export default function GlobalsEditor({ value, onChange }: Props) {
           <TextField
             label="Dirección Física"
             tooltip="Esta dirección se mostrará en la sección de contacto. Para que abra el mapa en el teléfono del cliente, configura el enlace de Google Maps en la sección de Contacto."
-            value={value.contactAddress}
+            value={value.contactAddress || ''}
             onChange={(e) => update('contactAddress', e.target.value)}
             placeholder="Ej: Av. Principal 123, Ciudad, País"
           />
@@ -154,7 +154,7 @@ export default function GlobalsEditor({ value, onChange }: Props) {
                 <TextField
                   label="Nombre de Usuario"
                   containerClassName="flex-1 w-full"
-                  value={username}
+                  value={username || ''}
                   onChange={(e) => updateSocial(i, { 
                     title: e.target.value,
                     url: buildFullUrl(e.target.value, currentNetwork.urlTemplate) 

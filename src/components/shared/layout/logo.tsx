@@ -1,42 +1,48 @@
 import React from 'react'
-import { Activity } from 'lucide-react'
+import { BookLock } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
   subtitle?: string
   animate?: boolean
   centered?: boolean
+  color?: 'default' | 'white'
 }
 
 export default function Logo({ 
   size = 'md', 
   subtitle, 
   animate = false, 
-  centered = false 
+  centered = false,
+  color = 'default'
 }: LogoProps) {
-  const containerClasses = centered ? 'text-center' : 'flex items-center gap-2.5'
+  const containerClasses = centered ? 'text-center' : 'flex items-center gap-3'
   
   // Icon and text sizing
-  let iconBgClass = 'w-8.5 h-8.5 rounded-lg'
-  let iconClass = 'w-4.5 h-4.5'
-  let titleClass = 'font-bold text-sm tracking-tight text-foreground'
-  let subtitleClass = 'text-[8px] text-primary font-mono block tracking-widest uppercase font-bold'
+  let iconBgClass = 'w-12 h-12 rounded-xl'
+  let iconClass = 'w-6 h-6'
+  let titleClass = 'font-bold text-xl tracking-tight'
+  let subtitleClass = 'text-[10px] font-mono block tracking-widest uppercase font-bold'
   
   if (size === 'sm') {
-    iconBgClass = 'w-8 h-8 rounded-lg'
-    iconClass = 'w-4 h-4'
-    titleClass = 'font-bold text-xs tracking-tight text-foreground'
-    subtitleClass = 'text-[7px] text-primary font-mono block tracking-widest uppercase font-bold'
+    iconBgClass = 'w-10 h-10 rounded-xl'
+    iconClass = 'w-5 h-5'
+    titleClass = 'font-bold text-lg tracking-tight'
+    subtitleClass = 'text-[9px] font-mono block tracking-widest uppercase font-bold'
   } else if (size === 'lg') {
-    iconBgClass = 'w-14 h-14 rounded-xl shadow-lg shadow-primary/20'
-    iconClass = 'w-8 h-8'
-    titleClass = 'font-bold text-xl text-foreground tracking-tight'
-    subtitleClass = 'text-[10px] text-primary font-mono tracking-widest uppercase font-bold'
+    iconBgClass = 'w-16 h-16 rounded-2xl shadow-lg shadow-primary/20'
+    iconClass = 'w-9 h-9'
+    titleClass = 'font-extrabold text-3xl tracking-tight'
+    subtitleClass = 'text-xs font-mono tracking-widest uppercase font-bold'
   }
 
+  const textColorClass = color === 'white' ? 'text-white' : 'text-foreground'
+  const subtitleColorClass = color === 'white' ? 'text-white/80' : 'text-primary'
+
   const iconElement = (
-    <div className={`${iconBgClass} bg-primary flex items-center justify-center ${centered ? 'mx-auto mb-4' : ''}`}>
-      <Activity className={`${iconClass} text-white ${animate ? 'animate-pulse' : ''}`} />
+    <div className={`${iconBgClass} bg-primary flex items-center justify-center shrink-0 ${centered ? 'mx-auto mb-4' : ''}`}>
+      <BookLock className={`${iconClass} text-white ${animate ? 'animate-pulse' : ''}`} />
     </div>
   )
 
@@ -44,8 +50,8 @@ export default function Logo({
     return (
       <div className={containerClasses}>
         {iconElement}
-        <h1 className={titleClass}>SENTINEL</h1>
-        {subtitle && <p className={subtitleClass}>{subtitle}</p>}
+        <h1 className={cn(titleClass, textColorClass)}>Sentinel</h1>
+        {subtitle && <p className={cn(subtitleClass, subtitleColorClass)}>{subtitle}</p>}
       </div>
     )
   }
@@ -53,9 +59,9 @@ export default function Logo({
   return (
     <div className={containerClasses}>
       {iconElement}
-      <div>
-        <span className="font-bold text-sm tracking-tight text-foreground block leading-none">SENTINEL</span>
-        {subtitle && <span className={subtitleClass}>{subtitle}</span>}
+      <div className="flex flex-col justify-center">
+        <span className={cn(titleClass, "block leading-none", textColorClass)}>Sentinel</span>
+        {subtitle && <span className={cn(subtitleClass, "mt-1", subtitleColorClass)}>{subtitle}</span>}
       </div>
     </div>
   )

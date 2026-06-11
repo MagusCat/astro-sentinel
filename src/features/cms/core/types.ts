@@ -217,4 +217,5 @@ export interface CmsPublishResult {
   backupKey?: string
   error?: string
   deployHookTriggered?: boolean
+  publicUrl?: string
 }

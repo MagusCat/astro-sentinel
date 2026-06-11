@@ -26,7 +26,7 @@ export default function CmsToolbar({
   onDiscard,
   onReload,
 }: CmsToolbarProps) {
-  const webUrl = process.env.NEXT_PUBLIC_WEB_URL
+  const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:4321'
 
   const actions = (
     <>
@@ -80,14 +80,14 @@ export default function CmsToolbar({
   )
 
   const description = (
-    <span className="text-sm text-muted-foreground font-medium flex items-center gap-1.5 select-none mt-1">
-      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-      <span>Última publicación:</span>
-      <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded font-mono text-sm">
+    <span className="text-sm text-muted-foreground font-medium flex flex-wrap items-center gap-1.5 select-none mt-1">
+      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+      <span className="whitespace-nowrap">Última publicación:</span>
+      <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded font-mono text-sm whitespace-nowrap">
         {loading ? '...' : lastPublished ?? 'Sin publicaciones'}
       </span>
       {lastModifiedBy && (
-        <span className="text-sm text-muted-foreground/60 truncate" title={`Publicado por: ${lastModifiedBy}`}>
+        <span className="text-sm text-muted-foreground/60 truncate max-w-[120px] sm:max-w-xs" title={`Publicado por: ${lastModifiedBy}`}>
           • Por: {lastModifiedBy}
         </span>
       )}

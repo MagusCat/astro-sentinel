@@ -132,22 +132,6 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
     })
   }
 
-  const cleanEmptyStrings = (obj: unknown): unknown => {
-    if (Array.isArray(obj)) {
-      return obj.map(cleanEmptyStrings)
-    } else if (obj !== null && typeof obj === 'object') {
-      const cleaned: Record<string, unknown> = {}
-      for (const [key, val] of Object.entries(obj)) {
-        if (val === '') {
-          continue // skip empty strings
-        }
-        cleaned[key] = cleanEmptyStrings(val)
-      }
-      return cleaned
-    }
-    return obj
-  }
-
   const handlePublish = async () => {
     if (!draft) return
     setPublishing(true)
@@ -168,12 +152,10 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
       _metadata: { lastModifiedBy: userIdentifier },
     }
 
-    const cleanedDraft = cleanEmptyStrings(derivedDraft)
-
-    const res = await publishSiteContent(cleanedDraft as SiteContent)
+    const res = await publishSiteContent(derivedDraft as SiteContent)
     if (res.success) {
-      setContent(JSON.parse(JSON.stringify(cleanedDraft)))
-      setDraft(JSON.parse(JSON.stringify(cleanedDraft)))
+      setContent(JSON.parse(JSON.stringify(derivedDraft)))
+      setDraft(JSON.parse(JSON.stringify(derivedDraft)))
       setIsDirty(false)
       const dateRes = await getLastPublicationDate()
       setLastPublished(formatDate(dateRes.date))
@@ -291,30 +273,30 @@ if (isLoggingOut) {
         )}>
           <div className="px-4 sm:px-8 pt-4 sm:pt-7 pb-3 sm:pb-4 border-b border-border/10 shrink-0 bg-background z-20 shadow-sm sticky top-0">
         
-        <div className="flex flex-row justify-between items-start gap-10">
-        <button
-          type="button"
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="md:hidden mb-3 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-          aria-label="Abrir menú"
-        >
+        <div className="flex flex-row items-start gap-3 w-full">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden mt-1 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer shrink-0"
+            aria-label="Abrir menú"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-          <Menu className="w-5 h-5" />
-        </button>
-
-        
-      <CmsToolbar
-        isDirty={isDirty}
-            loading={loading}
-            publishing={publishing}
-            lastPublished={lastPublished}
-            lastModifiedBy={content?._metadata?.lastModifiedBy}
-            onPublish={handlePublish}
-            onDiscard={handleDiscard}
-            onReload={loadContent}
-            onOpenBackups={() => setShowBackups(true)}
-          />
-</div>
+          <div className="flex-1 min-w-0">
+            <CmsToolbar
+              isDirty={isDirty}
+              loading={loading}
+              publishing={publishing}
+              lastPublished={lastPublished}
+              lastModifiedBy={content?._metadata?.lastModifiedBy}
+              onPublish={handlePublish}
+              onDiscard={handleDiscard}
+              onReload={loadContent}
+              onOpenBackups={() => setShowBackups(true)}
+            />
+          </div>
+        </div>
           <ProgressBar indeterminate={loading} className="absolute bottom-0 left-0 right-0 translate-y-1/2" />
         </div>
 

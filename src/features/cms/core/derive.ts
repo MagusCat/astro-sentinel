@@ -22,7 +22,8 @@ function stripAutoInjectedItems(items: ContactItem[]): ContactItem[] {
   return items.filter(i => !isAutoInjectedItem(i))
 }
 
-export function deriveWhatsappNumber(contactPhone: string): string {
+export function deriveWhatsappNumber(contactPhone: string | undefined): string {
+  if (!contactPhone) return ''
   let digits = contactPhone.replace(STRIP_PHONE_RE, '')
   if (digits.startsWith('+')) digits = digits.slice(1)
   return digits
@@ -48,11 +49,29 @@ export function deriveHeroSocialLinks(globals: WebGlobals, contact: Contact): So
   return links
 }
 
+export function getSocialUsername(url: string): string {
+  try {
+    const parsed = new URL(url)
+    let path = parsed.pathname
+    if (path.startsWith('/')) path = path.slice(1)
+    if (path.endsWith('/')) path = path.slice(0, -1)
+    
+    if (parsed.hostname.includes('instagram.com') || parsed.hostname.includes('twitter.com') || parsed.hostname.includes('x.com') || parsed.hostname.includes('tiktok.com')) {
+      return `@${path.split('/')[0]}`
+    }
+    if (parsed.hostname.includes('facebook.com')) {
+      return path.split('/')[0]
+    }
+    return url.replace(/^https?:\/\/(www\.)?/, '')
+  } catch {
+    return url
+  }
+}
+
 export function deriveContactItems(globals: WebGlobals, contact: Contact): ContactItem[] {
-  const existing = contact.contact ? stripAutoInjectedItems(contact.contact) : []
   const items: ContactItem[] = [...stripAutoInjected(globals.socialLinks)].map((link) => ({
     title: link.alt,
-    content: link.url,
+    content: link.title || getSocialUsername(link.url),
     icon: link.icon,
     url: link.url,
   }))
@@ -81,13 +100,10 @@ export function deriveContactItems(globals: WebGlobals, contact: Contact): Conta
       url: mapUrl,
     })
   }
-  if (existing.length > 0) {
-    items.push(...existing)
-  }
   return items
 }
 
-export function buildWhatsapp(contactPhone: string, partial: Partial<Whatsapp> = {}): Whatsapp {
+export function buildWhatsapp(contactPhone: string | undefined, partial: Partial<Whatsapp> = {}): Whatsapp {
   const number = partial.number ?? deriveWhatsappNumber(contactPhone)
   return {
     number,

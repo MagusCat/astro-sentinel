@@ -59,6 +59,8 @@ function DirtyBanner({ isDirty }: { isDirty: boolean }) {
   )
 }
 
+import { Logo } from '@/components/shared'
+
 export default function CmsSidebarNav({
   activeUser,
   activeSection,
@@ -73,8 +75,7 @@ export default function CmsSidebarNav({
 }: CmsSidebarNavProps) {
   return (
     <AppSidebar
-      title="Sentinel"
-      subtitle="Editor Web"
+      title={<Logo size="md" subtitle="Editor Web" color="white" />}
       isCollapsed={isCollapsed}
       onToggleCollapse={onToggleCollapse}
       isMobileOpen={isMobileOpen}

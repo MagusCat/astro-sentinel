@@ -98,12 +98,15 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
     const newJson = JSON.stringify(newContent, null, 2)
     const { error: uploadError } = await supabase.storage
       .from(APP_CONFIG.buckets.content)
-      .upload(APP_CONFIG.keys.contentJson, new Blob([newJson], { type: 'application/json' }), {
+      .upload(APP_CONFIG.keys.contentJson, newJson, {
         upsert: true,
         contentType: 'application/json'
       })
 
     if (uploadError) throw uploadError
+
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/', 'layout')
 
     const { getServiceConfig } = await import('@/lib/config')
     const { deployHookUrl } = getServiceConfig()
@@ -116,7 +119,18 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
       }
     }
 
-    return { success: true, backupKey, deployHookTriggered: !!deployHookUrl }
+    const { data: { publicUrl } } = supabase.storage
+      .from(APP_CONFIG.buckets.content)
+      .getPublicUrl(APP_CONFIG.keys.contentJson)
+
+    const finalPublicUrl = `${publicUrl}?t=${Date.now()}`
+
+    console.group('[CMS] Publicación Exitosa')
+    console.log('URL:', finalPublicUrl)
+    console.log('JSON:', newContent)
+    console.groupEnd()
+
+    return { success: true, backupKey, deployHookTriggered: !!deployHookUrl, publicUrl: finalPublicUrl }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { success: false, error: `Error al publicar contenido: ${msg}` }

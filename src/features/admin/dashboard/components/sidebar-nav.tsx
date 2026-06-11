@@ -9,6 +9,8 @@ import { LogOut, Power, FileEdit, Terminal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
+import { Logo } from '@/components/shared'
+
 export default function SidebarNav({
   activeUser,
   onLogout,
@@ -130,7 +132,7 @@ export default function SidebarNav({
 
   return (
     <AppSidebar
-      title="Sentinel"
+      title={<Logo size="md" subtitle="Administrador" color="white" />}
       onTitleClick={handleTitleClick}
       isMobileOpen={isMobileOpen}
       onCloseMobile={onCloseMobile}

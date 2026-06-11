@@ -26,14 +26,14 @@ export function PageHeader({
       )}
       {...props}
     >
-      <div>
-        <h3 className="text-lg text-foreground tracking-tight font-bold">{title}</h3>
+      <div className="min-w-0">
+        <h3 className="text-lg text-foreground tracking-tight font-bold truncate">{title}</h3>
         {description && (
-          <div className="text-sm text-muted-foreground mt-0.5">{description}</div>
+          <div className="text-sm text-muted-foreground mt-0.5 min-w-0">{description}</div>
         )}
       </div>
       {actions && (
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {actions}
         </div>
       )}

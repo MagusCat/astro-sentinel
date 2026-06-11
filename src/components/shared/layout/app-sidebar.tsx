@@ -14,7 +14,7 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType>({ isCollapsed: false, isMounted: false, enableTransitions: false })
 
 export interface AppSidebarProps {
-  title: string
+  title: React.ReactNode
   subtitle?: string
   onTitleClick?: () => void
   isMobileOpen?: boolean
@@ -66,14 +66,22 @@ export function AppSidebar({
                   <button
                     type="button"
                     onClick={onTitleClick}
-                    className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left hover:text-sidebar-foreground/80 cursor-pointer focus:outline-none transition-colors"
+                    className="block text-left hover:opacity-80 cursor-pointer focus:outline-none transition-opacity"
                   >
-                    {title}
+                    {typeof title === 'string' ? (
+                      <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none">{title}</span>
+                    ) : (
+                      title
+                    )}
                   </button>
                 ) : (
-                  <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left">
-                    {title}
-                  </span>
+                  typeof title === 'string' ? (
+                    <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left">
+                      {title}
+                    </span>
+                  ) : (
+                    title
+                  )
                 )}
                 
                 {subtitle && (
