@@ -34,6 +34,7 @@ import DeveloperEditor from '@/features/cms/editors/components/developer-editor'
 
 interface CmsShellProps {
   activeUser?: AuthenticatedUser
+  webUrl?: string
 }
 
 interface ToastState {
@@ -55,7 +56,7 @@ const formatDate = (dateStr: string | null) => {
 
 
 
-export default function CmsShell({ activeUser }: CmsShellProps) {
+export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<CmsSection>('base')
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -313,6 +314,7 @@ if (isLoggingOut) {
               onDiscard={handleDiscard}
               onReload={loadContent}
               onOpenBackups={() => setShowBackups(true)}
+              webUrl={webUrl}
             />
           </div>
         </div>

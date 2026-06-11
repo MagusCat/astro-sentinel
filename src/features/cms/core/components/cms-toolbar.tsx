@@ -14,6 +14,7 @@ interface CmsToolbarProps {
   onDiscard: () => void
   onReload: () => void
   onOpenBackups?: () => void
+  webUrl?: string
 }
 
 export default function CmsToolbar({
@@ -25,9 +26,8 @@ export default function CmsToolbar({
   onPublish,
   onDiscard,
   onReload,
+  webUrl,
 }: CmsToolbarProps) {
-  const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:4321'
-
   const actions = (
     <>
       <button
