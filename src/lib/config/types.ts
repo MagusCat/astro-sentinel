@@ -53,4 +53,5 @@ export interface SecretsConfig {
 export interface ServicesConfig {
   supabaseUrl: string
   supabasePublishableKey: string
+  deployHookUrl?: string
 }

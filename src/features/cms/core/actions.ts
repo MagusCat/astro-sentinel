@@ -105,6 +105,17 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
 
     if (uploadError) throw uploadError
 
+    const { getServiceConfig } = await import('@/lib/config')
+    const { deployHookUrl } = getServiceConfig()
+
+    if (deployHookUrl) {
+      try {
+        await fetch(deployHookUrl, { method: 'POST' })
+      } catch (hookError) {
+        console.error('Failed to trigger deploy hook:', hookError)
+      }
+    }
+
     return { success: true, backupKey }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
