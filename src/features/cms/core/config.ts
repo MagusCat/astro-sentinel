@@ -1,4 +1,4 @@
-import { Settings, Image, Star, Calendar, MessageSquare, HelpCircle, Images, Database, History } from 'lucide-react'
+import { Settings, Image, Star, Calendar, MessageSquare, HelpCircle, Images, Database, History, Code } from 'lucide-react'
 import { CmsSection, ContactChannelConfig } from './types'
 
 export const CMS_SECTIONS: Array<{ id: CmsSection; label: string; icon: React.ElementType; hidden?: boolean }> = [
@@ -14,6 +14,7 @@ export const CMS_SECTIONS: Array<{ id: CmsSection; label: string; icon: React.El
 export const CMS_SYSTEM_SECTIONS: Array<{ id: CmsSection; label: string; icon: React.ElementType; hidden?: boolean }> = [
   { id: 'storage', label: 'Gestor de Archivos', icon: Database },
   { id: 'backups', label: 'Historial de Versiones', icon: History },
+  { id: 'developer', label: 'Desarrollador', icon: Code },
 ]
 
 export const CMS_LIMITS = {

@@ -30,6 +30,7 @@ import CommentsEditor from '@/features/cms/editors/components/comments-editor'
 import FooterEditor from '@/features/cms/editors/components/footer-editor'
 import StorageEditor from '@/features/cms/editors/components/storage-editor'
 import BackupsEditor from '@/features/cms/editors/components/backups-editor'
+import DeveloperEditor from '@/features/cms/editors/components/developer-editor'
 
 interface CmsShellProps {
   activeUser?: AuthenticatedUser
@@ -234,6 +235,24 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
       case 'gallery': return <GalleryEditor value={draft.gallery} onChange={(v) => updateDraft('gallery', v)} />
       case 'storage': return <StorageEditor />
   case 'backups': return <BackupsEditor />
+  case 'developer': return (
+    <DeveloperEditor 
+      onImport={(data) => {
+        if (!draft) return
+        const merged = JSON.parse(JSON.stringify(draft)) as Record<string, any>
+        for (const key in data) {
+          if (data[key as keyof SiteContent] && typeof data[key as keyof SiteContent] === 'object' && !Array.isArray(data[key as keyof SiteContent])) {
+            merged[key] = { ...merged[key], ...(data[key as keyof SiteContent] as any) }
+          } else {
+            merged[key] = data[key as keyof SiteContent]
+          }
+        }
+        setDraft(merged as SiteContent)
+        setIsDirty(true)
+        showToast('JSON cargado exitosamente en el editor. Recuerda publicar los cambios.', 'success')
+      }}
+    />
+  )
   }
 }
 

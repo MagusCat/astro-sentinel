@@ -207,6 +207,7 @@ export type CmsSection =
   | 'gallery'
   | 'storage'
   | 'backups'
+  | 'developer'
 
 export interface UploadImageConfig {
   maxSizeMB?: number
