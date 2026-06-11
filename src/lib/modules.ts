@@ -1,9 +1,7 @@
-export const getActiveModules = () => {
-  const modulesRaw = process.env.NEXT_PUBLIC_MODULES || ''
-  const modules = modulesRaw.split(',').map(m => m.trim().toLowerCase())
+import { APP_CONFIG } from '@/lib/config'
 
-  return {
-    adminEnabled: modules.includes('admin'),
-    cmsEnabled: modules.includes('cms'),
-  }
-}
+export const getActiveModules = () => ({
+  adminEnabled: APP_CONFIG.modules.admin,
+  cmsEnabled: APP_CONFIG.modules.cms,
+  anyEnabled: APP_CONFIG.modules.anyEnabled,
+})

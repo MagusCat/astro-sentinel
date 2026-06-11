@@ -22,7 +22,7 @@ export function useSidebarNav() {
 
   const navigateToAdmin = (role: string) => {
     if (Roles.canManageStaff(role)) {
-      router.push('/dashboard?tab=developer')
+      void router.push('/dashboard?tab=developer')
     }
   }
 

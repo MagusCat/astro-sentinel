@@ -1,22 +1,35 @@
 // TypeScript schema matching content-web-example.json
 // Used by the CMS editor to validate and type all editable content
 
+export interface DataMediaItem {
+  id: number | string
+  title: string
+  url?: string
+  image?: string
+  excerpt?: string
+  date?: string
+  author?: string
+}
+
+export interface DataIconItem {
+  icon: string
+}
+
 export interface NavItem {
   section: string
   url: string
 }
 
-export interface SocialLink {
+export interface SocialLink extends DataIconItem {
   alt: string
   url: string
   icon: string
 }
 
-export interface CarouselImage {
-  src: string
-  type: 'local' | 'bucket'
-  alt: string
-  active?: boolean
+export interface HeroCarouselImage extends DataMediaItem {
+  id: number | string
+  url: string
+  title: string
 }
 
 export interface Header {
@@ -28,7 +41,8 @@ export interface Hero {
   title: string
   subtitle: string
   description: string
-  carouselImages: CarouselImage[]
+  socialLinks: SocialLink[]
+  carouselImages: HeroCarouselImage[]
 }
 
 export interface About {
@@ -85,11 +99,10 @@ export interface Schedule {
   classes: ScheduleClass[]
 }
 
-export interface GalleryImage {
-  id: string
-  title: string
+export interface GalleryImage extends DataMediaItem {
+  id: number | string
   url: string
-  active?: boolean
+  title: string
 }
 
 export interface Gallery {
@@ -137,6 +150,8 @@ export interface Contact {
   heading: string
   description: string
   mapEmbedUrl: string
+  mapLink: string
+  whatsapp: Whatsapp
   contact?: ContactItem[]
 }
 
@@ -152,7 +167,6 @@ export interface WebGlobals {
   contactPhone: string
   contactEmail: string
   contactAddress: string
-  whatsapp: Whatsapp
   socialLinks: SocialLink[]
 }
 
@@ -178,12 +192,17 @@ export interface SiteContent {
 export type CmsSection =
   | 'base'
   | 'hero'
-  | 'identity'
+  | 'about'
   | 'schedule'
-  | 'media'
+  | 'testimonials'
+  | 'faq'
+  | 'gallery'
   | 'storage'
   | 'backups'
-  | 'status'
+
+export interface UploadImageConfig {
+  maxSizeMB?: number
+}
 
 export interface CmsPublishResult {
   success: boolean

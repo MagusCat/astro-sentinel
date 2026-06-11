@@ -1,14 +1,17 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getServiceConfig } from '@/lib/config'
 
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
+  const { supabaseUrl, supabasePublishableKey } = getServiceConfig()
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    supabaseUrl,
+    supabasePublishableKey,
     {
       cookies: {
         getAll() {
@@ -28,7 +31,11 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   )
 
   // Refresh user session if expired
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch (err) {
+    console.warn('[Middleware] Session refresh failed:', err instanceof Error ? err.message : String(err))
+  }
 
   return supabaseResponse
 }

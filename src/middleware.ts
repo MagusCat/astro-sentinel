@@ -3,10 +3,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { Roles } from '@/lib/auth/roles'
 import { verifySessionToken } from '@/lib/auth/session'
-import { getActiveModules } from '@/lib/modules'
+import { APP_CONFIG } from '@/lib/config'
 
-const { adminEnabled, cmsEnabled } = getActiveModules()
-const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME || 'sentinel_session'
+const { admin: adminEnabled, cms: cmsEnabled } = APP_CONFIG.modules
 
 // ── 
 // Middleware that handles module availability, JWT session verification, and RBAC
@@ -32,7 +31,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/editor')
 
   if (isProtectedRoute) {
-    const token = request.cookies.get(SESSION_COOKIE)?.value
+    const token = request.cookies.get(APP_CONFIG.auth.sessionCookieName)?.value
     const session = token ? await verifySessionToken(token) : null
 
     if (!session) {

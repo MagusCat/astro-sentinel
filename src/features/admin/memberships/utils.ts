@@ -1,4 +1,4 @@
-export const MEMBERSHIP_FIELDS = 'id, payment_id, client_id, class_plan_id, amount_paid, start_date, end_date, status, remaining_days, created_at'
+export const MEMBERSHIP_FIELDS = 'id, payment_id, client_id, class_plan_id, amount_paid, start_date, end_date, status, remaining_days, frozen_days, created_at'
 export const MS_PER_DAY = 1000 * 60 * 60 * 24
 
 export function calcRemainingDays(endDateStr: string): number {

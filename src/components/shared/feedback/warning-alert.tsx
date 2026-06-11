@@ -66,7 +66,7 @@ export function WarningAlert({
           {title}
         </h2>
       )}
-      <p className={cn("text-[10px] font-mono tracking-widest uppercase font-black mt-1.5", styles.mono)}>
+      <p className={cn("text-sm font-mono tracking-widest uppercase font-black mt-1.5", styles.mono)}>
         {variant === "error" ? "Requiere Autorizacion" : "Aviso Importante"}
       </p>
       <div className="h-[2px] w-12 bg-border mx-auto my-4 rounded-full" />

@@ -1,215 +1,173 @@
 'use client'
 
 import React from 'react'
-import { WebGlobals, SocialLink, Contact } from '../../core/types'
+import { WebGlobals, SocialLink } from '../../core/types'
 import { Plus, Trash2, Settings, Share2, MapPin } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { TextField, SelectField, TextareaField, Tooltip } from '@/components/shared'
+import { SectionCard } from '@/components/shared'
+import { TextField, SelectField, PhoneField } from '@/components/shared'
+import { CMS_SOCIAL_NETWORKS } from '../../core/config'
 
 interface Props {
   value: WebGlobals
   onChange: (v: WebGlobals) => void
-  contact?: Contact
-  onContactChange?: (v: Contact) => void
 }
 
-const SOCIAL_NETWORKS = [
-  { id: 'facebook', name: 'Facebook', icon: 'mingcute:facebook-fill' },
-  { id: 'instagram', name: 'Instagram', icon: 'mingcute:ins-fill' },
-  { id: 'tiktok', name: 'TikTok', icon: 'mingcute:tiktok-fill' },
-  { id: 'twitter', name: 'X (Twitter)', icon: 'mingcute:social-x-line' },
-  { id: 'youtube', name: 'YouTube', icon: 'mingcute:youtube-fill' },
-  { id: 'linkedin', name: 'LinkedIn', icon: 'mingcute:linkedin-fill' },
-]
 
-export default function GlobalsEditor({ value, onChange, contact, onContactChange }: Props) {
+
+const isAutoInjected = (link: SocialLink): boolean => {
+  const name = link.alt?.toLowerCase() || ''
+  const icon = link.icon?.toLowerCase() || ''
+  const isPhoneOrEmail = name.includes('tel') || name.includes('mail') || name.includes('phone') || name.includes('correo') || icon.includes('phone') || icon.includes('mail')
+  const isLocation = name.includes('map') || name.includes('ubicacion') || name.includes('ubicación') || name.includes('address') || name.includes('direccion') || name.includes('dirección') || icon.includes('map') || icon.includes('pin')
+  return isPhoneOrEmail || isLocation
+}
+
+function extractUsername(url: string, template: string): string {
+  if (!url) return ''
+  // If it doesn't look like a URL, assume it's already a username
+  if (!url.startsWith('http')) return url.replace(/^@/, '')
+  
+  // Basic extraction based on template
+  const prefix = template.split('{username}')[0]
+  if (url.startsWith(prefix)) {
+    return url.slice(prefix.length).replace(/\/$/, '')
+  }
+  
+  // Fallback: extract last segment
+  const parts = url.split('/').filter(Boolean)
+  let last = parts[parts.length - 1]
+  if (last.startsWith('@')) last = last.slice(1)
+  return last
+}
+
+function buildFullUrl(username: string, template: string): string {
+  if (!username) return ''
+  if (username.startsWith('http')) return username // Already a URL
+  const cleanUsername = username.replace(/^@/, '')
+  return template.replace('{username}', cleanUsername)
+}
+
+export default function GlobalsEditor({ value, onChange }: Props) {
 
   const update = <K extends keyof WebGlobals>(key: K, val: WebGlobals[K]) => {
     onChange({ ...value, [key]: val })
   }
 
-  const socialLinks = value.socialLinks.filter(link => {
-    const name = link.alt?.toLowerCase() || ''
-    const icon = link.icon?.toLowerCase() || ''
-    const isPhoneOrEmail = name.includes('tel') || name.includes('mail') || name.includes('phone') || name.includes('correo') || icon.includes('phone') || icon.includes('mail')
-    const isLocation = name.includes('map') || name.includes('ubicacion') || name.includes('ubicación') || name.includes('address') || name.includes('direccion') || name.includes('dirección') || icon.includes('map') || icon.includes('pin')
-    return !isPhoneOrEmail && !isLocation
-  })
+  const editableLinks = value.socialLinks.filter(l => !isAutoInjected(l))
 
-  const updateSocial = (i: number, field: keyof SocialLink, val: string) => {
-    const links = [...socialLinks]
-    links[i] = { ...links[i], [field]: val }
+  const updateSocial = (editableIndex: number, updates: Partial<SocialLink>) => {
+    const actualIndex = value.socialLinks.indexOf(editableLinks[editableIndex])
+    if (actualIndex === -1) return
+    const links = [...value.socialLinks]
+    links[actualIndex] = { ...links[actualIndex], ...updates }
     update('socialLinks', links)
   }
 
-  const handleNetworkChange = (i: number, networkId: string) => {
-    const network = SOCIAL_NETWORKS.find(n => n.id === networkId)
+  const handleNetworkChange = (editableIndex: number, networkId: string) => {
+    const network = CMS_SOCIAL_NETWORKS.find(n => n.id === networkId)
     if (network) {
-      updateSocial(i, 'alt', network.name)
-      updateSocial(i, 'icon', network.icon)
+      // Re-build URL with new template if possible
+      const currentLink = editableLinks[editableIndex]
+      const oldNetwork = CMS_SOCIAL_NETWORKS.find(n => n.name === currentLink.alt || n.icon === currentLink.icon) || CMS_SOCIAL_NETWORKS[0]
+      const username = extractUsername(currentLink.url, oldNetwork.urlTemplate)
+      
+      updateSocial(editableIndex, { 
+        alt: network.name, 
+        icon: network.icon,
+        url: username ? buildFullUrl(username, network.urlTemplate) : currentLink.url
+      })
     }
   }
 
-  const removeSocial = (i: number) => {
-    update('socialLinks', socialLinks.filter((_, j) => j !== i))
+  const removeSocial = (editableIndex: number) => {
+    const actualIndex = value.socialLinks.indexOf(editableLinks[editableIndex])
+    if (actualIndex === -1) return
+    update('socialLinks', value.socialLinks.filter((_, j) => j !== actualIndex))
   }
 
   const addSocial = () => {
-    update('socialLinks', [...socialLinks, { alt: 'Facebook', url: '', icon: 'mingcute:facebook-fill' }])
+    update('socialLinks', [...value.socialLinks, { alt: 'Facebook', url: '', icon: 'mingcute:facebook-fill' }])
   }
-
-  const mapPreviewUrl = contact?.mapEmbedUrl || ''
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionCard 
-        title="Información General del Sitio Web" 
+      <SectionCard
+        title="Información del Sitio Web"
         titleAction={<Settings className="w-5 h-5 text-muted-foreground" />}
-        description="Estos textos ayudan a Google a entender de qué trata tu página y es lo primero que verán tus clientes al buscarte o al ver el enlace compartido."
+        description="Estos datos le ayudan a Google a entender de qué trata tu página y son lo primero que ven tus clientes al buscarte en internet."
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TextField
-            label="Título del Sitio (SEO)"
+            label="Nombre del Sitio"
             value={value.siteTitle}
             onChange={(e) => update('siteTitle', e.target.value)}
           />
           <TextField
-            label="Descripción del Sitio (SEO)"
+            label="Descripción Corta del Sitio"
+            tooltip="Este texto aparece debajo del nombre de tu página cuando alguien la comparte o la busca en Google. Debe ser breve y describir tu negocio."
             value={value.siteDescription}
             onChange={(e) => update('siteDescription', e.target.value)}
           />
         </div>
       </SectionCard>
 
-      <SectionCard 
-        title="Datos de Contacto Unificados" 
+      <SectionCard
+        title="Datos de Contacto"
         titleAction={<MapPin className="w-5 h-5 text-muted-foreground" />}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PhoneField
+              label="Teléfono"
+              tooltip="Este teléfono se mostrará en tu web y también se usará para el botón de WhatsApp automáticamente."
+              value={value.contactPhone}
+              onChange={(val) => update('contactPhone', val)}
+            />
+            <TextField
+              label="Correo Electrónico"
+              type="email"
+              value={value.contactEmail}
+              onChange={(e) => update('contactEmail', e.target.value)}
+              placeholder="Ej: info@studiopower.com"
+            />
+          </div>
+
           <TextField
-            label="Teléfono Comercial (Opcional)"
-            type="tel"
-            value={value.contactPhone}
-            onChange={(e) => update('contactPhone', e.target.value)}
-          />
-          <TextField
-            label="Email Comercial (Opcional)"
-            type="email"
-            value={value.contactEmail}
-            onChange={(e) => update('contactEmail', e.target.value)}
+            label="Dirección Física"
+            tooltip="Esta dirección se mostrará en la sección de contacto. Para que abra el mapa en el teléfono del cliente, configura el enlace de Google Maps en la sección de Contacto."
+            value={value.contactAddress}
+            onChange={(e) => update('contactAddress', e.target.value)}
+            placeholder="Ej: Av. Principal 123, Ciudad, País"
           />
         </div>
-
-        {contact && onContactChange && (
-          <div className="pt-6 mt-4 border-t border-border/30 flex flex-col gap-4">
-            <h4 className="text-sm font-bold text-foreground">Ubicación Física</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextField
-                label="Dirección Física Completa (Opcional)"
-                value={value.contactAddress}
-                onChange={(e) => update('contactAddress', e.target.value)}
-                placeholder="Ej: Av. Principal 123, Ciudad, País"
-              />
-
-              <div className="flex items-start gap-2">
-                <div className="pt-7">
-                  <Tooltip content="Pega el link corto (Compartir > Copiar enlace) que abrirá la app de mapas del usuario en su teléfono." />
-                </div>
-                <div className="flex-1">
-                  <TextField
-                    label="Link Corto de Ubicación"
-                    value={contact.contact?.find(item => item.title === 'Ubicación')?.url || ''}
-                    onChange={e => {
-                      const newContactItems = contact.contact ? [...contact.contact] : [];
-                      const idx = newContactItems.findIndex(i => i.title === 'Ubicación');
-                      if (idx !== -1) {
-                        newContactItems[idx].url = e.target.value;
-                      } else {
-                        newContactItems.push({ title: 'Ubicación', content: '', icon: 'mingcute:map-pin-line', url: e.target.value });
-                      }
-                      onContactChange({ ...contact, contact: newContactItems });
-                    }}
-                    placeholder="Ej: https://maps.app.goo.gl/..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border/30">
-              <div className="flex items-start gap-2">
-                <div className="pt-7">
-                  <Tooltip content='Abre Google Maps, busca tu negocio, haz clic en "Compartir", elige "Insertar un mapa", copia todo el código y pégalo aquí.' />
-                </div>
-                <div className="flex-1">
-                  <TextareaField
-                    label="Código de Google Maps"
-                    value={contact.mapEmbedUrl}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val.includes('<iframe') && val.includes('src="')) {
-                        const match = val.match(/src="([^"]+)"/);
-                        if (match) {
-                          onContactChange({ ...contact, mapEmbedUrl: match[1] });
-                          return;
-                        }
-                      }
-                      onContactChange({ ...contact, mapEmbedUrl: val });
-                    }}
-                    placeholder='Pega aquí el código HTML que empieza con <iframe ...'
-                    className="font-mono text-xs h-12 min-h-[48px] resize-none overflow-hidden scrollbar-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {mapPreviewUrl ? (
-              <div className="mt-4 rounded-xl overflow-hidden border border-border/50 h-[250px] w-full bg-muted/30 flex flex-col">
-                <div className="bg-muted px-4 py-2 text-xs font-bold text-muted-foreground flex justify-between items-center border-b border-border/50">
-                  <span>Previsualización del Mapa</span>
-                </div>
-                <iframe 
-                  src={mapPreviewUrl} 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={false} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            ) : (
-              <div className="mt-4 rounded-xl border border-dashed border-border/50 h-[100px] flex items-center justify-center text-sm text-muted-foreground">
-                Ingresa un link o dirección para ver la previsualización del mapa
-              </div>
-            )}
-          </div>
-        )}
       </SectionCard>
 
-      <SectionCard 
-        title="Redes Sociales Globales" 
+      <SectionCard
+        title="Redes Sociales"
         titleAction={<Share2 className="w-5 h-5 text-muted-foreground" />}
-        description="Configura los enlaces a tus perfiles oficiales de redes sociales. Estos se mostrarán en la web pública."
+        description="Agrega los enlaces a tus perfiles de redes sociales. El teléfono, correo y dirección se agregan automáticamente al final de la lista en la web pública."
       >
         <div className="flex flex-col gap-4">
-          {socialLinks.map((link, i) => {
-            const currentNetworkId = SOCIAL_NETWORKS.find(n => n.name === link.alt || n.icon === link.icon)?.id || 'facebook'
+          {editableLinks.map((link, i) => {
+            const currentNetwork = CMS_SOCIAL_NETWORKS.find(n => n.name === link.alt || n.icon === link.icon) || CMS_SOCIAL_NETWORKS[0]
+            const username = extractUsername(link.url, currentNetwork.urlTemplate)
+
             return (
-              <div key={i} className="flex flex-col md:flex-row gap-4 items-end border border-border/30 rounded-xl p-5 bg-muted/20">
+              <div key={i} className="flex flex-col md:flex-row gap-4 items-end border border-border/30 rounded-xl p-5 bg-muted/20 animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
                 <SelectField
                   label="Red Social"
                   containerClassName="w-full md:w-1/3 p-0"
-                  options={SOCIAL_NETWORKS.map(n => ({ value: n.id, label: n.name }))}
-                  value={currentNetworkId}
+                  options={CMS_SOCIAL_NETWORKS.map(n => ({ value: n.id, label: n.name }))}
+                  value={currentNetwork.id}
                   onChange={(e) => handleNetworkChange(i, e.target.value)}
                 />
-                
+
                 <TextField
-                  label="Enlace al Perfil (URL)"
+                  label="Nombre de Usuario"
                   containerClassName="flex-1 w-full"
-                  value={link.url}
-                  onChange={(e) => updateSocial(i, 'url', e.target.value)}
-                  placeholder="https://"
+                  value={username}
+                  onChange={(e) => updateSocial(i, { url: buildFullUrl(e.target.value, currentNetwork.urlTemplate) })}
+                  placeholder="ej. @tu_cuenta"
                 />
 
                 <button

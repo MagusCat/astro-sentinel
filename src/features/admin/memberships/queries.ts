@@ -33,8 +33,7 @@ export async function getMembershipsPanelData(): Promise<MembershipsPanelData> {
       .select('class_name, active_students')
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const membershipsList: MembershipsTableRow[] = (membershipsRes.data || []).map((m: any) => ({
+  const membershipsList: MembershipsTableRow[] = (membershipsRes.data || []).map((m: { id: string; client_id: string; client_name: string | null; class_name: string | null; plan_name: string | null; start_date: string; end_date: string; status: string }) => ({
     id: m.id,
     clientId: m.client_id,
     clientName: m.client_name || 'Desconocido',
@@ -42,9 +41,10 @@ export async function getMembershipsPanelData(): Promise<MembershipsPanelData> {
     planName: m.plan_name || 'Plan',
     startDate: m.start_date,
     endDate: m.end_date,
-    status: m.status
+    status: m.status as MembershipsTableRow['status']
   }))
 
+  // Supabase returns an array even for head queries; cast is safe as we control the select
   const classOccupancy = ((occupancyRes.data || []) as unknown as OccupancyQueryRow[]).map((row) => ({
     className: row.class_name,
     activeStudents: Number(row.active_students)

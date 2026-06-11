@@ -5,23 +5,14 @@ export const DEFAULT_CONTENT: SiteContent = {
   globals: {
     siteTitle: 'Studio Power',
     siteDescription: 'Academia de Pole Sport y Danza Aérea',
-    contactPhone: '+505 5002 0202',
-    contactEmail: 'info@studiopower.com',
-    contactAddress: 'Centro Comercial Power, Avenida Principal #456',
-    socialLinks: [
-      { alt: 'Instagram', url: 'https://instagram.com/studiopower', icon: 'mingcute:instagram-line' },
-      { alt: 'Teléfono', url: 'tel:+50550020202', icon: 'mingcute:phone-line' },
-      { alt: 'Ubicación', url: 'https://maps.google.com', icon: 'mingcute:map-pin-line' }
-    ],
-    whatsapp: {
-      number: "50550020202",
-      message: "¡Hola! Me gustaría conocer más sobre Studio Power y agendar mi clase de prueba.",
-      title: "¡Reserva tu Clase!"
-    }
+    contactPhone: '',
+    contactEmail: '',
+    contactAddress: '',
+    socialLinks: [],
   },
   header: {
     navItems: [
-      { section: "Home", url: "/" },
+      { section: "Inicio", url: "/" },
       { section: "Sobre Nosotros", url: "/#about-section" },
       { section: "Nuestras Clases", url: "/#schedule-section" },
       { section: "Galería", url: "/#gallery-section" },
@@ -31,14 +22,10 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
   hero: {
     title: "Academia de Pole Sport",
-    subtitle: "Studio Power",
+    subtitle: "Pole Power",
     description: "Bienvenida a Studio Power, tu espacio de transformación donde la fuerza, la gracia y la confianza se encuentran. Descubre la libertad de expresarte a través del movimiento acrobático y empodérate en cada clase. Donde tu viaje hacia la versión más fuerte de ti misma comienza.",
-    carouselImages: [
-      { src: "/images/hero/h_1.jpg", type: "local", alt: "Cerenidad y calentamiento" },
-      { src: "/images/hero/h_2.jpg", type: "local", alt: "Confianza en actuar" },
-      { src: "/images/hero/h_3.jpg", type: "local", alt: "Liberación de la mente" },
-      { src: "/images/hero/h_4.jpg", type: "local", alt: "Flexibilidad y fuerza" }
-    ]
+    socialLinks: [],
+    carouselImages: []
   },
   about: {
     heading: "Sobre Nosotros",
@@ -154,14 +141,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
   gallery: {
     heading: "Galería de Experiencias",
-    images: [
-      { id: "img-1", title: "Clase Básica - Técnica Fundamental", url: "/images/gallery/g_1.jpg" },
-      { id: "img-2", title: "Movimientos Básicos", url: "/images/gallery/g_2.png" },
-      { id: "img-3", title: "Calentamiento General", url: "/images/gallery/g_3.jpg" },
-      { id: "img-4", title: "Gato Mamita", url: "/images/gallery/g_4.jpg" },
-      { id: "img-5", title: "Destreza General", url: "/images/gallery/g_5.png" },
-      { id: "img-6", title: "Vamos al exotic", url: "/images/gallery/g_6.jpg" }
-    ]
+    images: []
   },
   comments: {
     heading: "Lo que dicen de nuestra academia",
@@ -188,14 +168,20 @@ export const DEFAULT_CONTENT: SiteContent = {
   contact: {
     heading: "Contáctanos",
     description: "¿Lista para transformar tu vida a través del pole sport? Contáctanos hoy para agendar tu clase de prueba gratuita. Nuestro equipo está aquí para responder todas tus preguntas y ayudarte a encontrar el programa perfecto para ti.",
-    mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15543.92096617144!2d-86.3497385558572!3d13.10043820444566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f718d006e094745%3A0xa894411f881c633e!2sCarl%27s%20Jr.%20-%20Estel%C3%AD!5e0!3m2!1ses-419!2sni!4v1778733202077!5m2!1ses-419!2sni"
+    whatsapp: {
+      number: "",
+      message: "¡Hola! Me gustaría conocer más sobre Studio Power y agendar mi clase de prueba.",
+      title: "¡Reserva tu Clase!"
+    },
+    mapEmbedUrl: "",
+    mapLink: ""
   },
   footer: {
     copyright: 2026,
     owner: "Studio Power",
     footerItems: [
-      { label: "Términos y Condiciones", url: "#" },
-      { label: "Política de Privacidad", url: "#" }
+      { label: "Términos y Condiciones", url: "/terms" },
+      { label: "Política de Privacidad", url: "/privacy" }
     ]
   }
 }

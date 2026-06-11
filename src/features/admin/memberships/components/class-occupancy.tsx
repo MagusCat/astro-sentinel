@@ -1,6 +1,7 @@
 import React from 'react'
 import { Activity } from 'lucide-react'
 import { MembershipsPanelData } from '../types'
+import { EmptyState } from '@/components/shared'
 
 interface ClassOccupancyProps {
   occupancy: MembershipsPanelData['classOccupancy']
@@ -22,8 +23,8 @@ export default function ClassOccupancy({ occupancy }: ClassOccupancyProps) {
 
       <div className="flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto scrollbar-none lg:pr-1 w-full mt-1 min-h-0">
         {occupancy.length === 0 ? (
-          <div className="py-2 w-full text-center text-sm text-muted-foreground/60 italic border border-dashed border-border/50 rounded-lg">
-            No hay datos
+          <div className="w-full flex-1 border border-dashed border-border/50 rounded-lg flex items-center justify-center">
+            <EmptyState message="No hay datos" className="py-6" />
           </div>
         ) : (
           occupancy.map((cls, idx) => (

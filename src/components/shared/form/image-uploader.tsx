@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { uploadImage } from '@/features/cms/core/actions'
-import { APP_CONFIG } from '@/lib/constants'
+import { APP_CONFIG } from '@/lib/config'
 import imageCompression from 'browser-image-compression'
 
 interface ImageUploaderProps {
@@ -22,8 +22,8 @@ export default function ImageUploader({
   onUploadSuccess, 
   onUploadError, 
   disabled,
-  maxSizeMB = APP_CONFIG.IMAGE_UPLOAD.MAX_SIZE_MB,
-  maxDimension = APP_CONFIG.IMAGE_UPLOAD.MAX_DIMENSION
+  maxSizeMB = APP_CONFIG.imageUpload.maxSizeMb,
+  maxDimension = APP_CONFIG.imageUpload.maxDimension
 }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -79,7 +79,7 @@ export default function ImageUploader({
       img.onload = () => {
         URL.revokeObjectURL(url)
         
-        const minDim = APP_CONFIG.IMAGE_UPLOAD.MIN_DIMENSION
+        const minDim = APP_CONFIG.imageUpload.minDimension
         if (img.width < minDim || img.height < minDim) {
           reject(new Error(`La imagen debe tener al menos ${minDim}x${minDim} píxeles.`))
           return
@@ -104,12 +104,12 @@ export default function ImageUploader({
           type="button"
           disabled={isUploading || disabled}
           onClick={() => fileInputRef.current?.click()}
-          className="text-xs font-bold bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+          className="text-sm font-bold bg-primary text-primary-foreground px-4 h-11 rounded-xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer w-full sm:w-auto"
         >
           {isUploading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            <Upload className="w-4 h-4" />
+            <Upload className="w-5 h-5" />
           )}
           <span>{isUploading ? 'Subiendo...' : 'Subir Imagen'}</span>
         </button>
@@ -118,10 +118,10 @@ export default function ImageUploader({
             type="button"
             disabled={isUploading || disabled}
             onClick={() => onUploadSuccess('')}
-            className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-all border border-transparent disabled:opacity-50"
+            className="h-11 w-11 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer transition-all border border-transparent disabled:opacity-50"
             title="Eliminar imagen"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>

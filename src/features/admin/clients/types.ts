@@ -1,4 +1,4 @@
-import { MembershipStatus } from '@/lib/constants'
+import { MembershipStatus } from '@/lib/config'
 
 export interface ClientData {
   id: string
@@ -20,6 +20,7 @@ export interface ClientMembershipView {
   start_date: string
   end_date: string
   remaining_days: number
+  frozen_days?: number
   class_plan_id: string
   plan_name: string
   duration_days: number

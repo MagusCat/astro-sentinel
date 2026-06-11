@@ -83,11 +83,11 @@ export function AppSidebar({
                 )}
               </div>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center">
                 {onToggleCollapse && (
                   <button
                     onClick={onToggleCollapse}
-                    className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer focus:outline-none"
+                    className="flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer focus:outline-none"
                     title="Colapsar menú"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -109,7 +109,7 @@ export function AppSidebar({
             onToggleCollapse && (
               <button
                 onClick={onToggleCollapse}
-                className="hidden md:flex w-10 h-10 rounded-xl bg-sidebar-accent hover:bg-sidebar-border/50 text-sidebar-foreground items-center justify-center transition-colors cursor-pointer"
+                className="flex w-10 h-10 rounded-xl bg-sidebar-accent hover:bg-sidebar-border/50 text-sidebar-foreground items-center justify-center transition-colors cursor-pointer"
                 title="Expandir menú"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -193,7 +193,7 @@ export function AppSidebarItem({
     <>
       <div className="shrink-0 flex items-center justify-center min-w-5">
         {isLoading ? (
-          <RefreshCw className="w-5 h-5 animate-spin" />
+          <RefreshCw className="size-4 animate-spin" />
         ) : (
           <Icon className="w-5 h-5" />
         )}
@@ -211,7 +211,7 @@ export function AppSidebarItem({
   const baseClasses = cn(
     "flex items-center rounded-xl cursor-pointer text-left overflow-hidden",
     enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-    isCollapsed ? "justify-center p-3 gap-0" : "px-4 py-3 gap-3"
+    isCollapsed ? "justify-center p-3 gap-0" : "px-4 py-3 gap-3 w-full"
   )
   
   let stateClasses = "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"

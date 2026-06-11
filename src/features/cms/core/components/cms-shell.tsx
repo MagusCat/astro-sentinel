@@ -2,35 +2,34 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, LogOut, AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Menu } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { logoutUser } from '@/features/auth/actions'
-import { getRoleLabel } from '@/features/auth/components/role-badge'
 import { SiteContent, CmsSection } from '../types'
 import { getSiteContent, publishSiteContent, getLastPublicationDate } from '../actions'
 import { restoreContentBackup } from '@/features/cms/backups/actions'
+import { deriveHeroSocialLinks, deriveContactItems, buildWhatsapp } from '../derive'
 
 import CmsToolbar from './cms-toolbar'
-import { CMS_SECTIONS, CMS_SYSTEM_SECTIONS } from '../config'
 import BackupsModal from '@/features/cms/backups/components/backups-modal'
-import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Modal, AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared'
+import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Modal } from '@/components/shared'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { cn } from '@/lib/utils'
 
+import CmsSidebarNav from './cms-sidebar-nav'
 import GlobalsEditor from '@/features/cms/editors/components/globals-editor'
 import HeroEditor from '@/features/cms/editors/components/hero-editor'
 import AboutEditor from '@/features/cms/editors/components/about-editor'
+import ArtEditor from '@/features/cms/editors/components/art-editor'
+import PrinciplesEditor from '@/features/cms/editors/components/principles-editor'
 import GalleryEditor from '@/features/cms/editors/components/gallery-editor'
 import FaqEditor from '@/features/cms/editors/components/faq-editor'
 import ContactEditor from '@/features/cms/editors/components/contact-editor'
 import ScheduleEditor from '@/features/cms/editors/components/schedule-editor'
 import CommentsEditor from '@/features/cms/editors/components/comments-editor'
-import ArtEditor from '@/features/cms/editors/components/art-editor'
-import PrinciplesEditor from '@/features/cms/editors/components/principles-editor'
 import FooterEditor from '@/features/cms/editors/components/footer-editor'
 import StorageEditor from '@/features/cms/editors/components/storage-editor'
 import BackupsEditor from '@/features/cms/editors/components/backups-editor'
-import StatusEditor from '@/features/cms/editors/components/status-editor'
 
 interface CmsShellProps {
   activeUser?: AuthenticatedUser
@@ -40,10 +39,6 @@ interface ToastState {
   message: string
   type: ToastType
 }
-
-import { getActiveModules } from '@/lib/modules'
-
-const { adminEnabled } = getActiveModules()
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return null
@@ -57,43 +52,14 @@ const formatDate = (dateStr: string | null) => {
   }
 }
 
-function DirtyBanner({ isDirty }: { isDirty: boolean }) {
-  const [show, setShow] = useState(isDirty)
-  const [closing, setClosing] = useState(false)
 
-  useEffect(() => {
-    if (isDirty) {
-      setShow(true)
-      setClosing(false)
-    } else if (show) {
-      setClosing(true)
-      const timer = setTimeout(() => {
-        setShow(false)
-        setClosing(false)
-      }, 300)
-      return () => clearTimeout(timer)
-    }
-  }, [isDirty, show])
-
-  if (!show) return null
-
-  return (
-    <div className={`mt-4 p-4 bg-amber-500 rounded-xl flex flex-col gap-1.5 shadow-lg shadow-amber-500/20 text-white
-      ${closing
-        ? 'animate-out fade-out slide-out-to-bottom-2 zoom-out-95 duration-300 ease-in'
-        : 'animate-in fade-in slide-in-from-bottom-2 zoom-in-95 duration-500 ease-out fill-mode-both'}`}>
-      <p className="text-[13px] font-black flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-white inline-block animate-pulse" />
-        Cambios Pendientes
-      </p>
-      <p className="text-[10px] text-amber-50 font-medium leading-tight tracking-wide">Tienes ediciones sin publicar. No olvides guardar.</p>
-    </div>
-  )
-}
 
 export default function CmsShell({ activeUser }: CmsShellProps) {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<CmsSection>('base')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [pendingSection, setPendingSection] = useState<CmsSection | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [content, setContent] = useState<SiteContent | null>(null)
   
   const { isCollapsed, isMounted, enableTransitions, toggleCollapse } = useSidebarState()
@@ -110,6 +76,23 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   const showToast = (message: string, type: ToastType) => setToast({ message, type })
+
+  const navigateToSection = (section: CmsSection) => {
+    if (section === activeSection || isTransitioning) return
+    setPendingSection(section)
+    setIsTransitioning(true)
+    setIsMobileMenuOpen(false)
+  }
+
+  useEffect(() => {
+    if (!isTransitioning || !pendingSection) return
+    const timer = setTimeout(() => {
+      setActiveSection(pendingSection)
+      setPendingSection(null)
+      setIsTransitioning(false)
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [isTransitioning, pendingSection])
 
   const loadContent = useCallback(async () => {
     setLoading(true)
@@ -170,9 +153,22 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
     setPublishing(true)
 
     const userIdentifier = activeUser?.full_name || activeUser?.username || 'Usuario Admin'
-    draft._metadata = { lastModifiedBy: userIdentifier }
 
-    const cleanedDraft = cleanEmptyStrings(draft)
+    const derivedDraft: SiteContent = {
+      ...draft,
+      hero: {
+        ...draft.hero,
+        socialLinks: deriveHeroSocialLinks(draft.globals, draft.contact),
+      },
+      contact: {
+        ...draft.contact,
+        whatsapp: buildWhatsapp(draft.globals.contactPhone, draft.contact.whatsapp),
+        contact: deriveContactItems(draft.globals, draft.contact),
+      },
+      _metadata: { lastModifiedBy: userIdentifier },
+    }
+
+    const cleanedDraft = cleanEmptyStrings(derivedDraft)
 
     const res = await publishSiteContent(cleanedDraft as SiteContent)
     if (res.success) {
@@ -228,45 +224,36 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
     if (!draft) return null
     switch (activeSection) {
       case 'base': return (
-        <div className="flex flex-col gap-12 lg:overflow-y-auto h-full pr-2 pb-12">
-          <GlobalsEditor 
-            value={draft.globals} 
-            onChange={(v) => updateDraft('globals', v)} 
-            contact={draft.contact}
-            onContactChange={(v) => updateDraft('contact', v)}
+        <div className="flex flex-col gap-12">
+          <GlobalsEditor
+            value={draft.globals}
+            onChange={(v) => updateDraft('globals', v)}
           />
-          <ContactEditor 
-            value={draft.contact} 
-            onChange={(v) => updateDraft('contact', v)} 
-            globals={draft.globals}
-            onGlobalsChange={(v) => updateDraft('globals', v)}
+          <ContactEditor
+            value={draft.contact}
+            onChange={(v) => updateDraft('contact', v)}
           />
           <FooterEditor value={draft.footer} onChange={(v) => updateDraft('footer', v)} />
         </div>
       )
-      case 'hero':       return <HeroEditor value={draft.hero} onChange={(v) => updateDraft('hero', v)} />
-      case 'identity': return (
-        <div className="flex flex-col gap-12 lg:overflow-y-auto h-full pr-2 pb-12">
+      case 'hero': return <HeroEditor value={draft.hero} onChange={(v) => updateDraft('hero', v)} />
+      case 'about': return (
+        <div className="flex flex-col gap-12">
           <AboutEditor value={draft.about} onChange={(v) => updateDraft('about', v)} />
           <ArtEditor value={draft.art} onChange={(v) => updateDraft('art', v)} />
           <PrinciplesEditor value={draft.principles} onChange={(v) => updateDraft('principles', v)} />
         </div>
       )
-      case 'schedule':   return <ScheduleEditor value={draft.schedule} onChange={(v) => updateDraft('schedule', v)} />
-      case 'media': return (
-        <div className="flex flex-col gap-12 lg:overflow-y-auto h-full pr-2 pb-12">
-          <GalleryEditor value={draft.gallery} onChange={(v) => updateDraft('gallery', v)} />
-          <CommentsEditor value={draft.comments} onChange={(v) => updateDraft('comments', v)} />
-          <FaqEditor value={draft.faq} onChange={(v) => updateDraft('faq', v)} />
-        </div>
-      )
-      case 'storage':    return <StorageEditor />
-      case 'backups':    return <BackupsEditor />
-      case 'status':     return <StatusEditor />
-    }
+      case 'schedule': return <ScheduleEditor value={draft.schedule} onChange={(v) => updateDraft('schedule', v)} />
+      case 'testimonials': return <CommentsEditor value={draft.comments} onChange={(v) => updateDraft('comments', v)} />
+      case 'faq': return <FaqEditor value={draft.faq} onChange={(v) => updateDraft('faq', v)} />
+      case 'gallery': return <GalleryEditor value={draft.gallery} onChange={(v) => updateDraft('gallery', v)} />
+      case 'storage': return <StorageEditor />
+  case 'backups': return <BackupsEditor />
   }
+}
 
-  if (isLoggingOut) {
+if (isLoggingOut) {
     return <SessionLoading />
   }
 
@@ -275,99 +262,47 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
       "min-h-screen bg-background text-foreground antialiased flex flex-col md:flex-row w-full overflow-hidden transition-opacity duration-200",
       isMounted ? "opacity-100" : "opacity-0"
     )}>
-      <AppSidebar
-        title="Sentinel"
-        subtitle="Editor Web"
+      <CmsSidebarNav
+        activeUser={activeUser}
+        activeSection={activeSection}
+        navigateToSection={navigateToSection}
         isCollapsed={isCollapsed}
         onToggleCollapse={toggleCollapse}
-        footerContent={
-          <>
-            {adminEnabled && (
-              <div className="mb-2">
-                <button
-                  type="button"
-                  onClick={handleGoToAdmin}
-                  className={cn(
-                    "flex items-center justify-center transition-all duration-200 cursor-pointer border border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground bg-sidebar-accent/30 font-semibold text-xs",
-                    isCollapsed ? "w-10 h-10 rounded-xl mx-auto" : "w-full gap-3 px-4 py-3 rounded-xl"
-                  )}
-                  title="Regresar al Admin"
-                >
-                  <LayoutDashboard className={cn("shrink-0", isCollapsed ? "w-5 h-5" : "w-4 h-4")} />
-                  {!isCollapsed && <span className="font-bold uppercase tracking-wider text-left">Regresar al Admin</span>}
-                </button>
-              </div>
-            )}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
+        isDirty={isDirty}
+        handleGoToAdmin={handleGoToAdmin}
+        handleLogoutWithCheck={handleLogoutWithCheck}
+      />
 
-            {!isCollapsed && (
-              <div className="space-y-1">
-                <DirtyBanner isDirty={isDirty} />
-              </div>
-            )}
-
-            {activeUser && (
-              <div className={cn("pt-4 w-full border-t border-sidebar-border mt-4 flex flex-col", isCollapsed ? "items-center gap-3" : "space-y-4")}>
-                {!isCollapsed && (
-                  <div className="px-4">
-                    <p className="text-sm font-bold text-sidebar-foreground/90 truncate">
-                      {activeUser.full_name || activeUser.username}
-                    </p>
-                    <p className="text-xs text-sidebar-foreground/50 font-mono uppercase tracking-wider mt-0.5">
-                      {getRoleLabel(activeUser.role)}
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleLogoutWithCheck}
-                  className={cn(
-                    "bg-sidebar-accent hover:bg-sidebar-accent/85 text-sidebar-foreground font-bold flex items-center justify-center transition-all cursor-pointer",
-                    isCollapsed ? "w-10 h-10 rounded-xl mx-auto" : "w-full py-3 rounded-xl gap-2 text-sm"
-                  )}
-                  title="Cerrar Sesión"
-                >
-                  <LogOut className={cn("shrink-0", isCollapsed ? "w-5 h-5" : "w-3.5 h-3.5")} />
-                  {!isCollapsed && <span>Cerrar Sesión</span>}
-                </button>
-              </div>
-            )}
-          </>
-        }
-      >
-        <AppSidebarGroup title="Secciones">
-          {CMS_SECTIONS.map((section) => (
-            <AppSidebarItem
-              key={section.id}
-              label={section.label}
-              icon={section.icon}
-              onClick={() => setActiveSection(section.id)}
-              isActive={activeSection === section.id}
-            />
-          ))}
-        </AppSidebarGroup>
-
-        <AppSidebarGroup title="Sistema">
-          {CMS_SYSTEM_SECTIONS.map((section) => (
-            <AppSidebarItem
-              key={section.id}
-              label={section.label}
-              icon={section.icon}
-              onClick={() => setActiveSection(section.id)}
-              isActive={activeSection === section.id}
-            />
-          ))}
-        </AppSidebarGroup>
-      </AppSidebar>
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       <div className={cn(
-        "flex-1 h-[calc(100vh-65px)] md:h-screen md:max-h-screen flex flex-col w-full bg-background overflow-hidden",
-        enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-        isCollapsed ? "md:pl-20" : "md:pl-64"
-      )}>
-        <div className="px-8 pt-7 pb-4 border-b border-border/10 shrink-0 bg-background z-20 shadow-sm relative">
-          <CmsToolbar
-            isDirty={isDirty}
+          "h-[100dvh] flex flex-col w-full bg-background",
+          enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
+          isCollapsed ? "md:pl-20" : "md:pl-64"
+        )}>
+          <div className="px-4 sm:px-8 pt-4 sm:pt-7 pb-3 sm:pb-4 border-b border-border/10 shrink-0 bg-background z-20 shadow-sm sticky top-0">
+        
+        <div className="flex flex-row justify-between items-start gap-10">
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden mb-3 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+          aria-label="Abrir menú"
+        >
+
+          <Menu className="w-5 h-5" />
+        </button>
+
+        
+      <CmsToolbar
+        isDirty={isDirty}
             loading={loading}
             publishing={publishing}
             lastPublished={lastPublished}
@@ -377,19 +312,23 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
             onReload={loadContent}
             onOpenBackups={() => setShowBackups(true)}
           />
-
+</div>
           <ProgressBar indeterminate={loading} className="absolute bottom-0 left-0 right-0 translate-y-1/2" />
         </div>
 
-        <div className="w-full h-full flex-1 px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start items-stretch relative z-10 overflow-y-auto">
-          {draft ? (
-            <div key={activeSection} className="h-full animate-in fade-in slide-in-from-bottom-2 duration-200">
-              {renderEditor()}
-            </div>
-          ) : (
-            <LoadingState text="Cargando datos del sitio por primera vez..." />
-          )}
-        </div>
+      <div className="flex-1 min-h-0 px-4 sm:px-6 md:px-10 py-6 overflow-y-auto">
+        {draft ? (
+          <div key={activeSection} className={cn(
+            isTransitioning
+              ? "animate-out fade-out slide-out-to-bottom-2 duration-150 ease-in"
+              : "animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out fill-mode-both"
+          )}>
+            {renderEditor()}
+          </div>
+        ) : (
+          <LoadingState text="Cargando datos del sitio por primera vez..." />
+        )}
+      </div>
       </div>
 
       <BackupsModal

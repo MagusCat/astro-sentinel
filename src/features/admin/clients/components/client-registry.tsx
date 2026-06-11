@@ -57,7 +57,6 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
   }, [fetchFilteredData])
 
   useEffect(() => {
-    // Reset to page 1 when search changes
     setFilters(prev => ({ ...prev, page: 1 }))
   }, [debouncedSearch])
 
@@ -128,7 +127,7 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
     try {
       const res = await deleteClient(clientToDelete.id)
       if (res.success) {
-        showSuccess('Cliente eliminado del registro exitosamente.')
+        showSuccess('Cliente eliminado.')
         setClientToDelete(null)
         onReload()
         fetchFilteredData()
@@ -291,7 +290,6 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
         <div className="flex flex-col gap-5">
           <p className="text-sm text-foreground leading-relaxed">
             ¿Estás seguro que deseas dar de baja a <span className="font-bold text-rose-500">{clientToDelete?.full_name}</span>? 
-            Se realizará un borrado lógico y el cliente ya no aparecerá en los registros activos.
           </p>
           <div className="flex items-center justify-end gap-3 mt-2">
             <Button variant="neutral" onClick={() => setClientToDelete(null)}>Cancelar</Button>

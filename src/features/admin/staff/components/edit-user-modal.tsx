@@ -67,10 +67,9 @@ export default function EditUserModal({
           className="bg-muted/20 text-muted-foreground font-mono cursor-not-allowed"
           value={selectedUser.username}
         />
-        <span className="text-[9px] text-muted-foreground italic -mt-1">El identificador de terminal no puede ser alterado.</span>
 
         <TextField
-          label="Nueva Contraseña (dejar en blanco para conservar)"
+          label="Nueva Contraseña"
           type="password"
           placeholder="Mínimo 6 caracteres..."
           value={form.password_raw}
@@ -90,7 +89,7 @@ export default function EditUserModal({
 
         {form.role !== APP_ROLE.RECEPTION && activeUser.role === APP_ROLE.MAINTAINER && (
           <div className="flex flex-col gap-1.5 border-t border-border/20 pt-4 mt-2">
-            <label className="text-[10px] font-bold text-primary uppercase font-mono tracking-wider flex items-center gap-1">
+            <label className="text-[11px] font-bold text-primary uppercase font-mono tracking-wider flex items-center gap-1">
               <LinkIcon className="w-3.5 h-3.5" />
               Vincular ID de Supabase Auth
             </label>

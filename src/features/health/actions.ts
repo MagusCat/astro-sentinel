@@ -2,19 +2,28 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { HealthStatus } from './types'
+import { getServiceConfig } from '@/lib/config'
 
 export async function runHealthCheck(): Promise<HealthStatus> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-
-  const serviceConfigured = !!(url && key && url !== 'https://your-project-id.supabase.co' && key !== 'your-anon-key-here')
+  let serviceConfigured = false
+  try {
+    const { supabaseUrl, supabasePublishableKey } = getServiceConfig()
+    serviceConfigured = !!(
+      supabaseUrl &&
+      supabasePublishableKey &&
+      supabaseUrl !== 'https://your-project-id.supabase.co' &&
+      supabasePublishableKey !== 'your-anon-key-here'
+    )
+  } catch {
+    serviceConfigured = false
+  }
 
   if (!serviceConfigured) {
     return {
       serviceConfigured: false,
       handshakeOk: false,
       connectionOk: false,
-      message: 'Service keys are not configured in environment variables.',
+      message: 'Las claves de servicio no están configuradas en las variables de entorno.',
       timestamp: new Date().toISOString()
     }
   }
@@ -22,19 +31,17 @@ export async function runHealthCheck(): Promise<HealthStatus> {
   try {
     const supabase = await createClient()
 
-    // 1. Heartbeat check verifying session connectivity
     const { error: sessionError } = await supabase.auth.getSession()
     if (sessionError) {
       return {
         serviceConfigured,
         handshakeOk: false,
         connectionOk: false,
-        message: `API Handshake failed: ${sessionError.message}`,
+        message: `Error de enlace API: ${sessionError.message}`,
         timestamp: new Date().toISOString()
       }
     }
 
-    // 2. Query the '_status' test table to count the number of rows
     const { count, error: statusError } = await supabase
       .from('_status')
       .select('*', { count: 'exact', head: true })
@@ -45,9 +52,9 @@ export async function runHealthCheck(): Promise<HealthStatus> {
       serviceConfigured,
       handshakeOk: true,
       connectionOk,
-      message: connectionOk 
-        ? `Database status verified. Found ${count ?? 0} active health status records.` 
-        : `Database status check failed: ${statusError?.message || 'Unknown database catalog error'}`,
+      message: connectionOk
+        ? `Estado de base de datos verificado. Se encontraron ${count ?? 0} registros de estado activos.`
+        : `Error en verificación de base de datos: ${statusError?.message || 'Error desconocido del catálogo de base de datos'}`,
       timestamp: new Date().toISOString()
     }
   } catch (err) {
@@ -56,7 +63,7 @@ export async function runHealthCheck(): Promise<HealthStatus> {
       serviceConfigured,
       handshakeOk: false,
       connectionOk: false,
-      message: `Database Service Exception: ${errorMsg}`,
+      message: `Excepción del servicio de base de datos: ${errorMsg}`,
       timestamp: new Date().toISOString()
     }
   }

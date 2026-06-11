@@ -52,16 +52,16 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
   return (
     <div className="flex flex-col gap-6 w-full h-full flex-1 min-w-0 animate-fade-in-up">
       
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div className="xl:col-span-2 bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between min-h-[330px] max-h-[330px]">
+        <div className="lg:col-span-2 bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between min-h-[330px] max-h-[330px]">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-primary/10 p-2 rounded-lg">
               <Search className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h3 className="font-extrabold text-lg text-foreground tracking-tight">Buscar Cliente</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Busca por nombre, teléfono o correo.</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Busca por nombre, teléfono o correo.</p>
             </div>
           </div>
 
@@ -110,7 +110,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
                       )}
                     </div>
                     <div className="flex flex-wrap items-start gap-2">
-                      <span className={`text-xs px-2 py-1 rounded-full font-bold tracking-wider border uppercase mt-0.5 ${
+                      <span className={`text-sm px-2 py-1 rounded-full font-bold tracking-wider border uppercase mt-0.5 ${
                         hasActivePlan 
                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
                           : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
@@ -168,7 +168,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
           emptyMessage="No hay membresías vencidas"
           renderItem={(membership, idx) => (
             <div key={idx} className="flex flex-row items-center justify-between p-3 border border-border rounded-xl bg-muted/10 hover:bg-muted/30 transition-colors gap-2">
-              <div className="flex flex-col items-start justify-between items-center gap-2">
+              <div className="flex flex-col items-start justify-between gap-2">
                 <span className="text-sm font-bold text-foreground leading-tight truncate" title={membership.clientName}>{membership.clientName}</span>
 
                                 <span className="text-sm text-muted-foreground">
@@ -176,7 +176,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
                 </span>
 
               </div>
-                <span className={`text-xs px-1.5 py-0.5 rounded-lg font-bold uppercase tracking-wider border ${
+                <span className={`text-sm px-1.5 py-0.5 rounded-lg font-bold uppercase tracking-wider border ${
                   membership.status === 'expired' 
                     ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' 
                     : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -202,8 +202,8 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
                 <span className="text-sm font-bold font-mono text-emerald-600 bg-emerald-500/10 px-1.5 rounded">${payment.totalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">{payment.paymentMethod}</span>
-                <span className="text-xs text-muted-foreground font-mono">{new Date(payment.transactionDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true  })}</span>
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">{payment.paymentMethod}</span>
+                <span className="text-sm text-muted-foreground font-mono">{new Date(payment.transactionDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true  })}</span>
               </div>
             </div>
           )}

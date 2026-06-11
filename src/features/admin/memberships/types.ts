@@ -1,4 +1,4 @@
-import { MembershipStatus } from '@/lib/constants'
+import { MembershipStatus } from '@/lib/config'
 
 export interface MembershipRecord {
   id: string
@@ -10,6 +10,7 @@ export interface MembershipRecord {
   end_date: string
   status: MembershipStatus
   remaining_days: number
+  frozen_days?: number
   created_at: string
 }
 

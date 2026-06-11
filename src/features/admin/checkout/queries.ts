@@ -1,11 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { CheckMembershipResult } from './types'
-import { MEMBERSHIP_STATUS } from '@/lib/constants'
+import { MEMBERSHIP_STATUS } from '@/lib/config'
 
 export async function findActiveMembership(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: SupabaseClient,
   client_id: string,
   class_id: string
 ): Promise<{ id: string; end_date: string; status: string } | null> {

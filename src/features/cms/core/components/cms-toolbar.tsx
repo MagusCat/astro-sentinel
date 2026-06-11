@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Upload, RotateCcw, RefreshCw } from 'lucide-react'
-import { PageHeader } from '@/components/shared/layout/page-header'
+import { PageHeader } from '@/components/shared'
 
 interface CmsToolbarProps {
   isDirty: boolean

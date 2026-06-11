@@ -134,6 +134,7 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
         {activeTab === 'memberships' && (
           <MembershipsPanel 
             data={membershipsData}
+            isLoading={loadingData}
             onReload={() => fetchDatabaseData('memberships')}
           />
         )}

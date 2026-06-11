@@ -28,7 +28,7 @@ export default function CreateClassModal({ initialData, onClose, onSuccess }: Cr
     }
 
     if (res.success) {
-      setToast({ message: initialData ? 'Disciplina actualizada.' : 'Disciplina creada exitosamente.', type: 'success' })
+      setToast({ message: initialData ? 'Clase actualizada.' : 'Clase creada exitosamente.', type: 'success' })
       setTimeout(() => {
         onSuccess()
       }, 1000)
@@ -39,10 +39,10 @@ export default function CreateClassModal({ initialData, onClose, onSuccess }: Cr
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={initialData ? "Editar Disciplina" : "Registrar Disciplina"} size="md">
+    <Modal isOpen={true} onClose={onClose} title={initialData ? "Editar Clase" : "Registrar Clase"} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextField
-          label="Nombre de la Disciplina"
+          label="Nombre de la Clase"
           type="text"
           required
           placeholder="Ej. Crossfit, Yoga..."

@@ -1,17 +1,10 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { verifyDeviceToken } from '@/lib/auth/session'
-
-const DEVICE_COOKIE = process.env.DEVICE_COOKIE_NAME || 'sentinel_device_token'
-
-export interface ConnectedDevice {
-  device_id: string
-  created_at: string
-  authorized_by: string
-  user_name?: string
-}
+import { getDeviceToken } from '@/lib/cookies'
+import { ConnectedDevice } from './types'
+import { revokeDeviceSchema } from './schemas'
 
 export async function getAuthorizedDevices(): Promise<{ success: boolean; data?: ConnectedDevice[]; currentDeviceId?: string; error?: string }> {
   try {
@@ -19,26 +12,23 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
 
     let currentDeviceId: string | undefined = undefined
     try {
-      const cookieStore = await cookies()
-      const token = cookieStore.get(DEVICE_COOKIE)
-      if (token?.value) {
-        const id = await verifyDeviceToken(token.value)
+      const token = await getDeviceToken()
+      if (token) {
+        const id = await verifyDeviceToken(token)
         if (id) currentDeviceId = id
       }
     } catch {
-      // ignore
     }
 
-    // Bring device data
     const { data, error } = await supabase
       .from('authorized_devices')
       .select('device_id, authorized_by, created_at')
       .order('created_at', { ascending: false })
-      
+
     if (error) {
-      return { success: false, error: error.message }
+      return { success: false, error: 'Error al obtener dispositivos autorizados.' }
     }
-    
+
     const { data: usersData } = await supabase
       .from('users')
       .select('auth_user_id, full_name, username')
@@ -47,7 +37,7 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
 
     const devices = (data || []).map(d => ({
       device_id: d.device_id,
-      created_at: d.created_at || new Date().toISOString(), // Fallback if no created_at
+      created_at: d.created_at || new Date().toISOString(),
       authorized_by: d.authorized_by,
       user_name: usersMap.get(d.authorized_by) || 'Desconocido'
     }))
@@ -55,25 +45,30 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
     return { success: true, data: devices, currentDeviceId }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: errorMsg }
+    return { success: false, error: `Error al consultar dispositivos: ${errorMsg}` }
   }
 }
 
 export async function revokeDeviceById(deviceId: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const parsed = revokeDeviceSchema.safeParse({ deviceId })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
+    }
+
     const supabase = await createClient()
     const { error } = await supabase
       .from('authorized_devices')
       .delete()
-      .eq('device_id', deviceId)
+      .eq('device_id', parsed.data.deviceId)
 
     if (error) {
-      return { success: false, error: error.message }
+      return { success: false, error: 'Error al revocar el dispositivo en la base de datos.' }
     }
 
     return { success: true }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: errorMsg }
+    return { success: false, error: `Error al revocar dispositivo: ${errorMsg}` }
   }
 }

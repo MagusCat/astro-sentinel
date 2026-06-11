@@ -7,7 +7,7 @@ import { ProcessCheckoutPayload } from './types'
 import { processCheckoutSchema } from './schemas'
 import { findActiveMembership } from './queries'
 import { calculateMembershipDates } from './utils'
-import { MEMBERSHIP_STATUS } from '@/lib/constants'
+import { MEMBERSHIP_STATUS } from '@/lib/config'
 
 export async function processCheckout(
   payload: ProcessCheckoutPayload

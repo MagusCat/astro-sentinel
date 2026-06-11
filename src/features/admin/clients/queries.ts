@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { ClientData, ClientMembershipView, GroupedClientMemberships, ClientFilters } from './types'
-import { MEMBERSHIP_STATUS } from '@/lib/constants'
+import { MEMBERSHIP_STATUS } from '@/lib/config'
 
 export async function getClients(filters?: ClientFilters): Promise<{ data: ClientData[], count: number }> {
   try {
@@ -89,13 +89,13 @@ export async function getClientMemberships(clientId: string): Promise<GroupedCli
 
     if (error) throw error
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rawMemberships: ClientMembershipView[] = (data || []).map((m: any) => ({
+    const rawMemberships: ClientMembershipView[] = (data || []).map((m: { id: string; status: string; start_date: string; end_date: string; remaining_days: number; frozen_days?: number | null; class_plan_id: string; plan_name: string | null; duration_days: number | null; class_id: string | null; class_name: string | null }) => ({
       id: m.id,
-      status: m.status,
+      status: m.status as ClientMembershipView['status'],
       start_date: m.start_date,
       end_date: m.end_date,
       remaining_days: m.remaining_days,
+      frozen_days: m.frozen_days ?? 0,
       class_plan_id: m.class_plan_id,
       plan_name: m.plan_name || 'Desconocido',
       duration_days: m.duration_days || 0,

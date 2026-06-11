@@ -3,7 +3,7 @@
 import React from 'react'
 import { Art, ArtItem } from '../../core/types'
 import { Palette } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField, TextareaField } from '@/components/shared'
 
 interface Props { 
@@ -19,9 +19,9 @@ export default function ArtEditor({ value, onChange }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
+    <div className="flex flex-col gap-6">
       <SectionCard 
-        title="Arte — Sección de Valores" 
+        title="Sección de Valores" 
         titleAction={<Palette className="w-5 h-5 text-muted-foreground" />}
         className="shrink-0"
       >
@@ -33,13 +33,13 @@ export default function ArtEditor({ value, onChange }: Props) {
       </SectionCard>
 
       <SectionCard 
-        title="Tarjetas de Valores (Estructura Fija)" 
+        title="Tarjetas de Valores" 
         titleAction={<Palette className="w-5 h-5 text-muted-foreground" />}
-        className="lg:flex-1 lg:min-h-0"
+        className="overflow-y-auto"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2">
           {value.items.map((item, i) => (
-            <div key={i} className="bg-background border border-border/40 rounded-lg p-5 shadow-sm flex flex-col gap-3 relative">
+            <div key={i} className="bg-background border border-border/40 rounded-lg p-5 shadow-sm flex flex-col gap-3 relative animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
               <TextField
                 label="Título"
                 value={item.title}

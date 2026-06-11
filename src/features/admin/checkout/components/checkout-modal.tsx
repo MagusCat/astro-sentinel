@@ -10,7 +10,7 @@ import { searchClients } from '@/features/admin/clients/queries'
 import { checkClientMembership } from '../queries'
 import { processCheckout } from '../mutations'
 import { useDebounce } from '@/hooks/use-debounce'
-import { MEMBERSHIP_STATUS } from '@/lib/constants'
+import { MEMBERSHIP_STATUS } from '@/lib/config'
 import { CheckCircle2, Download, CreditCard, User, Info, Zap } from 'lucide-react'
 
 interface CheckoutModalProps {

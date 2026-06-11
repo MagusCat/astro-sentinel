@@ -3,7 +3,7 @@
 import React from 'react'
 import { About } from '../../core/types'
 import { Info } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField, TextareaField } from '@/components/shared'
 
 interface Props { 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useId, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 import { ChevronDown, Check } from "lucide-react"
+import Tooltip from "../feedback/tooltip"
 
 export interface SelectFieldProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string
@@ -10,6 +11,7 @@ export interface SelectFieldProps extends Omit<React.SelectHTMLAttributes<HTMLSe
   containerClassName?: string
   options: Array<{ value: string; label: string }>
   onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  tooltip?: string
 }
 
 /**
@@ -17,7 +19,7 @@ export interface SelectFieldProps extends Omit<React.SelectHTMLAttributes<HTMLSe
  * Uses a React Portal to ensure the list is never clipped by containers with overflow.
  */
 export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
-  ({ label, error, containerClassName, className, id, options, placeholder, value, onChange, disabled, name, ...props }, ref) => {
+  ({ label, error, containerClassName, className, id, options, placeholder, value, onChange, disabled, name, tooltip, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
     const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
@@ -163,9 +165,12 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
     return (
       <div className={cn("flex flex-col gap-2 p-1 relative", containerClassName)} ref={containerRef}>
         {label && (
-          <label className="text-[13px] font-semibold text-foreground/80 ml-1 select-none">
-            {label}
-          </label>
+          <div className="flex items-center gap-1.5 ml-1">
+            <label className="text-sm font-semibold text-foreground/80 select-none">
+              {label}
+            </label>
+            {tooltip && <Tooltip content={tooltip} />}
+          </div>
         )}
         <div className="relative">
           <select 
@@ -198,7 +203,7 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
               setIsOpen(!isOpen)
             }}
             className={cn(
-              "w-full flex items-center justify-between text-sm px-3 h-10 py-2 rounded-lg border bg-background transition-all text-left font-medium relative focus:z-10 focus:outline-none",
+              "w-full flex items-center justify-between text-sm px-3 h-11 rounded-lg border bg-background transition-all text-left font-medium relative focus:z-10 focus:outline-none",
               isOpen 
                 ? "border-primary ring-[3px] ring-primary/15" 
                 : "border-border/60 hover:border-border focus:border-primary focus:ring-[3px] focus:ring-primary/15",

@@ -74,3 +74,28 @@ export interface ClientRow {
   registration_source: string | null
 }
 
+export interface InactiveMembershipViewRow {
+  client_name: string
+  status: string
+  end_date: string | null
+  plan_name: string
+  class_name: string
+}
+
+export interface PaymentViewRow {
+  client_name: string
+  total_amount: number
+  payment_method: string
+  transaction_date: string
+}
+
+export interface ClientViewRow {
+  full_name: string
+  created_at: string
+  registration_source: string | null
+}
+
+export interface UploadImageConfig {
+  maxSizeMB?: number
+}
+

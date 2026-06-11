@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Schedule, ScheduleClass, DayKey, TimeSlot } from '../../core/types'
 import { Plus, Trash2, Calendar, ChevronRight, Copy, ClipboardPaste, Settings2 } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField, TextareaField, ConfirmDialog } from '@/components/shared'
 
 interface Props { 
@@ -124,8 +124,8 @@ export default function ScheduleEditor({ value, onChange }: Props) {
   const currentClass = value.classes[activeClassIndex]
 
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start lg:items-stretch lg:h-full lg:min-h-0">
+  <div className="flex flex-col gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start lg:items-stretch lg:h-[calc(100dvh-220px)] lg:min-h-0">
         
         <div className="lg:col-span-1 flex flex-col gap-6 lg:overflow-y-auto pr-1"> 
           <SectionCard 
@@ -147,7 +147,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                   key={ci}
                   type="button"
                   onClick={() => setActiveClassIndex(ci)}
-                  className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-md flex items-center justify-between transition-all cursor-pointer ${activeClassIndex === ci ? 'bg-primary text-white shadow-sm shadow-primary/10' : 'hover:bg-muted text-foreground'}`}
+                  className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-md flex items-center justify-between transition-all duration-200 cursor-pointer ${activeClassIndex === ci ? 'bg-primary text-white shadow-sm shadow-primary/10' : 'hover:bg-muted text-foreground'}`}
                 >
                   <span className="truncate">{cls.name || 'Nueva Clase'}</span>
                   <ChevronRight className="w-4 h-4 shrink-0" />
@@ -173,8 +173,8 @@ export default function ScheduleEditor({ value, onChange }: Props) {
         </div>
 
         <div className="lg:col-span-3 flex flex-col lg:min-h-0">
-          {currentClass ? (
-            <div className="bg-card border border-border/40 rounded-lg p-6 shadow-sm flex flex-col gap-5 animate-in fade-in duration-200 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+        {currentClass ? (
+          <div key={activeClassIndex} className="bg-card border border-border/40 rounded-lg p-6 shadow-sm flex flex-col gap-5 animate-in fade-in slide-in-from-right-4 duration-300 ease-out lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
               
               <div className="flex justify-between items-center border-b border-border/10 pb-4">
                 <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                   {DAYS.filter(day => currentClass.scheduleDays[day]?.active).map(day => {
                     const dayData = currentClass.scheduleDays[day]!
                     return (
-                      <div key={day} className="bg-background border border-border/40 rounded-lg p-4 shadow-sm flex flex-col gap-2.5 shrink-0 w-full lg:w-[320px] snap-center lg:h-full">
+                      <div key={day} className="bg-background border border-border/40 rounded-lg p-4 shadow-sm flex flex-col gap-2.5 shrink-0 w-full lg:w-[320px] snap-center lg:h-full animate-in fade-in zoom-in-95 duration-300 ease-out">
                         
                         <div className="flex justify-between items-center border-b border-border/10 pb-2">
                           <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                             const end24 = to24HourApprox(parts[1], slot.period, true, start24)
 
                             return (
-                              <div key={si} className="flex gap-1.5 items-center bg-muted/20 p-1.5 rounded-md border border-border/40">
+                              <div key={si} className="flex gap-1.5 items-center bg-muted/20 p-1.5 rounded-md border border-border/40 transition-all duration-200 ease-out hover:border-primary/30 animate-in fade-in slide-in-from-bottom-1 duration-200 ease-out">
                                 <div className="flex flex-col gap-1 flex-1">
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-sm font-bold uppercase text-muted-foreground w-8">De:</span>

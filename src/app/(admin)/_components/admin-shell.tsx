@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Menu } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { UserProvider } from '@/features/auth/context'
 import { logoutUser, logoutUserFull } from '@/features/auth/actions'
@@ -53,20 +54,16 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
       )}>
 
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between px-6 py-4 border-b border-border/40 bg-card w-full shrink-0 z-40">
+        <div className="md:hidden flex items-center justify-start gap-10  px-6 py-4 border-b border-border/40 bg-card w-full shrink-0 z-40">
           <button
             onClick={() => setIsMobileOpen(true)}
             className="p-1 rounded-md hover:bg-muted text-foreground transition-colors focus:outline-none cursor-pointer"
             aria-label="Abrir menú"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Menu className="w-6 h-6" />
           </button>
+          
           <span className="font-extrabold text-foreground text-lg tracking-tight">Sentinel</span>
-          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase select-none">
-            {activeUser.full_name.charAt(0)}
-          </div>
         </div>
 
         {/* Sidebar Backdrop Overlay (Mobile only) */}

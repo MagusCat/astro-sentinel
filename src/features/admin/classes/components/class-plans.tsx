@@ -37,7 +37,7 @@ export default function ClassPlans({ plans, classes, onReload, isLoading }: Clas
     setActionLoading(true)
     const res = await deleteClass(classToDelete.id)
     if (res.success) {
-      setToast({ message: 'Clase eliminada exitosamente.', type: 'success' })
+      setToast({ message: 'Clase eliminada.', type: 'success' })
       setClassToDelete(null)
       handleSuccess()
     } else {
@@ -51,7 +51,7 @@ export default function ClassPlans({ plans, classes, onReload, isLoading }: Clas
     setActionLoading(true)
     const res = await deleteClassPlan(planToDelete.id)
     if (res.success) {
-      setToast({ message: 'Plan eliminado exitosamente.', type: 'success' })
+      setToast({ message: 'Plan eliminado.', type: 'success' })
       setPlanToDelete(null)
       handleSuccess()
     } else {
@@ -63,8 +63,8 @@ export default function ClassPlans({ plans, classes, onReload, isLoading }: Clas
   return (
     <div className="w-full flex flex-col gap-6">
       <PageHeader
-        title="Disciplinas y Planes"
-        description="Gestión de clases, disciplinas y planes de pago asociados"
+        title="Clases y Planes"
+        description="Gestión de clases y planes de pago asociados"
         actions={
           <Button size="default" onClick={() => setIsCreateClassOpen(true)}>
             <Plus className="w-4 h-4" />

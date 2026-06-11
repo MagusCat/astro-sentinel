@@ -3,7 +3,7 @@
 import React from 'react'
 import { Principles, PrincipleItem } from '../../core/types'
 import { Star } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField, TextareaField } from '@/components/shared'
 
 interface Props { 
@@ -19,9 +19,9 @@ export default function PrinciplesEditor({ value, onChange }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
+    <div className="flex flex-col gap-6">
       <SectionCard 
-        title="Principios — Configuración" 
+        title="Principios" 
         titleAction={<Star className="w-5 h-5 text-muted-foreground" />}
         className="shrink-0"
       >
@@ -43,11 +43,11 @@ export default function PrinciplesEditor({ value, onChange }: Props) {
       <SectionCard 
         title={`Tarjetas de Principios (${value.items.length})`} 
         titleAction={<Star className="w-5 h-5 text-muted-foreground" />}
-        className="lg:flex-1 lg:min-h-0"
+        className="overflow-y-auto"
       >
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 overflow-y-auto pr-2 pb-4">
           {value.items.map((item, i) => (
-            <div key={i} className="border border-border/30 rounded-lg p-4 bg-muted/20 flex flex-col gap-3">
+            <div key={i} className="border border-border/30 rounded-lg p-4 bg-muted/20 flex flex-col gap-3 transition-all duration-300 ease-out hover:border-primary/30 hover:shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
               <div className="flex gap-2 items-end">
                 <TextField
                   label="Título"

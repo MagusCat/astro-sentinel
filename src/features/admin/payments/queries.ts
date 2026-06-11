@@ -35,8 +35,7 @@ export async function getPayments(filters?: PaymentFilters): Promise<PaymentsRes
 
     if (error) throw error
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedData = (data || []).map((p: any) => ({
+    const formattedData = (data || []).map((p: { id: string; total_amount: number; payment_method: string; transaction_date: string; client_name: string | null; user_name: string | null; user_role: string | null }) => ({
       id: p.id,
       total_amount: Number(p.total_amount),
       payment_method: p.payment_method,

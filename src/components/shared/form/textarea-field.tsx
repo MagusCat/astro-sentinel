@@ -1,25 +1,30 @@
 import React, { useId } from "react"
 import { cn } from "@/lib/utils"
+import Tooltip from "../feedback/tooltip"
 
 interface TextareaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   error?: string
   containerClassName?: string
+  tooltip?: string
 }
 
 export const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
-  ({ label, error, containerClassName, className, id, ...props }, ref) => {
+  ({ label, error, containerClassName, className, id, tooltip, ...props }, ref) => {
     const generatedId = useId()
     const inputId = id || generatedId
     return (
       <div className={cn("flex flex-col gap-2 p-1 relative", containerClassName)}>
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-[13px] font-semibold text-foreground/80 ml-1 select-none"
-          >
-            {label}
-          </label>
+          <div className="flex items-center gap-1.5 ml-1">
+            <label
+              htmlFor={inputId}
+              className="text-[13px] font-semibold text-foreground/80 select-none"
+            >
+              {label}
+            </label>
+            {tooltip && <Tooltip content={tooltip} />}
+          </div>
         )}
         <textarea
           id={inputId}

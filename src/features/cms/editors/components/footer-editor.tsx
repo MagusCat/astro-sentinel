@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Footer } from '../../core/types'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField } from '@/components/shared'
 
 interface Props { 

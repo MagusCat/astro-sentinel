@@ -1,18 +1,16 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { ArrowUp, ArrowDown, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react'
+import { ArrowUp, ArrowDown, Trash2 } from 'lucide-react'
 import { ImageUploader, Toast, ToastType } from '@/components/shared'
 
 interface ImageCardProps {
   url: string
   folder?: string
   altText?: string
-  isActive?: boolean
   onUploadSuccess: (url: string) => void
   onUploadError?: (err: string) => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onToggleActive?: () => void
   onRemove?: () => void
   disableMoveUp?: boolean
   disableMoveDown?: boolean
@@ -23,12 +21,10 @@ export function ImageCard({
   url,
   folder,
   altText = 'Imagen',
-  isActive = true,
   onUploadSuccess,
   onUploadError,
   onMoveUp,
   onMoveDown,
-  onToggleActive,
   onRemove,
   disableMoveUp,
   disableMoveDown,
@@ -45,7 +41,7 @@ export function ImageCard({
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row gap-6 items-start border border-border/30 rounded-lg p-5 bg-muted/20 transition-all ${isActive ? 'opacity-100' : 'opacity-60 grayscale'}`}>
+    <div className={`flex flex-col sm:flex-row gap-6 items-start border border-border/30 rounded-lg p-5 bg-muted/20 animate-in fade-in zoom-in-95 duration-300 ease-out`}>
       
       {/* Lado izquierdo: Imagen grande 1:1 y botón de subida */}
       <div className="flex flex-col gap-3 w-full sm:w-48 shrink-0">
@@ -83,10 +79,10 @@ export function ImageCard({
               type="button"
               onClick={onMoveUp}
               disabled={disableMoveUp}
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md cursor-pointer disabled:opacity-30 transition-all"
+              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg cursor-pointer disabled:opacity-30 transition-all"
               title="Mover arriba"
             >
-              <ArrowUp className="w-4 h-4" />
+              <ArrowUp className="w-5 h-5" />
             </button>
           )}
           {onMoveDown && (
@@ -94,30 +90,20 @@ export function ImageCard({
               type="button"
               onClick={onMoveDown}
               disabled={disableMoveDown}
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md cursor-pointer disabled:opacity-30 transition-all"
+              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg cursor-pointer disabled:opacity-30 transition-all"
               title="Mover abajo"
             >
-              <ArrowDown className="w-4 h-4" />
+              <ArrowDown className="w-5 h-5" />
             </button>
           )}
-          {onToggleActive && (
-            <button 
-              type="button"
-              onClick={onToggleActive}
-              className={`p-2 transition-all rounded-md cursor-pointer flex items-center justify-center ${isActive ? 'text-emerald-600 hover:bg-emerald-50' : 'text-rose-600 hover:bg-rose-50'}`}
-              title={isActive ? "Desactivar imagen" : "Activar imagen"}
-            >
-              {isActive ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-            </button>
-          )}
-          {onRemove && (
+        {onRemove && (
             <button 
               type="button"
               onClick={onRemove}
-              className="p-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-md cursor-pointer transition-all ml-1"
+              className="p-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all ml-1"
               title="Eliminar imagen"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-5 h-5" />
             </button>
           )}
         </div>

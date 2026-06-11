@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { CreditCard, Filter } from 'lucide-react'
 import { PaymentData, PaymentFilters } from '../types'
-import { DataTable, LoadingState, SearchInput, SelectField, TextField } from '@/components/shared'
+import { DataTable, LoadingState, SearchInput, SelectField, TextField, EmptyState } from '@/components/shared'
 import { getPayments } from '../queries'
 
 interface PaymentsLogProps {
@@ -98,9 +98,7 @@ export default function PaymentsLog({ payments: initialPayments }: PaymentsLogPr
   ]
 
   const emptyState = (
-    <div className="py-12 text-center text-sm text-muted-foreground/60 italic">
-      No hay registros.
-    </div>
+    <EmptyState message="No hay registros." />
   )
 
   return (

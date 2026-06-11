@@ -6,11 +6,10 @@
  */
 
 import { hash, compare } from 'bcrypt-ts'
-
-const BCRYPT_ROUNDS = 12
+import { APP_CONFIG } from '@/lib/config'
 
 export async function hashPassword(plaintext: string): Promise<string> {
-  return hash(plaintext, BCRYPT_ROUNDS)
+  return hash(plaintext, APP_CONFIG.auth.bcryptRounds)
 }
 
 export async function verifyPassword(

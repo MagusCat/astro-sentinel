@@ -30,7 +30,7 @@ export default function BackupsModal({ isOpen, onClose, onRestore }: BackupsModa
   const fetchBackups = useCallback(async () => {
     setLoading(true)
     const res = await listContentBackups()
-    if (res.success && res.backups) setBackups(res.backups)
+    if (res.success && res.data) setBackups(res.data)
     setLoading(false)
   }, [])
 

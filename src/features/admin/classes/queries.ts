@@ -14,6 +14,7 @@ export async function getClassPlans(): Promise<PlanData[]> {
 
     if (error) throw error
 
+    // Supabase returns `classes` as an array due to the join, but we know it's a single row
     return ((data || []) as unknown as ClassPlanWithJoin[]).map((p) => ({
       id: p.id,
       plan_name: p.plan_name,

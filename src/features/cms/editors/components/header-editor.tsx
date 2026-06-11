@@ -3,7 +3,7 @@
 import React from 'react'
 import { Header, NavItem } from '../../core/types'
 import { Plus, Trash2 } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { TextField } from '@/components/shared'
 
 interface Props { 

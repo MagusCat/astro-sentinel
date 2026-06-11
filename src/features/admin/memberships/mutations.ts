@@ -8,14 +8,15 @@ import { freezeMembershipSchema, unfreezeMembershipSchema } from './schemas'
 import { calcRemainingDays, getTodayStr, MEMBERSHIP_FIELDS } from './utils'
 
 export async function freezeMembership(
-  membershipId: string
+  membershipId: string,
+  freezeDays: number
 ): Promise<{ success: boolean; error?: string }> {
   const currentUser = await getCurrentUser()
   if (!currentUser?.role) {
     return { success: false, error: 'Acceso denegado: Sesión inválida.' }
   }
 
-  const parsed = freezeMembershipSchema.safeParse({ membershipId })
+  const parsed = freezeMembershipSchema.safeParse({ membershipId, freezeDays })
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message }
   }
@@ -61,7 +62,7 @@ export async function freezeMembership(
 
     const { error: updateError } = await supabase
       .from('memberships')
-      .update({ status: 'frozen', remaining_days: remainingDays })
+      .update({ status: 'frozen', remaining_days: remainingDays, frozen_days: freezeDays })
       .eq('id', membershipId)
 
     if (updateError) {
@@ -128,19 +129,19 @@ export async function unfreezeMembership(
         remaining_days: 0,
       })
 
+    if (insertError) {
+      console.error(insertError)
+      return { success: false, error: 'Error al crear la nueva membresía activa.' }
+    }
+
     const { error: updateError } = await supabase
       .from('memberships')
-      .update({ status: 'transferred' })
+      .update({ status: 'transferred', frozen_days: 0 })
       .eq('id', membershipId)
 
     if (updateError) {
       console.error(updateError)
       return { success: false, error: 'Error al actualizar el estado de la membresía.' }
-    }
-
-    if (insertError) {
-      console.error(insertError)
-      return { success: false, error: 'Error al crear la nueva membresía activa.' }
     }
 
     return { success: true, newEndDate: finalEndDateStr }

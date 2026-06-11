@@ -157,7 +157,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
     try {
       const res = await deleteUserData(userToDelete.id)
       if (res.success) {
-        showSuccess('¡El operador fue eliminado lógicamente del sistema!')
+        showSuccess('¡El operador fue eliminado!')
         setUserToDelete(null)
         fetchUsers()
       } else {
@@ -200,15 +200,19 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
         }
       />
 
-      <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex flex-col flex-1 min-h-0">
-        {loading ? (
-          <div className="py-24 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-4 w-full">
-            <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-            <span className="font-mono">Cargando base de datos de operadores...</span>
+      <div className="relative bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex flex-col flex-1 min-h-0">
+        {loading && (
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+            <div className="text-center text-xs text-muted-foreground flex flex-col items-center gap-4">
+              <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+              <span className="font-mono">Cargando base de datos de operadores...</span>
+            </div>
           </div>
-        ) : users.length === 0 ? (
+        )}
+
+        {!loading && users.length === 0 ? (
           <div className="p-16 text-center text-xs text-muted-foreground italic">
-            No se encontraron usuarios o personal registrado.
+            No se encontraron personal registrado.
           </div>
         ) : (
           <DataTable
@@ -346,8 +350,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
         size="sm"
       >
         <p className="text-sm text-muted-foreground mb-4">
-          ¿Estás seguro que deseas ELIMINAR (lógicamente) al operador <span className="font-semibold text-foreground font-mono">&quot;{userToDelete?.full_name}&quot;</span>?
-          Su nombre de usuario quedará retenido por seguridad.
+          ¿Estás seguro que deseas eliminar al operador <span className="font-semibold text-foreground font-mono">&quot;{userToDelete?.full_name}&quot;</span>?
         </p>
         <FormActions
           onCancel={() => setUserToDelete(null)}

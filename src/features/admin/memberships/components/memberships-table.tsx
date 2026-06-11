@@ -4,10 +4,10 @@ import React, { useState, useMemo } from 'react'
 import { Ban, Pause, Play } from 'lucide-react'
 import { MembershipsTableRow, MembershipsPanelData } from '../types'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '../mutations'
-import { DataTable, SearchInput, SelectField, ConfirmDialog, Toast, ToastType } from '@/components/shared'
+import { DataTable, SearchInput, SelectField, ConfirmDialog, Modal, TextField, Toast, ToastType } from '@/components/shared'
 import ClassOccupancy from './class-occupancy'
 import { Button } from '@/components/shared'
-import { MEMBERSHIP_STATUS } from '@/lib/constants'
+import { MEMBERSHIP_STATUS } from '@/lib/config'
 
 interface MembershipsTableProps {
   memberships: MembershipsTableRow[]
@@ -38,9 +38,11 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
   const [confirmAction, setConfirmAction] = useState<{
     id: string
-    action: 'freeze' | 'unfreeze' | 'cancel'
+    action: 'unfreeze' | 'cancel'
     message: string
   } | null>(null)
+  const [pauseMembership, setPauseMembership] = useState<{ id: string; days: number } | null>(null)
+  const [pauseError, setPauseError] = useState<string | null>(null)
 
   const filteredData = useMemo(() => {
     return memberships.filter(m => {
@@ -55,8 +57,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
     setIsProcessing(true)
     
     let actionFn
-    if (confirmAction.action === 'freeze') actionFn = freezeMembership
-    else if (confirmAction.action === 'unfreeze') actionFn = unfreezeMembership
+    if (confirmAction.action === 'unfreeze') actionFn = unfreezeMembership
     else actionFn = cancelMembership
 
     const res = await actionFn(confirmAction.id)
@@ -70,7 +71,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
     }
   }
 
-  const promptAction = (action: 'freeze' | 'unfreeze' | 'cancel', id: string, message: string) => {
+  const promptAction = (action: 'unfreeze' | 'cancel', id: string, message: string) => {
     setConfirmAction({ id, action, message })
   }
 
@@ -128,7 +129,10 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
               className="h-8 w-8 text-muted-foreground hover:text-foreground" 
               disabled={isProcessing}
               title="Pausar"
-              onClick={() => promptAction('freeze', row.id, '¿Estás seguro que deseas pausar esta membresía? Los días restantes se congelarán y el cliente perderá acceso inmediatamente hasta que la membresía sea reanudada.')}
+              onClick={() => {
+                setPauseMembership({ id: row.id, days: 1 })
+                setPauseError(null)
+              }}
             >
               <Pause className="h-4 w-4" />
             </Button>
@@ -197,7 +201,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
 
       <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 w-full">
         {occupancy && (
-          <div className="flex-none lg:w-[220px] xl:w-[260px] flex flex-col min-h-0 lg:h-full">
+          <div className="flex-none lg:w-55 xl:w-65 flex flex-col min-h-0 lg:h-full">
             <ClassOccupancy occupancy={occupancy} />
           </div>
         )}
@@ -213,17 +217,68 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
         </div>
       </div>
 
+      <Modal
+        isOpen={!!pauseMembership}
+        onClose={() => setPauseMembership(null)}
+        title="Pausar Membresía"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Selecciona la cantidad de días para pausar esta membresía. El cliente perderá acceso de inmediato hasta que la membresía se reanude.
+          </p>
+          <TextField
+            label="Días de pausa"
+            type="number"
+            min={1}
+            value={pauseMembership?.days ?? 1}
+            onChange={(event) => {
+              const value = Number(event.target.value)
+              setPauseMembership((prev) => prev ? { ...prev, days: Number.isNaN(value) ? 1 : value } : { id: '', days: 1 })
+              setPauseError(null)
+            }}
+            error={pauseError ?? undefined}
+            className="max-w-45"
+          />
+          <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
+            <Button variant="ghost" size="sm" onClick={() => setPauseMembership(null)} disabled={isProcessing}>
+              Volver
+            </Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                if (!pauseMembership) return
+                if (pauseMembership.days < 1) {
+                  setPauseError('Ingresa una cantidad de días válida.')
+                  return
+                }
+                setIsProcessing(true)
+                const res = await freezeMembership(pauseMembership.id, pauseMembership.days)
+                setIsProcessing(false)
+                setPauseMembership(null)
+                if (res.success) {
+                  onReload()
+                } else {
+                  setToast({ message: res.error || 'Error al pausar la membresía.', type: 'error' })
+                }
+              }}
+              disabled={isProcessing || (pauseMembership?.days ?? 0) < 1}
+            >
+              {isProcessing ? 'Pausando...' : 'Confirmar pausa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <ConfirmDialog
         isOpen={!!confirmAction}
         onClose={() => setConfirmAction(null)}
         onConfirm={executeAction}
         title={
-          confirmAction?.action === 'freeze' ? 'Pausar Membresía' :
           confirmAction?.action === 'unfreeze' ? 'Reanudar Membresía' : 'Cancelar Membresía'
         }
         message={confirmAction?.message || ''}
         confirmText={
-          confirmAction?.action === 'freeze' ? 'Pausar' :
           confirmAction?.action === 'unfreeze' ? 'Reanudar' : 'Cancelar Membresía'
         }
         cancelText="Volver"

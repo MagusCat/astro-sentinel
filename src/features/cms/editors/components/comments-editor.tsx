@@ -3,8 +3,10 @@
 import React from 'react'
 import { Comments, Comment } from '../../core/types'
 import { MessageSquare } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { TextField, TextareaField } from '@/components/shared'
+import { SectionCard } from '@/components/shared'
+import { TextField, TextareaField, SelectField } from '@/components/shared'
+import { CMS_LIMITS } from '../../core/config'
+import { Plus, Trash2 } from 'lucide-react'
 
 interface Props { 
   value: Comments
@@ -18,10 +20,23 @@ export default function CommentsEditor({ value, onChange }: Props) {
     onChange({ ...value, items })
   }
 
+  const removeItem = (i: number) => {
+    if (value.items.length <= 1) return
+    onChange({ ...value, items: value.items.filter((_, idx) => idx !== i) })
+  }
+
+  const addItem = () => {
+    if (value.items.length >= CMS_LIMITS.maxTestimonials) return
+    onChange({
+      ...value,
+      items: [...value.items, { name: '', role: '', content: '', theme: 'light' }]
+    })
+  }
+
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
+    <div className="flex flex-col gap-6">
       <SectionCard 
-        title="Testimonios — Configuración" 
+        title="Testimonios" 
         titleAction={<MessageSquare className="w-5 h-5 text-muted-foreground" />}
         className="shrink-0"
       >
@@ -34,11 +49,11 @@ export default function CommentsEditor({ value, onChange }: Props) {
 
       <SectionCard 
         title={`Testimonios (${value.items.length})`} 
-        className="lg:flex-1 lg:min-h-0"
+        className="overflow-y-auto"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2">
           {value.items.map((item, i) => (
-            <div key={i} className="border border-border/30 rounded-xl p-4 bg-muted/20 flex flex-col gap-3">
+            <div key={i} className="border border-border/30 rounded-xl p-4 bg-muted/20 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
               <div className="flex gap-3 items-end">
                 <TextField
                   label="Nombre"
@@ -47,43 +62,56 @@ export default function CommentsEditor({ value, onChange }: Props) {
                   onChange={e => updateItem(i, 'name', e.target.value)}
                 />
                 
-                <div className="flex flex-col gap-2 flex-1">
-                  <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider select-none">
-                    Tema
-                  </label>
-                  <div className="flex gap-2">
-                    {[
+                <div className="flex-1">
+                  <SelectField
+                    label="Tema Visual"
+                    value={item.theme}
+                    onChange={(e) => updateItem(i, 'theme', e.target.value as Comment['theme'])}
+                    options={[
                       { value: 'light', label: 'Claro' },
                       { value: 'dark', label: 'Oscuro' },
                       { value: 'highlight', label: 'Resaltado' }
-                    ].map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => updateItem(i, 'theme', opt.value as Comment['theme'])}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold tracking-widest uppercase transition-all border ${
-                          item.theme === opt.value
-                            ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                            : 'bg-background text-foreground/70 border-border/60 hover:bg-muted'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
+                    ]}
+                  />
                 </div>
-
               </div>
 
-              <TextareaField
-                label="Contenido del Testimonio"
-                className="min-h-[80px] resize-y"
-                value={item.content}
-                onChange={e => updateItem(i, 'content', e.target.value)}
-              />
+              <div className="flex gap-3 items-start">
+                <TextareaField
+                  label="Contenido del Testimonio"
+                  className="min-h-[140px] resize-y"
+                  containerClassName="flex-1"
+                  value={item.content}
+                  onChange={e => updateItem(i, 'content', e.target.value)}
+                />
+                
+                {value.items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(i)}
+                    className="mt-7 p-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-all border border-transparent shrink-0"
+                    title="Eliminar testimonio"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
+        
+        {value.items.length < CMS_LIMITS.maxTestimonials && (
+          <div className="mt-4 border-t border-border/20 pt-4">
+            <button
+              type="button"
+              onClick={addItem}
+              className="text-sm font-bold text-primary flex items-center justify-center gap-2 w-full sm:w-auto px-6 h-11 rounded-xl bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Agregar Testimonio ({value.items.length}/{CMS_LIMITS.maxTestimonials})</span>
+            </button>
+          </div>
+        )}
       </SectionCard>
     </div>
   )

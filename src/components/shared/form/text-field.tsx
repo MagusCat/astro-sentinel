@@ -1,10 +1,12 @@
 import React, { useId } from "react"
 import { cn } from "@/lib/utils"
+import Tooltip from "../feedback/tooltip"
 
 interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   label?: string
   error?: string
   containerClassName?: string
+  tooltip?: string
 }
 
 /**
@@ -17,24 +19,27 @@ interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
  *   </div>
  */
 export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
-  ({ label, error, containerClassName, className, id, ...props }, ref) => {
+  ({ label, error, containerClassName, className, id, tooltip, ...props }, ref) => {
     const generatedId = useId()
     const inputId = id || generatedId
     return (
       <div className={cn("flex flex-col gap-2 p-1 relative", containerClassName)}>
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-[13px] font-semibold text-foreground/80 ml-1 select-none"
-          >
-            {label}
-          </label>
+          <div className="flex items-center gap-1.5 ml-1">
+            <label
+              htmlFor={inputId}
+              className="text-sm font-semibold text-foreground/80 select-none"
+            >
+              {label}
+            </label>
+            {tooltip && <Tooltip content={tooltip} />}
+          </div>
         )}
         <input
           id={inputId}
           ref={ref}
           className={cn(
-            "w-full text-sm px-3 h-10 py-2 rounded-lg border border-border/60 bg-background placeholder:text-muted-foreground/40 hover:border-border focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all text-foreground font-medium relative focus:z-10",
+            "w-full text-sm px-3 h-11 rounded-lg border border-border/60 bg-background placeholder:text-muted-foreground/40 hover:border-border focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all text-foreground font-medium relative focus:z-10",
             error && "border-destructive focus:border-destructive focus:ring-destructive/15 hover:border-destructive",
             className
           )}

@@ -1,27 +1,24 @@
 /*
  * JWT Signing & Verification Module
+ *
+ * Security Notes:
+ * - Never caches the secret key in module-level state (avoids cross-request leakage)
+ * - Uses Web Crypto (available in Edge/Workers runtime)
+ * - Minimum 32-char SESSION_SECRET enforced
  */
 
-export const runtime = 'edge';
 import { SignJWT } from 'jose/jwt/sign'
 import { jwtVerify } from 'jose/jwt/verify'
 import type { AuthenticatedUser } from '@/features/auth/types'
+import { APP_CONFIG, getSecret } from '@/lib/config'
 
-const ISSUER = process.env.JWT_ISSUER || 'sentinel:auth'
-const AUDIENCE = process.env.JWT_AUDIENCE || 'sentinel:app'
-const SESSION_MAX_AGE = process.env.SESSION_MAX_AGE || '7d'
-const DEVICE_MAX_AGE = process.env.DEVICE_MAX_AGE || '365d'
-let cachedKey: Uint8Array | null = null
-
-async function getSecretKey() {
-  if (cachedKey) return cachedKey
-  const secret = process.env.SESSION_SECRET
-  if (!secret || secret.length < 32) {
-    throw new Error('SESSION_SECRET env variable is missing or shorter than 32 characters.')
+async function getSecretKey(): Promise<Uint8Array> {
+  const secret = getSecret('SESSION_SECRET')
+  if (secret.length < 32) {
+    throw new Error('SESSION_SECRET must be at least 32 characters long.')
   }
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret))
-  cachedKey = new Uint8Array(hash)
-  return cachedKey
+  return new Uint8Array(hash)
 }
 
 // ── Session Token 
@@ -38,10 +35,10 @@ export async function createSessionToken(
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setIssuer(ISSUER)
-    .setAudience(AUDIENCE)
-    .setExpirationTime(SESSION_MAX_AGE)
-    .sign(key)
+  .setIssuer(APP_CONFIG.auth.jwtIssuer)
+  .setAudience(APP_CONFIG.auth.jwtAudience)
+  .setExpirationTime(APP_CONFIG.auth.sessionMaxAge)
+  .sign(key)
 }
 
 export async function verifySessionToken(
@@ -50,8 +47,8 @@ export async function verifySessionToken(
   try {
     const key = await getSecretKey()
     const { payload } = await jwtVerify(token, key, {
-      issuer: ISSUER,
-      audience: AUDIENCE
+      issuer: APP_CONFIG.auth.jwtIssuer,
+      audience: APP_CONFIG.auth.jwtAudience
     })
 
     if (
@@ -69,7 +66,9 @@ export async function verifySessionToken(
       role: payload.role,
       username: payload.username,
     }
-  } catch {
+  } catch (err) {
+    // JWT verification failed (expired, tampered, etc.) — log structured for observability
+    console.warn('[JWT] Session verification failed:', err instanceof Error ? err.message : String(err))
     return null
   }
 }
@@ -80,10 +79,10 @@ export async function createDeviceToken(deviceId: string): Promise<string> {
   return new SignJWT({ device_id: deviceId })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setIssuer(ISSUER)
-    .setAudience(AUDIENCE)
-    .setExpirationTime(DEVICE_MAX_AGE)
-    .sign(key)
+  .setIssuer(APP_CONFIG.auth.jwtIssuer)
+  .setAudience(APP_CONFIG.auth.jwtAudience)
+  .setExpirationTime(APP_CONFIG.auth.deviceMaxAge)
+  .sign(key)
 }
 
 export async function verifyDeviceToken(
@@ -92,12 +91,13 @@ export async function verifyDeviceToken(
   try {
     const key = await getSecretKey()
     const { payload } = await jwtVerify(token, key, {
-      issuer: ISSUER,
-      audience: AUDIENCE
+      issuer: APP_CONFIG.auth.jwtIssuer,
+      audience: APP_CONFIG.auth.jwtAudience
     })
     if (typeof payload.device_id !== 'string') return null
     return payload.device_id
-  } catch {
+  } catch (err) {
+    console.warn('[JWT] Device verification failed:', err instanceof Error ? err.message : String(err))
     return null
   }
 }

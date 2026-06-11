@@ -1,4 +1,4 @@
-import { MembershipStatus } from '@/lib/constants'
+import { MembershipStatus } from '@/lib/config'
 
 export interface ProcessCheckoutPayload {
   client_id: string

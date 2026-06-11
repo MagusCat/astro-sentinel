@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { History, Trash2, RefreshCw, UploadCloud, User } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { SectionCard } from '@/components/shared'
 import { listContentBackups, restoreContentBackup, deleteContentBackup, getBackupAuthors } from '../../backups/actions'
 import { ConfirmDialog, Toast, ToastType } from '@/components/shared'
 
@@ -25,14 +25,9 @@ export default function BackupsEditor() {
   const loadBackups = useCallback(async () => {
     setLoading(true)
     const res = await listContentBackups()
-    if (res.success && res.backups) {
-      
-      // Let's attempt to get the author from metadata by downloading them partially or just relying on a smart naming convention if possible.
-      // Since it's too slow to download all backups just to read author, we'll try to fetch their public url or download only the latest ones if needed.
-      // Actually, we can fetch metadata from Supabase if we fetch the files. Wait, let's just do a simple download for each or show the name.
-      // We will parse the file name to guess the date.
-      
-      const enrichedBackups = res.backups.map(b => {
+  if (res.success && res.data) {
+
+      const enrichedBackups = res.data.map(b => {
         return {
           ...b,
           author: 'Desconocido' // To be implemented or fetched dynamically
@@ -51,10 +46,10 @@ export default function BackupsEditor() {
     if (unknownBackups.length === 0) return
 
     const res = await getBackupAuthors(unknownBackups.map(b => b.name))
-    if (res.success && res.authors) {
+    if (res.success && res.data) {
       setBackups(prev => prev.map(b => ({
         ...b,
-        author: res.authors![b.name] || b.author
+        author: res.data![b.name] || b.author
       })))
     }
   }, [backups])
@@ -98,7 +93,7 @@ export default function BackupsEditor() {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
+    <div className="flex flex-col gap-6 pb-4">
       <SectionCard 
         title="Historial de Versiones" 
         titleAction={<History className="w-5 h-5 text-muted-foreground" />}
@@ -108,10 +103,10 @@ export default function BackupsEditor() {
 
       <SectionCard 
         title={`Backups Disponibles (${backups.length})`} 
-        className="lg:flex-1 lg:min-h-0"
+        className="overflow-y-auto"
       >
-        <div className="flex flex-col gap-4 lg:flex-1 lg:overflow-hidden">
-        <div className="border border-border/40 rounded-xl bg-muted/10 lg:flex-1 lg:overflow-y-auto relative">
+        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+        <div className="border border-border/40 rounded-xl bg-muted/10 flex-1 overflow-y-auto max-h-[50vh] relative">
           {loading && (
             <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
               <RefreshCw className="w-6 h-6 animate-spin text-primary" />

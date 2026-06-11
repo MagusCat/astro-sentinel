@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { AuthenticatedUser } from './types'
 import {
   verifyPassword,
@@ -11,15 +10,24 @@ import {
   verifyDeviceToken,
 } from '@/lib/auth/session'
 import { credentialsSchema, localLoginSchema } from './schemas'
-import { parseDuration } from '@/lib/utils'
-// TODO: Implement security audit logging (Vercel Drains + Supabase)
+import { getSecret, getServiceConfig } from '@/lib/config'
+import {
+  setSessionCookie,
+  setDeviceCookie,
+  getSessionToken,
+  getDeviceToken,
+  deleteSessionCookie,
+  deleteDeviceCookie,
+  deleteAllAuthCookies,
+} from '@/lib/cookies'
 
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 function getAdminClient() {
+  const { supabaseUrl } = getServiceConfig()
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    getSecret('SUPABASE_SERVICE_ROLE_KEY'),
     {
       global: {
         fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
@@ -28,21 +36,12 @@ function getAdminClient() {
   )
 }
 
-const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME || 'sentinel_session'
-const DEVICE_COOKIE = process.env.DEVICE_COOKIE_NAME || 'sentinel_device_token'
-
-const SESSION_MAX_AGE = parseDuration(process.env.SESSION_MAX_AGE || '7d')
-const DEVICE_MAX_AGE = parseDuration(process.env.DEVICE_MAX_AGE || '365d')
-
 // ── Device Authorization
 export async function isDeviceAuthorized(): Promise<boolean> {
-  const cookieStore = await cookies()
-  
-  // Slow path
-  const token = cookieStore.get(DEVICE_COOKIE)
-  if (!token || !token.value) return false
+  const token = await getDeviceToken()
+  if (!token) return false
 
-  const deviceId = await verifyDeviceToken(token.value)
+  const deviceId = await verifyDeviceToken(token)
   if (!deviceId) return false
 
   try {
@@ -53,13 +52,11 @@ export async function isDeviceAuthorized(): Promise<boolean> {
       .eq('device_id', deviceId)
       .maybeSingle()
 
-    // If there is no DB record, the device has been deleted.
     if (!data) {
-      cookieStore.delete(DEVICE_COOKIE)
+      await deleteDeviceCookie()
       return false
     }
   } catch {
-    // Fallback to strict DB check
     return false
   }
 
@@ -86,18 +83,18 @@ export async function authorizeDevice(
       })
 
       if (error) {
-        return { success: false, error: error.message }
+        return { success: false, error: 'Credenciales inválidas.' }
       }
 
       if (data.user) {
         authUserId = data.user.id
       }
     } catch {
-      return { success: false, error: 'API connection failed. Please check network connectivity.' }
+      return { success: false, error: 'Error de conexión. Por favor, verifique la conectividad de red.' }
     }
 
     if (!authUserId) {
-      return { success: false, error: 'Device authorization rejected.' }
+      return { success: false, error: 'Autorización de dispositivo rechazada.' }
     }
 
     const deviceId = crypto.randomUUID()
@@ -113,31 +110,22 @@ export async function authorizeDevice(
       return { success: false, error: `Error de base de datos: ${insertError.message}` }
     }
 
-    // Create a signed long-lived JWT and store in cookie
     const token = await createDeviceToken(deviceId)
-    const cookieStore = await cookies()
-    cookieStore.set(DEVICE_COOKIE, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: DEVICE_MAX_AGE,
-      path: '/'
-    })
+    await setDeviceCookie(token)
 
     return { success: true }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Device authorization exception: ${errorMsg}` }
+    return { success: false, error: `Error de autorización de dispositivo: ${errorMsg}` }
   }
 }
 
 export async function revokeDeviceAuthorization(): Promise<void> {
   try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get(DEVICE_COOKIE)
+    const token = await getDeviceToken()
 
-    if (token?.value) {
-      const deviceId = await verifyDeviceToken(token.value)
+    if (token) {
+      const deviceId = await verifyDeviceToken(token)
       if (deviceId) {
         const supabase = await createClient()
         const { error: updateError } = await supabase
@@ -151,9 +139,9 @@ export async function revokeDeviceAuthorization(): Promise<void> {
       }
     }
 
-    cookieStore.delete(DEVICE_COOKIE)
+    await deleteDeviceCookie()
   } catch (err) {
-    console.error('Failed to revoke device authorization:', err)
+    console.error('Error al revocar autorización de dispositivo:', err)
   }
 }
 
@@ -169,27 +157,24 @@ export async function authenticateUser(
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const cookieStore = await cookies()
-    const deviceToken = cookieStore.get(DEVICE_COOKIE)
-    if (!deviceToken || !deviceToken.value) {
+    const deviceToken = await getDeviceToken()
+    if (!deviceToken) {
       return {
         success: false,
-        error: 'Unauthorized.'
+        error: 'No autorizado.'
       }
     }
 
-    // Verify device JWT signature locally (fast path)
-    const deviceId = await verifyDeviceToken(deviceToken.value)
+    const deviceId = await verifyDeviceToken(deviceToken)
     if (!deviceId) {
       return {
         success: false,
-        error: 'Authorization token is invalid or expired.'
+        error: 'El token de autorización es inválido o ha expirado.'
       }
     }
 
     const supabase = await createClient()
 
-    // Check if device is active in DB (defense in depth)
     const { data: deviceData } = await supabase
       .from('authorized_devices')
       .select('device_id')
@@ -197,9 +182,8 @@ export async function authenticateUser(
       .maybeSingle()
 
     if (!deviceData) {
-       // Revoke local cookie immediately since it's inactive in DB
-       cookieStore.delete(DEVICE_COOKIE)
-       return { success: false, error: 'La autorización de esta terminal ha sido revocada remotamente.' }
+      await deleteDeviceCookie()
+      return { success: false, error: 'La autorización de esta terminal ha sido revocada remotamente.' }
     }
 
     const { data: user, error } = await supabase
@@ -209,20 +193,20 @@ export async function authenticateUser(
       .maybeSingle()
 
     if (error) {
-      return { success: false, error: 'Internal error' }
+      return { success: false, error: 'Error interno del servidor.' }
     }
 
     if (!user) {
-      return { success: false, error: 'Invalid username or password' }
+      return { success: false, error: 'Usuario o contraseña inválidos.' }
     }
 
     if (!user.is_active) {
-      return { success: false, error: 'User account is not registered' }
+      return { success: false, error: 'La cuenta de usuario no está registrada.' }
     }
 
     const passwordMatch = await verifyPassword(password, user.password_hash)
     if (!passwordMatch) {
-      return { success: false, error: 'Invalid username or password' }
+      return { success: false, error: 'Usuario o contraseña inválidos.' }
     }
 
     const authUser: AuthenticatedUser = {
@@ -232,15 +216,8 @@ export async function authenticateUser(
       username: user.username || ''
     }
 
-    // Create signed session JWT and set as HTTP-only cookie
     const sessionToken = await createSessionToken(authUser)
-    cookieStore.set(SESSION_COOKIE, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: SESSION_MAX_AGE,
-      path: '/'
-    })
+    await setSessionCookie(sessionToken)
 
     return {
       success: true,
@@ -248,16 +225,12 @@ export async function authenticateUser(
     }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Auth connection error: ${errorMsg}` }
+    return { success: false, error: `Error de conexión de autenticación: ${errorMsg}` }
   }
 }
 
 // ── Admin Authentication
 
-/**
- * Authenticate an admin via Supabase Auth, then issue a local
- * signed session JWT cookie.
- */
 export async function authenticateAdmin(
   email: string,
   password: string
@@ -278,14 +251,14 @@ export async function authenticateAdmin(
       })
 
       if (error) {
-        return { success: false, error: error.message }
+        return { success: false, error: 'Credenciales inválidas.' }
       }
 
       if (data.user) {
         supabaseUser = data.user
       }
     } catch {
-      return { success: false, error: 'API connection failed. Please check network connectivity.' }
+      return { success: false, error: 'Error de conexión. Por favor, verifique la conectividad de red.' }
     }
 
     if (!supabaseUser) {
@@ -305,11 +278,10 @@ export async function authenticateAdmin(
         userRecord = user
       }
     } catch {
-      // ignore
     }
 
     if (!userRecord) {
-      return { success: false, error: 'Error al obtener información de usuario' }
+      return { success: false, error: 'Error al obtener información de usuario.' }
     }
 
     if (!userRecord.is_active) {
@@ -323,16 +295,8 @@ export async function authenticateAdmin(
       username: userRecord.username || ''
     }
 
-    // Create signed session JWT and set as HTTP-only cookie
     const sessionToken = await createSessionToken(authUser)
-    const cookieStore = await cookies()
-    cookieStore.set(SESSION_COOKIE, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: SESSION_MAX_AGE,
-      path: '/'
-    })
+    await setSessionCookie(sessionToken)
 
     return {
       success: true,
@@ -340,26 +304,17 @@ export async function authenticateAdmin(
     }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error de conexión admin: ${errorMsg}` }
+    return { success: false, error: `Error de conexión de administrador: ${errorMsg}` }
   }
 }
 
 // ── Session Management
 
-/**
- * Read and verify the session JWT from the cookie.
- * Returns the authenticated user payload or null if invalid/expired.
- */
 export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get(SESSION_COOKIE)
-
-    if (!sessionCookie || !sessionCookie.value) {
-      return null
-    }
-
-    return await verifySessionToken(sessionCookie.value)
+    const token = await getSessionToken()
+    if (!token) return null
+    return await verifySessionToken(token)
   } catch {
     return null
   }
@@ -367,19 +322,16 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
 
 export async function logoutUser(): Promise<void> {
   try {
-    const cookieStore = await cookies()
-    cookieStore.delete(SESSION_COOKIE)
+    await deleteSessionCookie()
   } catch (err) {
-    console.error('Failed to clear session cookie:', err)
+    console.error('Error al limpiar cookie de sesión:', err)
   }
 }
 
 export async function logoutUserFull(): Promise<void> {
   try {
-    const cookieStore = await cookies()
-    cookieStore.delete(SESSION_COOKIE)
-    cookieStore.delete(DEVICE_COOKIE)
+    await deleteAllAuthCookies()
   } catch (err) {
-    console.error('Failed to clear full session:', err)
+    console.error('Error al limpiar sesión completa:', err)
   }
 }

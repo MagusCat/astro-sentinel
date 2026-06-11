@@ -4,11 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/features/auth/actions'
 import { Roles } from '@/lib/auth/roles'
 import { SiteContent } from '@/features/cms/core/types'
+import { BackupEntry } from './types'
+import { restoreBackupSchema, deleteBackupSchema, backupAuthorsSchema } from './schemas'
 import { publishSiteContent } from '@/features/cms/core/actions'
+import { APP_CONFIG } from '@/lib/config'
 
-const CONTENT_BUCKET = 'site-content'
+const CONTENT_BUCKET = APP_CONFIG.buckets.content
 
-// 1. Restore a backup version
 export async function restoreContentBackup(
   backupName: string
 ): Promise<{ success: boolean; content?: SiteContent; error?: string }> {
@@ -18,8 +20,13 @@ export async function restoreContentBackup(
       return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
     }
 
+    const parsed = restoreBackupSchema.safeParse({ backupName })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
+    }
+
     const supabase = await createClient()
-    const backupPath = `backups/${backupName}`
+    const backupPath = `backups/${parsed.data.backupName}`
 
     const { data, error } = await supabase.storage
       .from(CONTENT_BUCKET)
@@ -40,10 +47,9 @@ export async function restoreContentBackup(
   }
 }
 
-// 2. List backup versions for restore UI
 export async function listContentBackups(): Promise<{
   success: boolean
-  backups?: Array<{ name: string; created_at: string | null }>
+  data?: BackupEntry[]
   error?: string
 }> {
   try {
@@ -60,19 +66,18 @@ export async function listContentBackups(): Promise<{
 
     if (error) throw error
 
-    const backups = (data || []).map((f) => ({
+    const backups: BackupEntry[] = (data || []).map((f) => ({
       name: f.name,
       created_at: f.created_at
     }))
 
-    return { success: true, backups }
+    return { success: true, data: backups }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { success: false, error: `Error al listar versiones: ${msg}` }
   }
 }
 
-// 3. Delete a backup version
 export async function deleteContentBackup(
   backupName: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -82,8 +87,13 @@ export async function deleteContentBackup(
       return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
     }
 
+    const parsed = deleteBackupSchema.safeParse({ backupName })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
+    }
+
     const supabase = await createClient()
-    const backupPath = `backups/${backupName}`
+    const backupPath = `backups/${parsed.data.backupName}`
 
     const { error } = await supabase.storage
       .from(CONTENT_BUCKET)
@@ -100,17 +110,22 @@ export async function deleteContentBackup(
 
 export async function getBackupAuthors(
   names: string[]
-): Promise<{ success: boolean; authors?: Record<string, string>; error?: string }> {
+): Promise<{ success: boolean; data?: Record<string, string>; error?: string }> {
   try {
     const currentUser = await getCurrentUser()
     if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
       return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
     }
 
+    const parsed = backupAuthorsSchema.safeParse({ names })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
+    }
+
     const supabase = await createClient()
     const authors: Record<string, string> = {}
 
-    await Promise.all(names.map(async (name) => {
+    await Promise.all(parsed.data.names.map(async (name) => {
       try {
         const { data, error } = await supabase.storage
           .from(CONTENT_BUCKET)
@@ -128,7 +143,7 @@ export async function getBackupAuthors(
       }
     }))
 
-    return { success: true, authors }
+    return { success: true, data: authors }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { success: false, error: `Error al obtener autores: ${msg}` }
