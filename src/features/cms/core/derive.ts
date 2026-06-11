@@ -1,10 +1,11 @@
 import { SocialLink, ContactItem, WebGlobals, Whatsapp, Contact } from '@/features/cms/core/types'
+import { CMS_CONTACT_CONFIG } from '@/features/cms/core/config'
 
 const STRIP_PHONE_RE = /[^0-9+]/g
 
 const AUTO_INJECTED_TITLES = new Set(['teléfono', 'email', 'ubicación', 'correo', 'tel', 'mail', 'phone', 'address', 'dirección', 'direccion'])
 
-function isAutoInjectedItem(item: { title?: string; alt?: string; icon?: string }): boolean {
+export function isAutoInjectedItem(item: { title?: string; alt?: string; icon?: string }): boolean {
   const title = (item.title || item.alt || '').toLowerCase()
   const icon = (item.icon || '').toLowerCase()
   if (AUTO_INJECTED_TITLES.has(title)) return true
@@ -31,16 +32,17 @@ export function deriveHeroSocialLinks(globals: WebGlobals, contact: Contact): So
   const links: SocialLink[] = [...stripAutoInjected(globals.socialLinks)]
   if (globals.contactPhone) {
     links.push({
-      alt: 'Teléfono',
-      url: `tel:${globals.contactPhone.replace(STRIP_PHONE_RE, '')}`,
-      icon: 'mingcute:phone-line',
+      alt: CMS_CONTACT_CONFIG.phone.label,
+      url: CMS_CONTACT_CONFIG.phone.urlTemplate.replace('{value}', globals.contactPhone.replace(STRIP_PHONE_RE, '')),
+      icon: CMS_CONTACT_CONFIG.phone.icon,
     })
   }
-  if (contact.mapLink || globals.contactAddress) {
+  const mapUrl = contact.mapLink || (globals.contactAddress ? CMS_CONTACT_CONFIG.location.urlTemplate.replace('{value}', encodeURIComponent(globals.contactAddress)) : '')
+  if (mapUrl) {
     links.push({
-      alt: 'Ubicación',
-      url: contact.mapLink || `https://maps.google.com/?q=${encodeURIComponent(globals.contactAddress)}`,
-      icon: 'mingcute:map-pin-line',
+      alt: CMS_CONTACT_CONFIG.location.label,
+      url: mapUrl,
+      icon: CMS_CONTACT_CONFIG.location.icon,
     })
   }
   return links
@@ -56,26 +58,27 @@ export function deriveContactItems(globals: WebGlobals, contact: Contact): Conta
   }))
   if (globals.contactPhone) {
     items.push({
-      title: 'Teléfono',
+      title: CMS_CONTACT_CONFIG.phone.label,
       content: globals.contactPhone,
-      icon: 'mingcute:phone-line',
-      url: `tel:${globals.contactPhone.replace(STRIP_PHONE_RE, '')}`,
+      icon: CMS_CONTACT_CONFIG.phone.icon,
+      url: CMS_CONTACT_CONFIG.phone.urlTemplate.replace('{value}', globals.contactPhone.replace(STRIP_PHONE_RE, '')),
     })
   }
   if (globals.contactEmail) {
     items.push({
-      title: 'Email',
+      title: CMS_CONTACT_CONFIG.email.label,
       content: globals.contactEmail,
-      icon: 'mingcute:mail-line',
-      url: `mailto:${globals.contactEmail}`,
+      icon: CMS_CONTACT_CONFIG.email.icon,
+      url: CMS_CONTACT_CONFIG.email.urlTemplate.replace('{value}', globals.contactEmail),
     })
   }
-  if (globals.contactAddress || contact.mapLink) {
+  const mapUrl = contact.mapLink || (globals.contactAddress ? CMS_CONTACT_CONFIG.location.urlTemplate.replace('{value}', encodeURIComponent(globals.contactAddress)) : '')
+  if (mapUrl) {
     items.push({
-      title: 'Ubicación',
+      title: CMS_CONTACT_CONFIG.location.label,
       content: globals.contactAddress || '',
-      icon: 'mingcute:map-pin-line',
-      url: contact.mapLink || `https://maps.google.com/?q=${encodeURIComponent(globals.contactAddress)}`,
+      icon: CMS_CONTACT_CONFIG.location.icon,
+      url: mapUrl,
     })
   }
   if (existing.length > 0) {
@@ -85,7 +88,7 @@ export function deriveContactItems(globals: WebGlobals, contact: Contact): Conta
 }
 
 export function buildWhatsapp(contactPhone: string, partial: Partial<Whatsapp> = {}): Whatsapp {
-  const number = partial.number || deriveWhatsappNumber(contactPhone)
+  const number = partial.number ?? deriveWhatsappNumber(contactPhone)
   return {
     number,
     message: partial.message || '',

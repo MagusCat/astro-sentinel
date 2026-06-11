@@ -116,7 +116,7 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
       }
     }
 
-    return { success: true, backupKey }
+    return { success: true, backupKey, deployHookTriggered: !!deployHookUrl }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { success: false, error: `Error al publicar contenido: ${msg}` }

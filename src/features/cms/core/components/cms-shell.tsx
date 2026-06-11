@@ -177,7 +177,9 @@ export default function CmsShell({ activeUser }: CmsShellProps) {
       setIsDirty(false)
       const dateRes = await getLastPublicationDate()
       setLastPublished(formatDate(dateRes.date))
-      showToast(res.backupKey ? '¡Publicado exitosamente! Backup guardado.' : '¡Contenido publicado exitosamente!', 'success')
+      const baseMsg = res.backupKey ? '¡Publicado exitosamente! Backup guardado.' : '¡Contenido publicado exitosamente!'
+      const delayMsg = res.deployHookTriggered ? ' Los cambios tardarán de 5 a 10 min en ser mostrados en la web.' : ''
+      showToast(`${baseMsg}${delayMsg}`, 'success')
     } else {
       showToast(res.error || 'Error al publicar.', 'error')
     }

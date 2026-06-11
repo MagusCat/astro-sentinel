@@ -8,6 +8,7 @@ export interface AuthConfig {
   sessionMaxAge: string
   deviceMaxAge: string
   bcryptRounds: number
+  enableLocalLogin: boolean
 }
 
 export interface BucketsConfig {

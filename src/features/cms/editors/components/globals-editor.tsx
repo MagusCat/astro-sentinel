@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { WebGlobals, SocialLink } from '../../core/types'
+import { isAutoInjectedItem } from '../../core/derive'
 import { Plus, Trash2, Settings, Share2, MapPin } from 'lucide-react'
 import { SectionCard } from '@/components/shared'
 import { TextField, SelectField, PhoneField } from '@/components/shared'
@@ -13,27 +14,15 @@ interface Props {
 }
 
 
-
-const isAutoInjected = (link: SocialLink): boolean => {
-  const name = link.alt?.toLowerCase() || ''
-  const icon = link.icon?.toLowerCase() || ''
-  const isPhoneOrEmail = name.includes('tel') || name.includes('mail') || name.includes('phone') || name.includes('correo') || icon.includes('phone') || icon.includes('mail')
-  const isLocation = name.includes('map') || name.includes('ubicacion') || name.includes('ubicación') || name.includes('address') || name.includes('direccion') || name.includes('dirección') || icon.includes('map') || icon.includes('pin')
-  return isPhoneOrEmail || isLocation
-}
-
 function extractUsername(url: string, template: string): string {
   if (!url) return ''
-  // If it doesn't look like a URL, assume it's already a username
   if (!url.startsWith('http')) return url.replace(/^@/, '')
   
-  // Basic extraction based on template
   const prefix = template.split('{username}')[0]
   if (url.startsWith(prefix)) {
     return url.slice(prefix.length).replace(/\/$/, '')
   }
   
-  // Fallback: extract last segment
   const parts = url.split('/').filter(Boolean)
   let last = parts[parts.length - 1]
   if (last.startsWith('@')) last = last.slice(1)
@@ -42,7 +31,7 @@ function extractUsername(url: string, template: string): string {
 
 function buildFullUrl(username: string, template: string): string {
   if (!username) return ''
-  if (username.startsWith('http')) return username // Already a URL
+  if (username.startsWith('http')) return username
   const cleanUsername = username.replace(/^@/, '')
   return template.replace('{username}', cleanUsername)
 }
@@ -53,7 +42,7 @@ export default function GlobalsEditor({ value, onChange }: Props) {
     onChange({ ...value, [key]: val })
   }
 
-  const editableLinks = value.socialLinks.filter(l => !isAutoInjected(l))
+  const editableLinks = value.socialLinks.filter(l => !isAutoInjectedItem(l))
 
   const updateSocial = (editableIndex: number, updates: Partial<SocialLink>) => {
     const actualIndex = value.socialLinks.indexOf(editableLinks[editableIndex])
@@ -66,14 +55,14 @@ export default function GlobalsEditor({ value, onChange }: Props) {
   const handleNetworkChange = (editableIndex: number, networkId: string) => {
     const network = CMS_SOCIAL_NETWORKS.find(n => n.id === networkId)
     if (network) {
-      // Re-build URL with new template if possible
       const currentLink = editableLinks[editableIndex]
       const oldNetwork = CMS_SOCIAL_NETWORKS.find(n => n.name === currentLink.alt || n.icon === currentLink.icon) || CMS_SOCIAL_NETWORKS[0]
-      const username = extractUsername(currentLink.url, oldNetwork.urlTemplate)
+      const username = currentLink.title !== undefined ? currentLink.title : extractUsername(currentLink.url, oldNetwork.urlTemplate)
       
       updateSocial(editableIndex, { 
         alt: network.name, 
         icon: network.icon,
+        title: username,
         url: username ? buildFullUrl(username, network.urlTemplate) : currentLink.url
       })
     }
@@ -86,7 +75,7 @@ export default function GlobalsEditor({ value, onChange }: Props) {
   }
 
   const addSocial = () => {
-    update('socialLinks', [...value.socialLinks, { alt: 'Facebook', url: '', icon: 'mingcute:facebook-fill' }])
+    update('socialLinks', [...value.socialLinks, { alt: 'Facebook', url: '', icon: 'mingcute:facebook-fill', title: '', id: crypto.randomUUID() }])
   }
 
   return (
@@ -150,10 +139,10 @@ export default function GlobalsEditor({ value, onChange }: Props) {
         <div className="flex flex-col gap-4">
           {editableLinks.map((link, i) => {
             const currentNetwork = CMS_SOCIAL_NETWORKS.find(n => n.name === link.alt || n.icon === link.icon) || CMS_SOCIAL_NETWORKS[0]
-            const username = extractUsername(link.url, currentNetwork.urlTemplate)
+            const username = link.title !== undefined ? link.title : extractUsername(link.url, currentNetwork.urlTemplate)
 
             return (
-              <div key={i} className="flex flex-col md:flex-row gap-4 items-end border border-border/30 rounded-xl p-5 bg-muted/20 animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
+              <div key={link.id || `${link.alt}-${link.icon}-${i}`} className="flex flex-col md:flex-row gap-4 items-end border border-border/30 rounded-xl p-5 bg-muted/20 animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
                 <SelectField
                   label="Red Social"
                   containerClassName="w-full md:w-1/3 p-0"
@@ -166,7 +155,10 @@ export default function GlobalsEditor({ value, onChange }: Props) {
                   label="Nombre de Usuario"
                   containerClassName="flex-1 w-full"
                   value={username}
-                  onChange={(e) => updateSocial(i, { url: buildFullUrl(e.target.value, currentNetwork.urlTemplate) })}
+                  onChange={(e) => updateSocial(i, { 
+                    title: e.target.value,
+                    url: buildFullUrl(e.target.value, currentNetwork.urlTemplate) 
+                  })}
                   placeholder="ej. @tu_cuenta"
                 />
 

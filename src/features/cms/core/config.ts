@@ -1,5 +1,5 @@
 import { Settings, Image, Star, Calendar, MessageSquare, HelpCircle, Images, Database, History } from 'lucide-react'
-import { CmsSection } from './types'
+import { CmsSection, ContactChannelConfig } from './types'
 
 export const CMS_SECTIONS: Array<{ id: CmsSection; label: string; icon: React.ElementType; hidden?: boolean }> = [
   { id: 'base', label: 'Datos Generales', icon: Settings },
@@ -33,3 +33,9 @@ export const CMS_SOCIAL_NETWORKS = [
   { id: 'youtube', name: 'YouTube', icon: 'mingcute:youtube-fill', urlTemplate: 'https://youtube.com/@{username}' },
   { id: 'linkedin', name: 'LinkedIn', icon: 'mingcute:linkedin-fill', urlTemplate: 'https://linkedin.com/in/{username}' },
 ]
+
+export const CMS_CONTACT_CONFIG: Record<'phone' | 'email' | 'location', ContactChannelConfig> = {
+  phone: { label: 'Teléfono', icon: 'mingcute:phone-line', urlTemplate: 'tel:{value}' },
+  email: { label: 'Email', icon: 'mingcute:mail-line', urlTemplate: 'mailto:{value}' },
+  location: { label: 'Ubicación', icon: 'mingcute:map-pin-line', urlTemplate: 'https://maps.google.com/?q={value}' },
+}

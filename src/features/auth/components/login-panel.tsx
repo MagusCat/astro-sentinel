@@ -12,10 +12,10 @@ interface LoginPanelProps {
 
 import { getActiveModules } from '@/lib/modules'
 
-const { adminEnabled } = getActiveModules()
+const { adminEnabled, localLoginEnabled } = getActiveModules()
 
 export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
-  const [loginType, setLoginType] = useState<'local' | 'admin'>(adminEnabled ? 'admin' : 'local')
+  const [loginType, setLoginType] = useState<'local' | 'admin'>(localLoginEnabled ? 'local' : 'admin')
   const [deviceAuthorized, setDeviceAuthorized] = useState<boolean | null>(null)
 
   const [adminAuthForm, setAdminAuthForm] = useState({ email: '', password: '' })
@@ -171,7 +171,7 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
             value={loginType}
             onChange={(val) => setLoginType(val as 'local' | 'admin')}
             options={[
-              { value: 'local', label: 'Personal', icon: <User className="w-4 h-4" /> },
+              ...(localLoginEnabled ? [{ value: 'local', label: 'Personal', icon: <User className="w-4 h-4" /> }] : []),
               { value: 'admin', label: 'Admin', icon: <Lock className="w-4 h-4" /> },
             ]}
             className="mb-8"

@@ -21,9 +21,11 @@ export interface NavItem {
 }
 
 export interface SocialLink extends DataIconItem {
+  id?: string
   alt: string
   url: string
   icon: string
+  title?: string
 }
 
 export interface HeroCarouselImage extends DataMediaItem {
@@ -140,6 +142,12 @@ export interface ContactItem {
   url: string
 }
 
+export interface ContactChannelConfig {
+  label: string
+  icon: string
+  urlTemplate: string
+}
+
 export interface Whatsapp {
   number: string
   message: string
@@ -208,4 +216,5 @@ export interface CmsPublishResult {
   success: boolean
   backupKey?: string
   error?: string
+  deployHookTriggered?: boolean
 }

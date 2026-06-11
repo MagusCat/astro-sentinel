@@ -24,6 +24,25 @@ export default function ScheduleEditor({ value, onChange }: Props) {
     onChange({ ...value, classes })
   }
 
+  const sortSlots = (slots: TimeSlot[]) => {
+    return [...slots].sort((a, b) => {
+      const getMinutes = (slot: TimeSlot) => {
+        if (!slot.time) return 0
+        const [start] = slot.time.split(' - ')
+        if (!start) return 0
+        const [h, m] = start.split(':')
+        let hour = parseInt(h, 10) || 0
+        const min = parseInt(m, 10) || 0
+        
+        if (slot.period === 'PM' && hour !== 12) hour += 12
+        if (slot.period === 'AM' && hour === 12) hour = 0
+        
+        return hour * 60 + min
+      }
+      return getMinutes(a) - getMinutes(b)
+    })
+  }
+
   const toggleDay = (ci: number, day: DayKey) => {
     const cls = { ...value.classes[ci] }
     const current = cls.scheduleDays[day]
@@ -40,9 +59,10 @@ export default function ScheduleEditor({ value, onChange }: Props) {
   const addSlot = (ci: number, day: DayKey) => {
     const cls = { ...value.classes[ci] }
     const dayData = cls.scheduleDays[day] || { active: true, slots: [] }
+    const newSlots = sortSlots([...dayData.slots, { time: '08:00 - 09:00', period: 'AM' }])
     cls.scheduleDays = { 
       ...cls.scheduleDays, 
-      [day]: { ...dayData, slots: [...dayData.slots, { time: '08:00 - 09:00', period: 'AM' }] } 
+      [day]: { ...dayData, slots: newSlots } 
     }
     updateClass(ci, cls)
   }
@@ -51,9 +71,10 @@ export default function ScheduleEditor({ value, onChange }: Props) {
     if (!clipboardSlots) return
     const cls = { ...value.classes[ci] }
     const dayData = cls.scheduleDays[day] || { active: true, slots: [] }
+    const newSlots = sortSlots([...dayData.slots, ...clipboardSlots.map(s => ({...s}))])
     cls.scheduleDays = { 
       ...cls.scheduleDays, 
-      [day]: { ...dayData, slots: [...dayData.slots, ...clipboardSlots.map(s => ({...s}))] } 
+      [day]: { ...dayData, slots: newSlots } 
     }
     updateClass(ci, cls)
   }
@@ -84,6 +105,14 @@ export default function ScheduleEditor({ value, onChange }: Props) {
 
     slot.time = `${currentStart12} - ${currentEnd12}`
     cls.scheduleDays = { ...cls.scheduleDays, [day]: { ...dayData, slots } }
+    updateClass(ci, cls)
+  }
+
+  const handleTimeBlur = (ci: number, day: DayKey) => {
+    const cls = { ...value.classes[ci] }
+    const dayData = cls.scheduleDays[day]
+    if (!dayData) return
+    cls.scheduleDays = { ...cls.scheduleDays, [day]: { ...dayData, slots: sortSlots(dayData.slots) } }
     updateClass(ci, cls)
   }
 
@@ -125,9 +154,9 @@ export default function ScheduleEditor({ value, onChange }: Props) {
 
   return (
   <div className="flex flex-col gap-6">
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start lg:items-stretch lg:h-[calc(100dvh-220px)] lg:min-h-0">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start lg:items-stretch">
         
-        <div className="lg:col-span-1 flex flex-col gap-6 lg:overflow-y-auto pr-1"> 
+        <div className="lg:col-span-1 flex flex-col gap-6 pr-1"> 
           <SectionCard 
             title="General" 
             titleAction={<Settings2 className="w-5 h-5 text-muted-foreground" />}
@@ -139,9 +168,9 @@ export default function ScheduleEditor({ value, onChange }: Props) {
             />
           </SectionCard>
 
-          <div className="bg-card border border-border/40 rounded-lg p-4 flex flex-col gap-2 shadow-sm lg:flex-1 lg:min-h-0">
+          <div className="bg-card border border-border/40 rounded-lg p-4 flex flex-col gap-2 shadow-sm lg:flex-1">
             <h4 className="text-sm font-bold text-muted-foreground uppercase font-mono tracking-wider mb-2 shrink-0">Clases</h4>
-            <div className="flex flex-col gap-1 lg:flex-1 lg:overflow-y-auto pr-2">
+            <div className="flex flex-col gap-1 lg:flex-1 pr-2">
               {value.classes.map((cls, ci) => (
                 <button
                   key={ci}
@@ -172,9 +201,9 @@ export default function ScheduleEditor({ value, onChange }: Props) {
           </div>
         </div>
 
-        <div className="lg:col-span-3 flex flex-col lg:min-h-0">
+        <div className="lg:col-span-3 flex flex-col">
         {currentClass ? (
-          <div key={activeClassIndex} className="bg-card border border-border/40 rounded-lg p-6 shadow-sm flex flex-col gap-5 animate-in fade-in slide-in-from-right-4 duration-300 ease-out lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+          <div key={activeClassIndex} className="bg-card border border-border/40 rounded-lg p-6 shadow-sm flex flex-col gap-5 animate-in fade-in slide-in-from-right-4 duration-300 ease-out lg:flex-1">
               
               <div className="flex justify-between items-center border-b border-border/10 pb-4">
                 <div className="flex items-center gap-2">
@@ -207,6 +236,48 @@ export default function ScheduleEditor({ value, onChange }: Props) {
               </div>
 
               <div className="flex flex-col gap-2.5">
+                <label className="text-sm font-bold text-muted-foreground uppercase font-mono tracking-wider">Detalles / Beneficios</label>
+                <div className="flex flex-col gap-2">
+                  {(currentClass.details || []).map((detail, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <TextField
+                        containerClassName="flex-1"
+                        value={detail}
+                        onChange={e => {
+                          const newDetails = [...(currentClass.details || [])]
+                          newDetails[idx] = e.target.value
+                          updateClass(activeClassIndex, { ...currentClass, details: newDetails })
+                        }}
+                        placeholder={`Ej: Corrección personalizada de postura`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newDetails = (currentClass.details || []).filter((_, i) => i !== idx)
+                          updateClass(activeClassIndex, { ...currentClass, details: newDetails })
+                        }}
+                        className="text-rose-500 hover:bg-rose-50 p-2 rounded-md transition-all"
+                        title="Eliminar detalle"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newDetails = [...(currentClass.details || []), '']
+                      updateClass(activeClassIndex, { ...currentClass, details: newDetails })
+                    }}
+                    className="text-sm font-bold text-primary flex items-center justify-center gap-2 py-2 rounded-md border border-dashed border-primary/30 hover:bg-primary/5 transition-all mt-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Agregar Detalle</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
                 <label className="text-sm font-bold text-muted-foreground uppercase font-mono tracking-wider">Días Activos de la Clase</label>
                 <div className="flex flex-wrap gap-2">
                   {DAYS.map(day => {
@@ -225,10 +296,10 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0">
+              <div className="flex flex-col gap-4 lg:flex-1">
                 <label className="text-sm font-bold text-muted-foreground uppercase font-mono tracking-wider">Horarios por Día Activo</label>
                 
-                <div className="flex flex-col lg:flex-row lg:overflow-x-auto gap-4 pb-4 snap-x lg:flex-1 lg:min-h-0 items-start lg:items-stretch">
+                <div className="flex flex-col lg:flex-row lg:overflow-x-auto gap-4 pb-4 snap-x lg:flex-1 items-start lg:items-stretch">
                   {DAYS.filter(day => currentClass.scheduleDays[day]?.active).map(day => {
                     const dayData = currentClass.scheduleDays[day]!
                     return (
@@ -268,7 +339,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                           </button>
                         </div>
 
-                        <div className="flex flex-col gap-2 lg:overflow-y-auto pr-1 lg:flex-1">
+                        <div className="flex flex-col gap-2 pr-1 lg:flex-1">
                           {dayData.slots.map((slot, si) => {
                             const parts = (slot.time || '').split(' - ')
                             const start24 = to24HourApprox(parts[0], slot.period, false, '')
@@ -285,6 +356,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                                       className="text-sm px-2 py-1 rounded-lg border border-border/60 bg-background flex-1 focus:outline-none focus:border-primary font-mono text-foreground h-[36px] font-semibold !p-1"
                                       value={start24} 
                                       onChange={e => handleTimeChange(activeClassIndex, day, si, true, e.target.value)} 
+                                      onBlur={() => handleTimeBlur(activeClassIndex, day)}
                                     />
                                   </div>
                                   <div className="flex items-center gap-1.5">
@@ -295,6 +367,7 @@ export default function ScheduleEditor({ value, onChange }: Props) {
                                       className="text-sm px-2 py-1 rounded-lg border border-border/60 bg-background flex-1 focus:outline-none focus:border-primary font-mono text-foreground h-[36px] font-semibold !p-1"
                                       value={end24} 
                                       onChange={e => handleTimeChange(activeClassIndex, day, si, false, e.target.value)} 
+                                      onBlur={() => handleTimeBlur(activeClassIndex, day)}
                                     />
                                   </div>
                                 </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Upload, RotateCcw, RefreshCw } from 'lucide-react'
+import { Upload, RotateCcw, RefreshCw, ExternalLink } from 'lucide-react'
 import { PageHeader } from '@/components/shared'
 
 interface CmsToolbarProps {
@@ -26,6 +26,8 @@ export default function CmsToolbar({
   onDiscard,
   onReload,
 }: CmsToolbarProps) {
+  const webUrl = process.env.NEXT_PUBLIC_WEB_URL
+
   const actions = (
     <>
       <button
@@ -61,6 +63,19 @@ export default function CmsToolbar({
         <Upload className="w-4 h-4" />
         <span className="hidden sm:inline">{publishing ? 'Publicando...' : 'Publicar'}</span>
       </button>
+
+      {webUrl && (
+        <a
+          href={webUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Abrir sitio web público en una nueva pestaña"
+          className="text-sm font-bold px-4 py-2.5 border border-border/40 bg-background text-foreground hover:bg-muted rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ml-1"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span className="hidden sm:inline">Ver Web</span>
+        </a>
+      )}
     </>
   )
 
