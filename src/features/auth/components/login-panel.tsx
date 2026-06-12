@@ -70,7 +70,8 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
 
   const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (localLoginForm.username.trim() === '' || localLoginForm.password.trim() === '') {
+    const formattedUsername = localLoginForm.username.trim().toLowerCase()
+    if (formattedUsername === '' || localLoginForm.password.trim() === '') {
       setToast({ message: 'Por favor ingrese sus credenciales de usuario.', type: 'error' })
       return
     }
@@ -79,7 +80,7 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
 
     try {
       // Send raw password over HTTPS — bcrypt.compare runs server-side
-      const res = await authenticateUser(localLoginForm.username, localLoginForm.password)
+      const res = await authenticateUser(formattedUsername, localLoginForm.password)
       if (res.success && res.user) {
         setLoginSuccessUser(res.user)
         setTimeout(() => {
@@ -144,166 +145,163 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
         }
       `}} />
 
-      <div className="w-full h-full min-h-screen md:min-h-0 md:max-w-[420px] bg-card border-0 md:border md:border-border rounded-none md:rounded-2xl md:shadow-xl mx-auto relative md:overflow-hidden transition-all duration-300 md:hover:shadow-2xl flex flex-col">
+      <div className="w-full h-full md:h-auto md:max-w-[420px] bg-card border-0 md:border md:border-border rounded-none md:rounded-2xl md:shadow-xl mx-auto relative overflow-hidden transition-all duration-300 md:hover:shadow-2xl flex flex-col">
         
-        <div className="flex w-full bg-primary py-4 md:py-10 flex-col justify-center items-center shrink-0 sticky top-0 z-10 shadow-md">
-          <div className="hidden md:block">
-            <Logo size="lg" animate={false} centered={true} color="white" />
-          </div>
+        <div className="flex w-full bg-primary h-[20%] md:h-auto md:py-12 flex-col justify-center items-center shrink-0 sticky top-0 z-20 shadow-md">
+          <Logo size="lg" animate={false} centered={true} color="white" />
         </div>
 
-        <div className="p-8 sm:p-10 flex flex-col flex-1 justify-center">
-
-        {loginSuccessUser ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-8 animate-in zoom-in-95 fade-in duration-500">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-2">
-              <CheckCircle2 className="w-8 h-8" />
+        <div className="p-8 sm:p-10 flex flex-col flex-1 justify-start md:justify-center">
+          {loginSuccessUser ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-8 animate-in zoom-in-95 fade-in duration-500">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-2">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-foreground text-center tracking-tight">¡Bienvenido!</h2>
+              <p className="text-muted-foreground text-sm font-medium text-center">
+                {loginSuccessUser.full_name || loginSuccessUser.username}
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-xs font-mono text-muted-foreground bg-muted/50 px-4 py-2 rounded-full">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Ingresando al sistema...
+              </div>
             </div>
-            <h2 className="text-2xl font-extrabold text-foreground text-center tracking-tight">¡Bienvenido!</h2>
-            <p className="text-muted-foreground text-sm font-medium text-center">
-              {loginSuccessUser.full_name || loginSuccessUser.username}
-            </p>
-            <div className="mt-6 flex items-center gap-2 text-xs font-mono text-muted-foreground bg-muted/50 px-4 py-2 rounded-full">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Ingresando al sistema...
-            </div>
-          </div>
-        ) : (
-          <>
-            {adminEnabled && localLoginEnabled && (
-              <ToggleButtonGroup
-            value={loginType}
-            onChange={(val) => setLoginType(val as 'local' | 'admin')}
-            variant="simple"
-            options={[
-              ...(localLoginEnabled ? [{ value: 'local', label: 'Personal', icon: <User className="w-4 h-4" /> }] : []),
-              { value: 'admin', label: 'Admin', icon: <Lock className="w-4 h-4" /> },
-            ]}
-            className="mb-8"
-          />
-        )}
+          ) : (
+            <>
+              {adminEnabled && localLoginEnabled && (
+                <ToggleButtonGroup
+                  value={loginType}
+                  onChange={(val) => setLoginType(val as 'local' | 'admin')}
+                  variant="simple"
+                  options={[
+                    ...(localLoginEnabled ? [{ value: 'local', label: 'Personal', icon: <User className="w-4 h-4" /> }] : []),
+                    { value: 'admin', label: 'Admin', icon: <Lock className="w-4 h-4" /> },
+                  ]}
+                  className="mb-8"
+                />
+              )}
 
-        <div key={loginType} className="mode-animate">
-              {loginType === 'local' ? (
-                !deviceAuthorized ? (
-                  <form onSubmit={handleDeviceAuthorization} className="flex flex-col gap-5 animate-in fade-in duration-300">
+              <div key={loginType} className="mode-animate">
+                {loginType === 'local' ? (
+                  !deviceAuthorized ? (
+                    <form onSubmit={handleDeviceAuthorization} className="flex flex-col gap-5 animate-in fade-in duration-300">
+                      <TextField
+                        label="Correo Admin"
+                        type="email"
+                        placeholder="Correo electrónico"
+                        value={deviceForm.email}
+                        disabled={deviceLoading}
+                        onChange={(e) => setDeviceForm(prev => ({ ...prev, email: e.target.value }))}
+                      />
+
+                      <TextField
+                        label="Contraseña Admin"
+                        type="password"
+                        placeholder="Contraseña"
+                        value={deviceForm.password}
+                        disabled={deviceLoading}
+                        onChange={(e) => setDeviceForm(prev => ({ ...prev, password: e.target.value }))}
+                      />
+
+                      <Button
+                        type="submit"
+                        disabled={deviceLoading}
+                        size="default"
+                        className="w-full mt-2"
+                        variant="destructive"
+                      >
+                        {deviceLoading ? (
+                          <span className="flex items-center gap-1.5">
+                            <RefreshCw className="w-4 h-4 animate-spin" /> Autorizando...
+                          </span>
+                        ) : 'Autorizar Terminal'}
+                      </Button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleLocalLogin} className="flex flex-col gap-5 animate-in fade-in duration-200">
+                      <TextField
+                        label="Usuario"
+                        type="text"
+                        placeholder="Usuario"
+                        value={localLoginForm.username}
+                        disabled={localLoading}
+                        onChange={(e) => setLocalLoginForm(prev => ({ ...prev, username: e.target.value }))}
+                      />
+
+                      <TextField
+                        label="Contraseña"
+                        type="password"
+                        placeholder="Contraseña"
+                        value={localLoginForm.password}
+                        disabled={localLoading}
+                        onChange={(e) => setLocalLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                      />
+
+                      <Button
+                        type="submit"
+                        disabled={localLoading}
+                        size="default"
+                        className="w-full mt-2"
+                      >
+                        {localLoading ? (
+                          <span className="flex items-center gap-1.5">
+                            <RefreshCw className="w-4 h-4 animate-spin" /> Verificando...
+                          </span>
+                        ) : 'Iniciar Sesión'}
+                      </Button>
+                    </form>
+                  )
+                ) : (
+                  <form onSubmit={handleAdminLogin} className="flex flex-col gap-5 animate-in fade-in duration-200">
                     <TextField
                       label="Correo Admin"
                       type="email"
                       placeholder="Correo electrónico"
-                      value={deviceForm.email}
-                      disabled={deviceLoading}
-                      onChange={(e) => setDeviceForm(prev => ({ ...prev, email: e.target.value }))}
+                      value={adminAuthForm.email}
+                      disabled={adminAuthLoading}
+                      onChange={(e) => setAdminAuthForm(prev => ({ ...prev, email: e.target.value }))}
                     />
 
                     <TextField
                       label="Contraseña Admin"
                       type="password"
                       placeholder="Contraseña"
-                      value={deviceForm.password}
-                      disabled={deviceLoading}
-                      onChange={(e) => setDeviceForm(prev => ({ ...prev, password: e.target.value }))}
+                      value={adminAuthForm.password}
+                      disabled={adminAuthLoading}
+                      onChange={(e) => setAdminAuthForm(prev => ({ ...prev, password: e.target.value }))}
                     />
 
                     <Button
                       type="submit"
-                      disabled={deviceLoading}
+                      disabled={adminAuthLoading}
                       size="default"
                       className="w-full mt-2"
-                      variant="destructive"
                     >
-                      {deviceLoading ? (
+                      {adminAuthLoading ? (
                         <span className="flex items-center gap-1.5">
-                          <RefreshCw className="w-4 h-4 animate-spin" /> Autorizando...
+                          <RefreshCw className="w-4 h-4 animate-spin" /> Autenticando...
                         </span>
-                      ) : 'Autorizar Terminal'}
+                      ) : 'Iniciar Sesión Admin'}
                     </Button>
                   </form>
-                ) : (
-              <form onSubmit={handleLocalLogin} className="flex flex-col gap-5 animate-in fade-in duration-200">
-                <TextField
-                  label="Usuario"
-                  type="text"
-                  placeholder="Usuario"
-                  value={localLoginForm.username}
-                  disabled={localLoading}
-                  onChange={(e) => setLocalLoginForm(prev => ({ ...prev, username: e.target.value }))}
-                />
+                )}
+              </div>
 
-                <TextField
-                  label="Contraseña"
-                  type="password"
-                  placeholder="Contraseña"
-                  value={localLoginForm.password}
-                  disabled={localLoading}
-                  onChange={(e) => setLocalLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                />
-
-                <Button
-                  type="submit"
-                  disabled={localLoading}
-                  size="default"
-                  className="w-full mt-2"
-                >
-                  {localLoading ? (
-                    <span className="flex items-center gap-1.5">
-                      <RefreshCw className="w-4 h-4 animate-spin" /> Verificando...
-                    </span>
-                  ) : 'Iniciar Sesión'}
-                </Button>
-              </form>
-            )
-          ) : (
-            <form onSubmit={handleAdminLogin} className="flex flex-col gap-5 animate-in fade-in duration-200">
-              <TextField
-                label="Correo Admin"
-                type="email"
-                placeholder="Correo electrónico"
-                value={adminAuthForm.email}
-                disabled={adminAuthLoading}
-                onChange={(e) => setAdminAuthForm(prev => ({ ...prev, email: e.target.value }))}
-              />
-
-              <TextField
-                label="Contraseña Admin"
-                type="password"
-                placeholder="Contraseña"
-                value={adminAuthForm.password}
-                disabled={adminAuthLoading}
-                onChange={(e) => setAdminAuthForm(prev => ({ ...prev, password: e.target.value }))}
-              />
-
-              <Button
-                type="submit"
-                disabled={adminAuthLoading}
-                size="default"
-                className="w-full mt-2"
-              >
-                {adminAuthLoading ? (
-                  <span className="flex items-center gap-1.5">
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Autenticando...
-                  </span>
-                ) : 'Iniciar Sesión Admin'}
-              </Button>
-            </form>
+              {!loginSuccessUser && !deviceAuthorized && loginType === 'local' && (
+                <div className="w-full mt-6 bg-rose-500/5 border border-rose-500/20 rounded-xl p-4 shadow-sm animate-in slide-in-from-bottom-4 fade-in duration-500">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Lock className="w-4 h-4 text-rose-500" />
+                    <h4 className="font-bold text-xs text-rose-600">Terminal Bloqueada</h4>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Esta terminal requiere ser desbloqueada por un administrador antes de permitir el acceso al personal operativo. Por favor, ingresa tus credenciales de administrador en el formulario superior.
+                  </p>
+                </div>
+              )}
+            </>
           )}
-        </div>
-        </>
-        )}
         </div>
 
       </div>
-
-      {!loginSuccessUser && !deviceAuthorized && loginType === 'local' && (
-        <div className="w-full max-w-[420px] mx-auto bg-rose-500/5 border border-rose-500/20 rounded-2xl p-6 shadow-sm animate-in slide-in-from-bottom-4 fade-in duration-500">
-          <div className="flex items-center gap-2 mb-2">
-            <Lock className="w-4 h-4 text-rose-500" />
-            <h4 className="font-bold text-sm text-rose-600">Terminal Bloqueada</h4>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Esta terminal requiere ser desbloqueada por un administrador antes de permitir el acceso al personal operativo. Por favor, ingresa tus credenciales de administrador en la tarjeta superior.
-          </p>
-        </div>
-      )}
 
       {toast && (
         <Toast

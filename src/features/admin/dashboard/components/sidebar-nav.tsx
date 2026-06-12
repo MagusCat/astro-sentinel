@@ -5,7 +5,7 @@ import { SidebarNavProps } from '../types'
 import { useSidebarNav } from '../hooks/use-sidebar-nav'
 import { MAIN_LINKS, ADMIN_LINKS } from '../config'
 import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared'
-import { LogOut, Power, FileEdit, Terminal } from 'lucide-react'
+import { LogOut, Power, FileEdit, Terminal, Users, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
@@ -21,9 +21,10 @@ export default function SidebarNav({
   isCollapsed,
   onToggleCollapse
 }: SidebarNavProps) {
-  const { activeTab, transitioningTab, setTransitioningTab, navigateToAdmin, getRoleText } = useSidebarNav()
+  const { activeTab, transitioningTab, setTransitioningTab, navigateToAdmin, getRoleText } = useSidebarNav(activeUser.role)
   const { localLoginEnabled } = getActiveModules()
 
+  const isReception = activeUser.role === 'reception'
   const showAdminMenu = Roles.canManageStaff(activeUser.role)
   const showDevMenu = Roles.canAccessDeveloper(activeUser.role)
   const isElevated = Roles.canManageStaff(activeUser.role)
@@ -130,9 +131,11 @@ export default function SidebarNav({
     </>
   )
 
+  const subtitleLabel = isReception ? "Recepcionista" : "Administrador"
+
   return (
     <AppSidebar
-      title={<Logo size="md" subtitle="Administrador" color="white" />}
+      title={<Logo size="md" subtitle={subtitleLabel} color="white" />}
       onTitleClick={handleTitleClick}
       isMobileOpen={isMobileOpen}
       onCloseMobile={onCloseMobile}
@@ -140,34 +143,78 @@ export default function SidebarNav({
       onToggleCollapse={onToggleCollapse}
       footerContent={footerContent}
     >
-      <AppSidebarGroup>
-        {MAIN_LINKS.map((link) => (
-          <AppSidebarItem
-            key={link.id}
-            label={link.label}
-            icon={link.icon}
-            href={link.href}
-            onClick={() => handleLinkClick(link.id)}
-            isActive={activeTab === link.id && !cmsMode}
-            isLoading={transitioningTab === link.id}
-          />
-        ))}
-      </AppSidebarGroup>
-
-      {showAdminMenu && (
-        <AppSidebarGroup title="Administrar">
-          {ADMIN_LINKS.map((link) => (
+      {isReception ? (
+        <>
+          <AppSidebarGroup title="Recepción">
             <AppSidebarItem
-              key={link.id}
-              label={link.label}
-              icon={link.icon}
-              href={link.href}
-              onClick={() => handleLinkClick(link.id)}
-              isActive={activeTab === link.id && !cmsMode}
-              isLoading={transitioningTab === link.id}
+              label="Dashboard de Recepción"
+              icon={Users}
+              href="/dashboard?tab=reception"
+              onClick={() => handleLinkClick('reception')}
+              isActive={activeTab === 'reception' && !cmsMode}
+              isLoading={transitioningTab === 'reception'}
             />
-          ))}
-        </AppSidebarGroup>
+            <AppSidebarItem
+              label="Gestión de Clientes"
+              icon={Users}
+              href="/dashboard?tab=clients"
+              onClick={() => handleLinkClick('clients')}
+              isActive={activeTab === 'clients' && !cmsMode}
+              isLoading={transitioningTab === 'clients'}
+            />
+          </AppSidebarGroup>
+
+          <AppSidebarGroup title="Pagos">
+            <AppSidebarItem
+              label="Registro de Pagos"
+              icon={CreditCard}
+              href="/dashboard?tab=checkout"
+              onClick={() => handleLinkClick('checkout')}
+              isActive={activeTab === 'checkout' && !cmsMode}
+              isLoading={transitioningTab === 'checkout'}
+            />
+            <AppSidebarItem
+              label="Historial de Pagos"
+              icon={CreditCard}
+              href="/dashboard?tab=payments"
+              onClick={() => handleLinkClick('payments')}
+              isActive={activeTab === 'payments' && !cmsMode}
+              isLoading={transitioningTab === 'payments'}
+            />
+          </AppSidebarGroup>
+        </>
+      ) : (
+        <>
+          <AppSidebarGroup>
+            {MAIN_LINKS.map((link) => (
+              <AppSidebarItem
+                key={link.id}
+                label={link.label}
+                icon={link.icon}
+                href={link.href}
+                onClick={() => handleLinkClick(link.id)}
+                isActive={activeTab === link.id && !cmsMode}
+                isLoading={transitioningTab === link.id}
+              />
+            ))}
+          </AppSidebarGroup>
+
+          {showAdminMenu && (
+            <AppSidebarGroup title="Administrar">
+              {ADMIN_LINKS.map((link) => (
+                <AppSidebarItem
+                  key={link.id}
+                  label={link.label}
+                  icon={link.icon}
+                  href={link.href}
+                  onClick={() => handleLinkClick(link.id)}
+                  isActive={activeTab === link.id && !cmsMode}
+                  isLoading={transitioningTab === link.id}
+                />
+              ))}
+            </AppSidebarGroup>
+          )}
+        </>
       )}
     </AppSidebar>
   )

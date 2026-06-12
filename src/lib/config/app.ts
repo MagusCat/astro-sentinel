@@ -9,7 +9,7 @@ export const APP_CONFIG = {
     sessionMaxAge: '7d',
     deviceMaxAge: '365d',
     bcryptRounds: 12,
-    enableLocalLogin: false,
+    enableLocalLogin: true,
   },
   buckets: {
     content: 'site-content',

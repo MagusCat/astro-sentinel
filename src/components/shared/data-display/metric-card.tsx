@@ -44,7 +44,7 @@ export function MetricCard({
     )}>
       <div className="flex flex-col justify-between h-full min-h-[80px] md:min-h-[90px]">
         <div className="flex items-center justify-between mb-2 md:mb-3">
-          <p className="text-[12px] md:text-xs lg:text-sm font-bold uppercase tracking-wider whitespace-normal mr-2 text-muted-foreground">
+          <p className="hidden xs:block text-[12px] md:text-xs lg:text-sm font-bold uppercase tracking-wider whitespace-normal mr-2 text-muted-foreground">
             {title}
           </p>
           <Icon className={cn("w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-110 transition-transform duration-300", textClass, iconClassName)} />

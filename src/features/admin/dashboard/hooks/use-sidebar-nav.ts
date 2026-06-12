@@ -6,7 +6,7 @@ import { VALID_TABS, TabId } from '../types'
 import { Roles } from '@/lib/auth/roles'
 import { getRoleLabel } from '@/features/auth/components/role-badge'
 
-export function useSidebarNav() {
+export function useSidebarNav(role?: string) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [transitioningTab, setTransitioningTab] = useState<string | null>(null)
@@ -14,7 +14,7 @@ export function useSidebarNav() {
   const rawTab = searchParams.get('tab') as string | null
   const activeTab: TabId = (VALID_TABS as readonly string[]).includes(rawTab ?? '')
     ? (rawTab as TabId)
-    : 'overview'
+    : (role === 'reception' ? 'reception' : 'overview')
 
   useEffect(() => {
     setTransitioningTab(null)

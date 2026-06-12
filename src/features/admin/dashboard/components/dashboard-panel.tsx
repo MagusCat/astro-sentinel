@@ -27,6 +27,7 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
   const searchParams = useSearchParams()
 
   const rawTab = searchParams.get('tab')
+  const isReception = activeUser.role === 'reception'
   const activeTab = (
     rawTab === 'overview' ||
     rawTab === 'clients' ||
@@ -39,7 +40,7 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
     rawTab === 'memberships'
   )
     ? rawTab
-    : 'overview'
+    : (isReception ? 'reception' : 'overview')
 
   const { clients, plans, classes, payments, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData()
   const [refreshTrigger, setRefreshTrigger] = useState(0)
