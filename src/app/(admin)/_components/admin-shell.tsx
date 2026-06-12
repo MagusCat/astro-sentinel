@@ -8,15 +8,16 @@
  * Keeping this as 'use client' because it uses useRouter for navigation.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { UserProvider } from '@/features/auth/context'
 import { logoutUser, logoutUserFull } from '@/features/auth/actions'
 import SidebarNav from '@/features/admin/dashboard/components/sidebar-nav'
-import { SessionLoading } from '@/components/shared'
+import { SessionLoading, Logo } from '@/components/shared'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 
 interface AdminShellProps {
@@ -30,6 +31,24 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   
   const { isCollapsed, isMounted, enableTransitions, toggleCollapse } = useSidebarState()
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+
+  useEffect(() => {
+    if (isDesktop && isMobileOpen) {
+      setIsMobileOpen(false)
+    }
+  }, [isDesktop, isMobileOpen])
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.classList.add('overflow-hidden')
+    } else {
+      document.body.classList.remove('overflow-hidden')
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden')
+    }
+  }, [isMobileOpen])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -53,17 +72,15 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
         isMounted ? "opacity-100" : "opacity-0"
       )}>
 
-        {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-start gap-10  px-6 py-4 border-b border-border/40 bg-card w-full shrink-0 z-40">
+        {/* Mobile Header — fixed so it never scrolls away */}
+        <div className="md:hidden fixed top-0 left-0 right-0 flex items-center px-6 py-4 border-b border-border/40 bg-card w-full z-40 h-[65px]">
           <button
             onClick={() => setIsMobileOpen(true)}
             className="p-1 rounded-md hover:bg-muted text-foreground transition-colors focus:outline-none cursor-pointer"
-            aria-label="Abrir menú"
+            aria-label="Open menu"
           >
             <Menu className="w-6 h-6" />
           </button>
-          
-          <span className="font-extrabold text-foreground text-lg tracking-tight">Sentinel</span>
         </div>
 
         {/* Sidebar Backdrop Overlay (Mobile only) */}
@@ -85,11 +102,15 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
         />
 
         <div className={cn(
-          "flex-1 h-[calc(100vh-65px)] md:h-screen md:max-h-screen flex flex-col w-full bg-background overflow-hidden",
+          "flex-1 h-[calc(100dvh-65px)] md:h-screen md:max-h-screen flex flex-col w-full bg-background overflow-hidden mt-[65px] md:mt-0",
           enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-          isCollapsed ? "md:pl-20" : "md:pl-64"
+          isCollapsed ? "md:pl-20" : "md:pl-64",
+          isMobileOpen && "pointer-events-none select-none"
         )}>
-          <main className="w-full h-full flex-1 px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start items-stretch relative z-10 overflow-y-auto">
+          <main className={cn(
+            "w-full h-full flex-1 px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start items-stretch relative z-10",
+            isMobileOpen ? "overflow-hidden" : "overflow-y-auto"
+          )}>
             {children}
           </main>
         </div>

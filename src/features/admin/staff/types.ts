@@ -8,3 +8,11 @@ export interface LocalUser {
   created_at?: string
   password_hash?: string
 }
+
+export interface UpdatePayload {
+  full_name?: string
+  password_hash?: string
+  is_active?: boolean
+  role?: string
+  auth_user_id?: string | null
+}

@@ -48,7 +48,7 @@ export default function Toast({ message, type = 'info', duration = 4000, onClose
   return createPortal(
     <div
       role="alert"
-      className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-xl border shadow-xl text-sm font-bold max-w-sm w-full 
+      className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-xl border shadow-xl text-sm font-bold max-w-sm w-full 
       ${isClosing 
         ? 'animate-out fade-out slide-out-to-bottom-2 duration-300 ease-in' 
         : 'animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out fill-mode-both'} 

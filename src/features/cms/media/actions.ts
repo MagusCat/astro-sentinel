@@ -119,8 +119,10 @@ export async function getBucketStats(bucketName: string): Promise<{ success: boo
 
     const foldersToScan = parsed.data === 'site-images' ? ['', 'hero', 'gallery', 'about', 'art', 'principles'] : ['', 'backups'];
 
-    for (const folder of foldersToScan) {
-      const { data } = await supabase.storage.from(parsed.data).list(folder, { limit: 1000 })
+    const results = await Promise.all(
+      foldersToScan.map(folder => supabase.storage.from(parsed.data).list(folder, { limit: 1000 }))
+    )
+    for (const { data } of results) {
       if (data) {
         for (const file of data) {
           if (file.id && file.name !== '.emptyFolderPlaceholder') {

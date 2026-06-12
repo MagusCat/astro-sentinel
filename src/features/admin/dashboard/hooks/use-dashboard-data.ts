@@ -42,23 +42,7 @@ export function useDashboardData() {
         setClients(clientsData.data)
       }
       
-      if (!tab || tab === 'plans') {
-        const [plansData, classesRes] = await Promise.all([
-          getClassPlans(),
-          getClassesList()
-        ])
-        setPlans(plansData)
-        if (classesRes.success && classesRes.classes) {
-          setClasses(classesRes.classes)
-        }
-      }
-      
-      if (!tab || tab === 'payments') {
-        const paymentsRes = await getPayments()
-        setPayments(paymentsRes.data)
-      }
-
-      if (tab === 'checkout') {
+      if (!tab || tab === 'plans' || tab === 'checkout') {
         const [plansData, classesRes] = await Promise.all([
           getClassPlans(),
           getClassesList()

@@ -1,14 +1,6 @@
 import { AuthenticatedUser } from '@/features/auth/types'
-import { LocalUser } from './types'
+import { LocalUser, UpdatePayload } from './types'
 import { APP_ROLE } from '@/lib/auth/roles'
-
-export interface UpdatePayload {
-  full_name?: string
-  password_hash?: string
-  is_active?: boolean
-  role?: string
-  auth_user_id?: string | null
-}
 
 export function enforceStaffUpdatePolicies(
   currentUser: AuthenticatedUser,

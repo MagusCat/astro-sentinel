@@ -7,9 +7,10 @@ import { SiteContent } from '../../core/types'
 
 interface Props {
   onImport: (data: SiteContent) => void
+  onError: (message: string) => void
 }
 
-export default function DeveloperEditor({ onImport }: Props) {
+export default function DeveloperEditor({ onImport, onError }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,10 +30,10 @@ export default function DeveloperEditor({ onImport }: Props) {
         if (json && typeof json === 'object' && json.globals) {
           onImport(json as SiteContent)
         } else {
-          alert('El archivo JSON no tiene el formato de contenido esperado (falta la clave principal "globals"). Verifica el formato.')
+          onError('El archivo JSON no tiene el formato de contenido esperado (falta la clave principal "globals"). Verifica el formato.')
         }
       } catch {
-        alert('Error crítico: El archivo subido no es un JSON válido.')
+        onError('Error crítico: El archivo subido no es un JSON válido.')
       }
       if (fileInputRef.current) {
         fileInputRef.current.value = ''

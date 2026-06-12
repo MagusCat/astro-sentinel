@@ -6,7 +6,7 @@ import { Plus, Edit2, Trash2, Power, PowerOff, RefreshCw } from 'lucide-react'
 import { LocalUser } from '../types'
 import { getUsersList } from '../queries'
 import { saveNewUser, updateUserData, deleteUserData } from '../mutations'
-import { Toast, ToastType, Modal, FormActions, DataTable, PageHeader } from '@/components/shared'
+import { Toast, ToastType, Modal, FormActions, DataTable, PageHeader, TableSkeleton, ProgressBar } from '@/components/shared'
 import { Button } from '@/components/shared'
 import CreateUserModal from './create-user-modal'
 import EditUserModal from './edit-user-modal'
@@ -15,6 +15,8 @@ import { APP_ROLE } from '@/lib/auth/roles'
 
 interface UserManagementProps {
   activeUser: AuthenticatedUser
+  refreshTrigger?: number
+  setLoading?: (loading: boolean) => void
 }
 
 const DEFAULT_CREATE_FORM = {
@@ -25,7 +27,7 @@ const DEFAULT_CREATE_FORM = {
   auth_user_id: ''
 }
 
-export default function UserManagement({ activeUser }: UserManagementProps) {
+export default function UserManagement({ activeUser, refreshTrigger, setLoading: setLoadingProp }: UserManagementProps) {
   const [users, setUsers] = useState<LocalUser[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -42,9 +44,17 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
   const [createForm, setCreateForm] = useState({ ...DEFAULT_CREATE_FORM })
   const [createErrors, setCreateErrors] = useState<Record<string, string[]>>({})
   const [editErrors, setEditErrors] = useState<Record<string, string[]>>({})
-  const [editForm, setEditForm] = useState({
+  const [editForm, setEditForm] = useState<{
+    full_name: string
+    password_raw: string
+    current_password_raw?: string
+    role: string
+    auth_user_id: string
+    is_active: boolean
+  }>({
     full_name: '',
     password_raw: '',
+    current_password_raw: '',
     role: APP_ROLE.RECEPTION as string,
     auth_user_id: '',
     is_active: true
@@ -66,7 +76,12 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
     }
   }, [showError])
 
-  useEffect(() => { fetchUsers() }, [fetchUsers])
+  useEffect(() => { fetchUsers() }, [fetchUsers, refreshTrigger])
+
+  useEffect(() => {
+    setLoadingProp?.(loading)
+    return () => setLoadingProp?.(false)
+  }, [loading, setLoadingProp])
 
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -108,6 +123,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
       const res = await updateUserData(selectedUser.id, {
         full_name: editForm.full_name,
         password_raw: editForm.password_raw || undefined,
+        current_password_raw: editForm.current_password_raw || undefined,
         role: editForm.role,
         auth_user_id: editForm.auth_user_id || undefined,
         is_active: editForm.is_active
@@ -180,6 +196,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
     setEditForm({
       full_name: user.full_name,
       password_raw: '',
+      current_password_raw: '',
       role: user.role,
       auth_user_id: user.auth_user_id || '',
       is_active: user.is_active
@@ -200,22 +217,19 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
         }
       />
 
-      <div className="relative bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex flex-col flex-1 min-h-0">
-        {loading && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-            <div className="text-center text-xs text-muted-foreground flex flex-col items-center gap-4">
-              <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-              <span className="font-mono">Cargando base de datos de operadores...</span>
-            </div>
-          </div>
-        )}
+      <div className="relative bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex flex-col flex-1 min-h-[300px]">
 
-        {!loading && users.length === 0 ? (
+        {loading && users.length === 0 ? (
+          <div className="p-6 flex-1 flex flex-col justify-center">
+            <TableSkeleton rows={5} cols={4} />
+          </div>
+        ) : !loading && users.length === 0 ? (
           <div className="p-16 text-center text-xs text-muted-foreground italic">
             No se encontraron personal registrado.
           </div>
         ) : (
-          <DataTable
+          <div className={loading ? "opacity-60 pointer-events-none transition-opacity duration-200 flex-1 flex flex-col" : "flex-1 flex flex-col"}>
+            <DataTable
             className="flex-1"
             data={users}
             keyExtractor={(user) => user.id}
@@ -248,8 +262,8 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
                 key: 'status',
                 header: 'Estado',
                 render: (user) => (
-                  <span className={`inline-flex items-center gap-1 font-bold text-[10px] ${user.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${user.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                  <span className={`inline-flex items-center gap-1.5 font-bold text-sm ${user.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <span className={`w-2 h-2 rounded-full ${user.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                     {user.is_active ? 'Activo' : 'Desactivado'}
                   </span>
                 )
@@ -264,7 +278,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
                   const isTargetAdmin = user.role === APP_ROLE.ADMIN
                   const isSelf = user.id === activeUser.id
 
-                  const canEdit = !isTargetMaintainer && !(isAdmin && isTargetAdmin && !isSelf)
+                  const canEdit = (!isTargetMaintainer || isSelf) && !(isAdmin && isTargetAdmin && !isSelf)
                   const canDelete = !isTargetMaintainer && !isTargetAdmin && !isSelf
                   const canToggleStatus = !isTargetMaintainer && !isSelf
 
@@ -306,7 +320,7 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
               }
             ]}
           />
-
+          </div>
         )}
       </div>
 
@@ -348,17 +362,20 @@ export default function UserManagement({ activeUser }: UserManagementProps) {
         onClose={() => setUserToDelete(null)}
         title="Eliminar Operador"
         size="sm"
+        footer={
+          <FormActions
+            onCancel={() => setUserToDelete(null)}
+            onSubmit={confirmDeleteUser}
+            submitText="Eliminar"
+            submitVariant="destructive"
+            isLoading={actionLoading}
+            className="mt-0"
+          />
+        }
       >
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-muted-foreground">
           ¿Estás seguro que deseas eliminar al operador <span className="font-semibold text-foreground font-mono">&quot;{userToDelete?.full_name}&quot;</span>?
         </p>
-        <FormActions
-          onCancel={() => setUserToDelete(null)}
-          onSubmit={confirmDeleteUser}
-          submitText="Eliminar"
-          submitVariant="destructive"
-          isLoading={actionLoading}
-        />
       </Modal>
     </div>
   )

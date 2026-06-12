@@ -125,23 +125,27 @@ export async function getBackupAuthors(
     const supabase = await createClient()
     const authors: Record<string, string> = {}
 
-    await Promise.all(parsed.data.names.map(async (name) => {
-      try {
-        const { data, error } = await supabase.storage
-          .from(CONTENT_BUCKET)
-          .download(`backups/${name}`)
+    const CHUNK_SIZE = 5
+    const parsedNames = parsed.data.names
+    for (let i = 0; i < parsedNames.length; i += CHUNK_SIZE) {
+      await Promise.all(parsedNames.slice(i, i + CHUNK_SIZE).map(async (name) => {
+        try {
+          const { data, error } = await supabase.storage
+            .from(CONTENT_BUCKET)
+            .download(`backups/${name}`)
 
-        if (!error && data) {
-          const text = await data.text()
-          const json = JSON.parse(text)
-          authors[name] = json._metadata?.lastModifiedBy || 'Usuario Anónimo'
-        } else {
+          if (!error && data) {
+            const text = await data.text()
+            const json = JSON.parse(text)
+            authors[name] = json._metadata?.lastModifiedBy || 'Usuario Anónimo'
+          } else {
+            authors[name] = 'Desconocido'
+          }
+        } catch {
           authors[name] = 'Desconocido'
         }
-      } catch {
-        authors[name] = 'Desconocido'
-      }
-    }))
+      }))
+    }
 
     return { success: true, data: authors }
   } catch (err) {

@@ -52,9 +52,9 @@ export default function LoginPage() {
 
   if (!anyEnabled) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center antialiased transition-colors duration-300 relative overflow-hidden">
-        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-secondary/15 dark:bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="min-h-screen bg-gradient-to-br from-primary/40 via-background to-primary/40 text-foreground flex flex-col justify-center antialiased transition-colors duration-300 relative overflow-hidden">
+        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-primary/30 dark:bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-primary/40 dark:bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
 
         <main className="w-full max-w-2xl mx-auto px-6 py-8 flex flex-col justify-center relative z-10">
           <div className="w-full max-w-md mx-auto bg-card border border-border rounded-3xl p-10 shadow-xl text-center">
@@ -72,12 +72,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center antialiased transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary/40 via-background to-primary/40 text-foreground flex flex-col justify-center antialiased transition-colors duration-300 relative overflow-x-hidden">
       {/* Background graphic accents */}
-      <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-secondary/15 dark:bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-primary/30 dark:bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-primary/40 dark:bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <main className="w-full max-w-5xl mx-auto px-6 py-8 flex flex-col justify-center relative z-10">
+      <main className="w-full max-w-5xl mx-auto px-0 sm:px-6 py-0 sm:py-8 flex flex-col justify-center relative z-10 h-screen overflow-y-auto sm:h-auto sm:overflow-visible">
         <LoginPanel onLoginSuccess={handleLoginSuccess} />
       </main>
     </div>

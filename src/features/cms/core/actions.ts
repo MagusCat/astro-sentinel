@@ -7,6 +7,9 @@ import { SiteContent, CmsPublishResult, UploadImageConfig, SocialLink } from './
 import { DEFAULT_CONTENT } from './default-content'
 import { APP_CONFIG } from '@/lib/config'
 import { uploadImageSchema } from './schemas'
+import { normalizeContent } from './normalize'
+import { revalidatePath } from 'next/cache'
+import { getServiceConfig } from '@/lib/config'
 
 export async function getSiteContent(): Promise<{ success: boolean; content?: SiteContent; error?: string }> {
   try {
@@ -33,33 +36,7 @@ export async function getSiteContent(): Promise<{ success: boolean; content?: Si
     }
 
     const text = await data.text()
-    const content = JSON.parse(text) as SiteContent
-
-    if (!content.globals) {
-      content.globals = DEFAULT_CONTENT.globals
-    }
-
-    if (!content.hero.socialLinks) {
-      content.hero.socialLinks = []
-    }
-
-    if (!content.contact.whatsapp && (content.globals as unknown as Record<string, unknown>).whatsapp) {
-      content.contact.whatsapp = (content.globals as unknown as Record<string, unknown>).whatsapp as SiteContent['contact']['whatsapp']
-      delete (content.globals as unknown as Record<string, unknown>).whatsapp
-    }
-
-    if (!content.contact.whatsapp) {
-      content.contact.whatsapp = DEFAULT_CONTENT.contact.whatsapp
-    }
-
-    if (!content.contact.mapLink) {
-      content.contact.mapLink = ''
-    }
-
-    const AUTO_ICONS = ['phone', 'mail', 'map-pin']
-    content.globals.socialLinks = content.globals.socialLinks.filter(
-      (l: SocialLink) => !AUTO_ICONS.some(ic => (l.icon || '').toLowerCase().includes(ic))
-    )
+    const content = normalizeContent(JSON.parse(text))
 
     return { success: true, content }
   } catch (err) {
@@ -105,10 +82,8 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
 
     if (uploadError) throw uploadError
 
-    const { revalidatePath } = await import('next/cache')
     revalidatePath('/', 'layout')
 
-    const { getServiceConfig } = await import('@/lib/config')
     const { deployHookUrl } = getServiceConfig()
 
     if (deployHookUrl) {
@@ -125,10 +100,11 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
 
     const finalPublicUrl = `${publicUrl}?t=${Date.now()}`
 
-    console.group('[CMS] Publicación Exitosa')
-    console.log('URL:', finalPublicUrl)
-    console.log('JSON:', newContent)
-    console.groupEnd()
+    console.info('[CMS] Content published', {
+      url: finalPublicUrl,
+      modifiedBy: newContent._metadata?.lastModifiedBy,
+      backupKey,
+    })
 
     return { success: true, backupKey, deployHookTriggered: !!deployHookUrl, publicUrl: finalPublicUrl }
   } catch (err) {
@@ -184,7 +160,7 @@ export async function uploadImage(
     const uuid = crypto.randomUUID()
     const fileName = `${parsed.data.folder}/${uuid}.webp`
 
-    console.log(`[IMAGE UPLOAD] User ${currentUser.id} is uploading image: ${fileName} (Size: ${file.size} bytes)`)
+    console.info('[CMS] Image upload', { userId: currentUser.id, fileName, size: file.size })
 
     const { error: uploadError } = await supabase.storage
       .from(APP_CONFIG.buckets.images)

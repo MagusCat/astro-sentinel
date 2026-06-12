@@ -51,10 +51,10 @@ export function ConfirmDialog({
       >
         <h3 className="font-extrabold text-foreground text-sm">{title}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{message}</p>
-        <div className="flex gap-2 justify-end mt-2">
+        <div className="flex gap-2 justify-end mt-2 pt-2 border-t border-border/10">
           <Button
             variant="ghost"
-            size="sm"
+            className="min-h-[44px] px-6 text-sm"
             onClick={onClose}
             disabled={loading}
           >
@@ -62,7 +62,7 @@ export function ConfirmDialog({
           </Button>
           <Button
             variant={variant === "danger" ? "destructive" : variant === "warning" ? "secondary" : "default"}
-            size="sm"
+            className="min-h-[44px] px-6 text-sm"
             onClick={onConfirm}
             disabled={loading}
           >

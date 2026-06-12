@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Users, Trophy, CreditCard, Clock, UserPlus } from 'lucide-react'
-import { DashboardListWidget, MetricCard } from '@/components/shared'
+import { DashboardListWidget, MetricCard, StatusBadge, PriceDisplay } from '@/components/shared'
 import { OverviewStats } from '../types'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
 
@@ -60,19 +60,7 @@ export default function DashboardOverview({ stats }: DashboardOverviewProps) {
                 <span className="text-sm font-mono text-muted-foreground">
                   {membership.endDate ? new Date(membership.endDate).toLocaleDateString('es-ES') : 'N/A'}
                 </span>
-                <span className={`text-sm px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
-                  membership.status === MEMBERSHIP_STATUS.EXPIRED 
-                    ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' 
-                    : membership.status === MEMBERSHIP_STATUS.CANCELLED
-                      ? 'bg-red-500/10 text-red-600 border-red-500/20'
-                      : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                }`}>
-                  {membership.status === MEMBERSHIP_STATUS.EXPIRED 
-                    ? 'Vencida' 
-                    : membership.status === MEMBERSHIP_STATUS.CANCELLED
-                      ? 'Cancelada'
-                      : 'Congelada'}
-                </span>
+                <StatusBadge status={membership.status} />
               </div>
             </div>
           )}
@@ -88,7 +76,7 @@ export default function DashboardOverview({ stats }: DashboardOverviewProps) {
               <div key={idx} className="flex flex-col gap-1 p-2.5 lg:p-3 border border-border rounded-xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-200">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-semibold text-foreground truncate max-w-[150px]">{payment.clientName}</span>
-                  <span className="text-sm font-bold font-mono text-emerald-600">${payment.totalAmount.toFixed(2)}</span>
+                  <PriceDisplay amount={payment.totalAmount} variant="badge" />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground capitalize">{payment.paymentMethod}</span>

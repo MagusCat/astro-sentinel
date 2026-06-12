@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { AuthenticatedUser } from '@/features/auth/types'
@@ -42,6 +42,9 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
     : 'overview'
 
   const { clients, plans, classes, payments, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData()
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [childLoading, setChildLoading] = useState(false)
+  const isGlobalLoading = loadingData || childLoading
 
   useEffect(() => {
     fetchDatabaseData(activeTab)
@@ -97,19 +100,22 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
         <Button
           variant="neutral"
           size="icon"
-          onClick={() => fetchDatabaseData(activeTab)}
-          disabled={loadingData}
+          onClick={() => {
+            fetchDatabaseData(activeTab)
+            setRefreshTrigger(prev => prev + 1)
+          }}
+          disabled={isGlobalLoading}
           title="Sincronizar Base de Datos"
         >
-          <RefreshCw className={`w-4 h-4 ${loadingData ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${isGlobalLoading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
-      <ProgressBar indeterminate={loadingData} className="-mt-3 mb-1 flex-none" />
+      <ProgressBar indeterminate={isGlobalLoading} className="-mt-3 mb-1 flex-none" />
 
       <div
         key={activeTab}
-        className="w-full flex-1 min-h-0 overflow-hidden animate-fade-in-up"
+        className="w-full flex-1 min-h-0 flex flex-col animate-fade-in-up"
       >
         {activeTab === 'overview' && (
           <DashboardOverview
@@ -144,20 +150,22 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
             clients={clients} 
             activeUser={activeUser}
             onReload={() => fetchDatabaseData('clients')}
+            refreshTrigger={refreshTrigger}
+            setLoading={setChildLoading}
           />
         )}
 
         {activeTab === 'plans' && (
-          <ClassPlans plans={plans} classes={classes} onReload={() => fetchDatabaseData('plans')} isLoading={loadingData} />
+          <ClassPlans plans={plans} classes={classes} onReload={() => fetchDatabaseData('plans')} isLoading={isGlobalLoading} />
         )}
         
         {activeTab === 'payments' && (
-          <PaymentsLog payments={payments} />
+          <PaymentsLog payments={payments} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
         )}
 
         {activeTab === 'admin_users' && (
           hasAdminAccess ? (
-            <UserManagement activeUser={activeUser} />
+            <UserManagement activeUser={activeUser} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
           ) : (
             renderAccessDenied()
           )
@@ -165,7 +173,7 @@ export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
 
         {activeTab === 'developer' && (
           hasDevAccess ? (
-            <DeveloperPanel />
+            <DeveloperPanel refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
           ) : (
             renderAccessDenied()
           )

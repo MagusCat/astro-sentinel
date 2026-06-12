@@ -40,8 +40,22 @@ export default function CreateUserModal({
   ]
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Registrar Nuevo Operador" size="md">
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Registrar Nuevo Operador"
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText="Registrar"
+          isLoading={loading}
+          formId="user-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="user-form" onSubmit={onSubmit} className="flex flex-col gap-4">
         <TextField
           label="Nombre Completo"
           type="text"
@@ -106,11 +120,6 @@ export default function CreateUserModal({
           </div>
         )}
 
-        <FormActions
-          onCancel={onClose}
-          submitText="Registrar"
-          isLoading={loading}
-        />
       </form>
     </Modal>
   )

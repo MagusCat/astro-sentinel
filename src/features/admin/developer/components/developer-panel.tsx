@@ -7,7 +7,12 @@ import { getAuthorizedDevices, revokeDeviceById } from '../actions'
 import { Button, Toast, ToastType, ConfirmDialog, SectionCard, EmptyState, MetricCard } from '@/components/shared'
 import { getActiveModules } from '@/lib/modules'
 
-export default function DeveloperPanel() {
+interface DeveloperPanelProps {
+  refreshTrigger?: number
+  setLoading?: (loading: boolean) => void
+}
+
+export default function DeveloperPanel({ refreshTrigger, setLoading: setLoadingProp }: DeveloperPanelProps) {
   const [appLatency, setAppLatency] = useState<number | null>(null)
   const [serverLatency, setServerLatency] = useState<number | null>(null)
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
@@ -36,7 +41,12 @@ export default function DeveloperPanel() {
   useEffect(() => {
     requestAnimationFrame(() => setAppLatency(Math.round(performance.now())))
     loadDevices()
-  }, [loadDevices])
+  }, [loadDevices, refreshTrigger])
+
+  useEffect(() => {
+    setLoadingProp?.(isLoadingDevices)
+    return () => setLoadingProp?.(false)
+  }, [isLoadingDevices, setLoadingProp])
 
   const confirmRevokeDevice = (deviceId: string) => {
     setConfirmRevokeId(deviceId)
@@ -87,44 +97,10 @@ export default function DeveloperPanel() {
         />
       </div>
 
-      <SectionCard
-        title="Configuración de la App"
-        description="Módulos habilitados, entorno y estado de la aplicación"
-        className="shrink-0"
-        size="sm"
-      >
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { label: 'Admin', enabled: modules.adminEnabled },
-              { label: 'CMS', enabled: modules.cmsEnabled },
-              { label: 'Any Enabled', enabled: modules.anyEnabled },
-          ].map((item) => (
-            <div key={item.label} className="flex flex-col gap-2 p-4 rounded-xl bg-muted/20 border border-border/30">
-              <span className="text-sm font-semibold text-foreground">{item.label}</span>
-              <span className={`text-sm font-bold ${item.enabled ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {item.enabled ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-          ))}
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/20 border border-border/30">
-            <span className="text-sm font-semibold text-foreground">Entorno</span>
-            <span className="text-sm text-muted-foreground">{process.env.NODE_ENV || 'development'}</span>
-          </div>
-          <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/20 border border-border/30">
-            <span className="text-sm font-semibold text-foreground">Navegador</span>
-            <span className="text-sm text-muted-foreground break-words">{typeof navigator !== 'undefined' ? navigator.userAgent : 'Desconocido'}</span>
-          </div>
-        </div>
-        </div>
-      </SectionCard>
 
       <SectionCard
         title="Sesiones Activas"
-        description="Dispositivos autorizados que pueden acceder al sistema"
         titleAction={
           <Button
             variant="default"
@@ -185,64 +161,7 @@ export default function DeveloperPanel() {
         )}
       </SectionCard>
 
-      <SectionCard
-        title="Herramientas de Diagnóstico"
-        description="Opciones de mantenimiento local y depuración"
-        className="shrink-0"
-        size="sm"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button 
-            onClick={() => setShowClearCacheConfirm(true)}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/30 transition-colors"
-          >
-            <div className="p-3 bg-rose-500/10 rounded-full text-rose-500">
-              <Trash2 className="w-5 h-5" />
-            </div>
-            <div className="text-center">
-              <span className="block text-sm font-bold text-foreground">Limpiar Caché</span>
-              <span className="block text-sm text-muted-foreground mt-0.5">Local y Session Storage</span>
-            </div>
-          </button>
 
-          <button 
-            onClick={() => window.location.reload()}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/30 transition-colors"
-          >
-            <div className="p-3 bg-blue-500/10 rounded-full text-blue-500">
-              <RefreshCcw className="w-5 h-5" />
-            </div>
-            <div className="text-center">
-              <span className="block text-sm font-bold text-foreground">Forzar Recarga</span>
-              <span className="block text-sm text-muted-foreground mt-0.5">Refrescar aplicación Web</span>
-            </div>
-          </button>
-
-          <button 
-            onClick={() => {
-              console.log('App Config', { env: process.env.NODE_ENV, timestamp: Date.now() });
-            }}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/30 transition-colors"
-          >
-            <div className="p-3 bg-amber-500/10 rounded-full text-amber-500">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <div className="text-center">
-              <span className="block text-sm font-bold text-foreground">Test Consola</span>
-              <span className="block text-sm text-muted-foreground mt-0.5">Generar Log de prueba</span>
-            </div>
-          </button>
-
-          <div className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-border/50 bg-muted/10">
-            <span className="text-sm font-mono text-muted-foreground uppercase tracking-wider">Entorno Activo</span>
-            <span className="font-bold text-sm text-foreground bg-background px-3 py-1 rounded-md border border-border/30">
-              {process.env.NODE_ENV || 'development'}
-            </span>
-            <span className="text-sm text-muted-foreground mt-1">v1.0.0-rc1</span>
-          </div>
-
-        </div>
-      </SectionCard>
 
       {confirmRevokeId && (
         <ConfirmDialog

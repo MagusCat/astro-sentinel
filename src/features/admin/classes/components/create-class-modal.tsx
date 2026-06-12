@@ -39,8 +39,22 @@ export default function CreateClassModal({ initialData, onClose, onSuccess }: Cr
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={initialData ? "Editar Clase" : "Registrar Clase"} size="md">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={initialData ? "Editar Clase" : "Registrar Clase"}
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText={initialData ? 'Guardar Cambios' : 'Registrar Disciplina'}
+          isLoading={loading}
+          formId="class-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="class-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextField
           label="Nombre de la Clase"
           type="text"
@@ -58,11 +72,6 @@ export default function CreateClassModal({ initialData, onClose, onSuccess }: Cr
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <FormActions
-          onCancel={onClose}
-          submitText={initialData ? 'Guardar Cambios' : 'Registrar Disciplina'}
-          isLoading={loading}
-        />
       </form>
 
       {toast && (

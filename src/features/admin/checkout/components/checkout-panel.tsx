@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { ClientData } from '@/features/admin/clients/types'
 import { PlanData, ClassData } from '@/features/admin/classes/types'
-import { EmptyState, PageHeader } from '@/components/shared'
+import { EmptyState, PageHeader, PriceDisplay } from '@/components/shared'
 import { Dumbbell, Calendar, ChevronRight } from 'lucide-react'
 import CheckoutModal from './checkout-modal'
 
@@ -63,18 +63,18 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
                 <div>
                   <h4 className="font-bold text-foreground font-heading leading-tight">{cls.name}</h4>
                   {cls.description && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{cls.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{cls.description}</p>
                   )}
                 </div>
               </div>
 
               {/* Plans List */}
               <div className="p-4 flex flex-col gap-3">
-                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground ml-1 mb-1">
+                <p className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground ml-1 mb-1">
                   Planes Disponibles
                 </p>
                 {classPlans.length === 0 ? (
-                  <div className="text-xs text-muted-foreground italic text-center py-4">
+                  <div className="text-sm text-muted-foreground italic text-center py-4">
                     Sin planes asignados
                   </div>
                 ) : (
@@ -88,15 +88,13 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
                         <span className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
                           {plan.plan_name}
                         </span>
-                        <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
                           <Calendar className="w-3 h-3" />
                           Vigencia de {plan.duration_days} días
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold font-mono text-foreground">
-                          ${plan.price.toFixed(2)}
-                        </span>
+                        <PriceDisplay amount={plan.price} variant="neutral" />
                         <div className="bg-muted text-muted-foreground p-1.5 rounded-md group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           <ChevronRight className="w-3.5 h-3.5" />
                         </div>

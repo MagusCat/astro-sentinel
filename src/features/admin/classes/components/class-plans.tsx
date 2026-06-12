@@ -7,7 +7,7 @@ import { PlanData, ClassData } from '../types'
 import { deleteClass, deleteClassPlan } from '../mutations'
 import CreateClassModal from './create-class-modal'
 import CreatePlanModal from './create-plan-modal'
-import { ConfirmDialog, EmptyState, PageHeader, SectionCard, Toast, ToastType } from '@/components/shared'
+import { ConfirmDialog, EmptyState, PageHeader, SectionCard, Toast, ToastType, PriceDisplay } from '@/components/shared'
 
 interface ClassPlansProps {
   plans: PlanData[]
@@ -129,9 +129,7 @@ export default function ClassPlans({ plans, classes, onReload, isLoading }: Clas
                         <div>
                           <div className="flex justify-between items-start gap-4">
                             <h4 className="font-bold text-sm text-foreground">{plan.plan_name}</h4>
-                            <div className="text-sm font-bold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded">
-                              ${plan.price.toFixed(2)}
-                            </div>
+                            <PriceDisplay amount={plan.price} variant="primary-badge" />
                           </div>
                           <p className="text-xs text-muted-foreground mt-2">
                             Duración: <strong>{plan.duration_days} días</strong>

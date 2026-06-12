@@ -54,8 +54,22 @@ export default function CreatePaymentModal({
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Registrar Nuevo Pago" size="md">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Registrar Nuevo Pago"
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText="Registrar Pago"
+          isLoading={loading}
+          formId="payment-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="payment-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
         
         <SelectField
           label="Cliente"
@@ -89,11 +103,6 @@ export default function CreatePaymentModal({
           ]}
         />
 
-        <FormActions
-          onCancel={onClose}
-          submitText="Registrar Pago"
-          isLoading={loading}
-        />
       </form>
     </Modal>
   )

@@ -18,8 +18,8 @@ function HealthCheckContent() {
     return (
       <div className="flex flex-col items-center justify-center text-center gap-4 py-12">
         <Logo size="lg" animate={true} />
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground mt-4">System Operational</h1>
-        <p className="text-muted-foreground text-sm font-medium">All Sentinel core systems are running smoothly.</p>
+        <h1 className="text-2xl font-extrabold tracking-tight text-foreground mt-4">Sistema Operativo</h1>
+        <p className="text-muted-foreground text-sm font-medium">Todos los servicios de Sentinel están funcionando correctamente.</p>
         <p className="text-sm text-muted-foreground">Módulos cargados: {loadedModulesLabel}</p>
       </div>
     )

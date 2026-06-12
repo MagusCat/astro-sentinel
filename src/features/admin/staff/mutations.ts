@@ -12,6 +12,16 @@ export async function saveNewUser(
   userData: { full_name: string; username: string; password_raw: string; role: string; auth_user_id?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
+    const parsed = createUserSchema.safeParse(userData)
+    if (!parsed.success) {
+      return { 
+        success: false, 
+        error: parsed.error.issues[0]?.message || 'Datos inválidos.',
+        validationErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>
+      }
+    }
+    const clean = parsed.data
+
     const currentUser = await getCurrentUser()
     if (!currentUser || !currentUser.role) {
       return { success: false, error: 'Acceso denegado: Sesión inválida.' }
@@ -21,28 +31,18 @@ export async function saveNewUser(
       return { success: false, error: 'Acceso denegado: No autorizado.' }
     }
 
-    if (currentUser.role === APP_ROLE.ADMIN && userData.role !== APP_ROLE.RECEPTION) {
+    if (currentUser.role === APP_ROLE.ADMIN && clean.role !== APP_ROLE.RECEPTION) {
       return { success: false, error: 'Acceso denegado: Un Administrador solo puede registrar Recepcionistas.' }
     }
 
-    if (userData.role === APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
+    if (clean.role === APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
       return { success: false, error: 'Acceso denegado: Solo un Desarrollador (Maintainer) puede registrar Administradores.' }
     }
 
-    if (userData.role === APP_ROLE.ADMIN && !userData.auth_user_id?.trim()) {
+    if (clean.role === APP_ROLE.ADMIN && !clean.auth_user_id?.trim()) {
       return { success: false, error: 'El ID de Supabase Auth es obligatorio para vincular la cuenta del Administrador.' }
     }
 
-    const parsed = createUserSchema.safeParse(userData)
-    if (!parsed.success) {
-      return { 
-        success: false, 
-        error: parsed.error.issues[0]?.message || 'Datos inválidos.',
-        validationErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>
-      }
-    }
-
-    const clean = parsed.data
     const supabase = await createClient()
 
     const { data: existingUser } = await supabase
@@ -78,7 +78,7 @@ export async function saveNewUser(
 
 export async function updateUserData(
   targetUserId: string,
-  updatedFields: { full_name?: string; password_raw?: string; is_active?: boolean; role?: string; auth_user_id?: string }
+  updatedFields: { full_name?: string; password_raw?: string; current_password_raw?: string; is_active?: boolean; role?: string; auth_user_id?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
     const currentUser = await getCurrentUser()
@@ -94,7 +94,7 @@ export async function updateUserData(
 
     const { data: targetUser, error: fError } = await supabase
       .from('users')
-      .select('id, role, username, is_active, full_name')
+      .select('id, role, username, is_active, full_name, password_hash')
       .eq('id', targetUserId)
       .maybeSingle()
 
@@ -113,6 +113,17 @@ export async function updateUserData(
 
     let hashedPw: string | undefined
     if (updatedFields.password_raw) {
+      if (currentUser.id === targetUserId) {
+        if (!updatedFields.current_password_raw) {
+          return { success: false, error: 'Debe ingresar su contraseña actual para cambiarla.' }
+        }
+        // Necesitamos importar verifyPassword pero ya está importado arriba
+        const { verifyPassword } = await import('@/lib/auth/session')
+        const isMatch = await verifyPassword(updatedFields.current_password_raw, targetUser.password_hash)
+        if (!isMatch) {
+          return { success: false, error: 'La contraseña actual ingresada es incorrecta.' }
+        }
+      }
       hashedPw = await hashPassword(updatedFields.password_raw)
     }
 

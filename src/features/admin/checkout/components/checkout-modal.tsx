@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Modal, Toast, ToastType, SearchInput } from '@/components/shared'
+import { Modal, Toast, ToastType, SearchInput, PriceDisplay } from '@/components/shared'
 import { Button } from '@/components/shared'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { ClientData } from '@/features/admin/clients/types'
@@ -11,7 +11,7 @@ import { checkClientMembership } from '../queries'
 import { processCheckout } from '../mutations'
 import { useDebounce } from '@/hooks/use-debounce'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
-import { CheckCircle2, Download, CreditCard, User, Info, Zap } from 'lucide-react'
+import { CheckCircle2, Download, CreditCard, User, AlertCircle, Zap } from 'lucide-react'
 
 interface CheckoutModalProps {
   selectedClass: ClassData
@@ -156,7 +156,7 @@ export default function CheckoutModal({
             
             <div className="flex justify-between items-center border-b border-border/50 pb-3 mb-1">
               <span className="text-muted-foreground uppercase text-sm font-bold tracking-wider">Concepto</span>
-              <span className="font-semibold text-right">{selectedClass.name} - {selectedPlan.plan_name}</span>
+              <span className="font-semibold text-right">{selectedClass.name} - {selectedPlan.plan_name} ({selectedClient?.full_name})</span>
             </div>
             
             <div className="flex justify-between items-center">
@@ -177,7 +177,7 @@ export default function CheckoutModal({
 
             <div className="flex justify-between items-center border-t border-border/50 pt-3 mt-1">
               <span className="text-muted-foreground uppercase text-sm font-bold tracking-wider">Total Pagado</span>
-              <span className="font-bold text-lg text-primary">${selectedPlan.price.toFixed(2)}</span>
+              <PriceDisplay amount={selectedPlan.price} className="text-lg text-primary" variant="neutral" />
             </div>
             <div className="flex justify-end mt-[-8px]">
               <span className="text-sm uppercase text-muted-foreground">Método: {paymentMethod}</span>
@@ -220,7 +220,7 @@ export default function CheckoutModal({
                 <span className="text-sm text-muted-foreground font-medium">{selectedPlan.plan_name} ({selectedPlan.duration_days} días)</span>
               </div>
               <div className="text-right flex flex-col">
-                <span className="text-2xl font-extrabold text-foreground font-mono">${selectedPlan.price.toFixed(2)}</span>
+                <PriceDisplay amount={selectedPlan.price} variant="highlight" />
                 <span className="text-sm text-muted-foreground">Monto Total</span>
               </div>
             </div>
@@ -303,17 +303,17 @@ export default function CheckoutModal({
             </div>
 
             {existingMembership && (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex gap-3 animate-fade-in-up mt-2">
-                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="bg-muted border border-border/50 rounded-lg p-4 flex gap-3 animate-fade-in-up mt-2">
+                <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-amber-700 uppercase tracking-wide">
+                  <span className="text-sm font-bold text-foreground uppercase tracking-wide">
                     {existingMembership.status === MEMBERSHIP_STATUS.FROZEN ? 'Membresía Pausada Detectada' : 'Membresía Activa Detectada'}
                   </span>
-                  <span className="text-sm text-amber-800 mt-1 leading-relaxed">
-                    Este cliente tiene una membresía vigente hasta el <strong className="text-amber-900">{new Date(existingMembership.endDate + 'T00:00:00').toLocaleDateString('es-ES')}</strong>.
+                  <span className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    Este cliente tiene una membresía vigente hasta el <strong className="text-foreground">{new Date(existingMembership.endDate + 'T00:00:00').toLocaleDateString('es-ES')}</strong>.
                     El nuevo plan se programará de forma consecutiva.{' '}
                     {existingMembership.status === MEMBERSHIP_STATUS.FROZEN && (
-                      <span className="font-semibold block mt-2 text-foreground bg-muted border border-border/50 p-2 rounded flex items-start gap-2">
+                      <span className="font-semibold block mt-2 text-foreground bg-background border border-border/50 p-2 rounded flex items-start gap-2">
                         <Zap className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                         Al confirmar, su cuenta será reactivada de forma forzada.
                       </span>

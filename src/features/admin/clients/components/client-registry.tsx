@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Plus, Eye, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/shared'
-import { SearchInput, DataTable, EmptyState, Toast, ToastType, Modal, PageHeader, LoadingState } from '@/components/shared'
+import { SearchInput, DataTable, EmptyState, Toast, ToastType, Modal, PageHeader, TableSkeleton, ProgressBar } from '@/components/shared'
 import { ClientData, ClientFilters } from '../types'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { Roles } from '@/lib/auth/roles'
@@ -17,9 +17,11 @@ interface ClientRegistryProps {
   clients: ClientData[]
   activeUser: AuthenticatedUser
   onReload: () => void
+  refreshTrigger?: number
+  setLoading?: (loading: boolean) => void
 }
 
-export default function ClientRegistry({ clients, activeUser, onReload }: ClientRegistryProps) {
+export default function ClientRegistry({ clients, activeUser, onReload, refreshTrigger, setLoading: setLoadingProp }: ClientRegistryProps) {
   const [localClients, setLocalClients] = useState<ClientData[]>(clients)
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -54,7 +56,12 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
 
   useEffect(() => {
     fetchFilteredData()
-  }, [fetchFilteredData])
+  }, [fetchFilteredData, refreshTrigger])
+
+  useEffect(() => {
+    setLoadingProp?.(loading)
+    return () => setLoadingProp?.(false)
+  }, [loading, setLoadingProp])
 
   useEffect(() => {
     setFilters(prev => ({ ...prev, page: 1 }))
@@ -162,21 +169,22 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
         }
       />
 
-      <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex-1 flex flex-col relative min-h-0">
-          {loading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <LoadingState />
+      <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex-1 flex flex-col relative min-h-[300px]">
+
+          {loading && localClients.length === 0 ? (
+            <div className="p-6 flex-1 flex flex-col justify-center">
+              <TableSkeleton rows={5} cols={4} />
             </div>
-          )}
-          {localClients.length === 0 && !loading && !debouncedSearch ? (
+          ) : localClients.length === 0 && !loading && !debouncedSearch ? (
             <EmptyState message="No hay registros." />
           ) : localClients.length === 0 && !loading && debouncedSearch ? (
             <EmptyState message={`No se encontraron resultados para "${searchQuery}".`} />
           ) : (
-            <DataTable
-              className="flex-1"
-              data={localClients}
-              keyExtractor={(client) => client.id}
+            <div className={loading ? "opacity-60 pointer-events-none transition-opacity duration-200 flex-1 flex flex-col" : "flex-1 flex flex-col"}>
+              <DataTable
+                className="flex-1"
+                data={localClients}
+                keyExtractor={(client) => client.id}
               pagination={{
                 currentPage: filters.page,
                 totalPages,
@@ -198,7 +206,7 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
                   render: (client) => (
                     <div className="text-muted-foreground font-mono leading-relaxed">
                       <div>{client.email || 'Sin correo'}</div>
-                      <div className="text-[10px] mt-0.5">{client.phone_number || 'Sin teléfono'}</div>
+                      <div className="text-[11px] mt-0.5">{client.phone_number || 'Sin teléfono'}</div>
                     </div>
                   ),
                 },
@@ -254,7 +262,8 @@ export default function ClientRegistry({ clients, activeUser, onReload }: Client
                 },
               ]}
             />
-          )}
+          </div>
+        )}
       </div>
 
       {isCreateOpen && (

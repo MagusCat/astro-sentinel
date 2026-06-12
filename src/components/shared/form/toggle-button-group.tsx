@@ -10,6 +10,7 @@ interface ToggleButtonGroupProps {
     icon?: React.ReactNode
   }[]
   className?: string
+  variant?: 'default' | 'simple'
 }
 
 /**
@@ -23,9 +24,36 @@ export function ToggleButtonGroup({
   onChange,
   options,
   className,
+  variant = 'default',
 }: ToggleButtonGroupProps) {
   const activeIndex = options.findIndex((opt) => opt.value === value)
   const safeIndex = activeIndex >= 0 ? activeIndex : 0
+
+  if (variant === 'simple') {
+    return (
+      <div className={cn("flex items-center justify-center gap-6", className)}>
+        {options.map((opt) => {
+          const isActive = opt.value === value
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value)}
+              className={cn(
+                "py-2 text-sm font-bold transition-all duration-300 cursor-pointer flex items-center gap-2 border-b-2",
+                isActive
+                  ? "text-primary border-primary"
+                  : "text-muted-foreground hover:text-foreground border-transparent"
+              )}
+            >
+              {opt.icon}
+              <span>{opt.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
 
   return (
     <div

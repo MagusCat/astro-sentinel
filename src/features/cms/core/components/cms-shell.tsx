@@ -12,9 +12,9 @@ import { deriveHeroSocialLinks, deriveContactItems, buildWhatsapp } from '../der
 
 import CmsToolbar from './cms-toolbar'
 import BackupsModal from '@/features/cms/backups/components/backups-modal'
-import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Modal } from '@/components/shared'
+import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Modal, Logo } from '@/components/shared'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
-import { cn } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 
 import CmsSidebarNav from './cms-sidebar-nav'
 import GlobalsEditor from '@/features/cms/editors/components/globals-editor'
@@ -42,17 +42,7 @@ interface ToastState {
   type: ToastType
 }
 
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return null
-  try {
-    return new Date(dateStr).toLocaleDateString('es-ES', {
-      day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    })
-  } catch {
-    return null
-  }
-}
+
 
 
 
@@ -235,25 +225,26 @@ export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
       case 'faq': return <FaqEditor value={draft.faq} onChange={(v) => updateDraft('faq', v)} />
       case 'gallery': return <GalleryEditor value={draft.gallery} onChange={(v) => updateDraft('gallery', v)} />
       case 'storage': return <StorageEditor />
-  case 'backups': return <BackupsEditor />
-  case 'developer': return (
-    <DeveloperEditor 
-      onImport={(data) => {
-        if (!draft) return
-        const merged = JSON.parse(JSON.stringify(draft)) as Record<string, unknown>
-        for (const key in data) {
-          if (data[key as keyof SiteContent] && typeof data[key as keyof SiteContent] === 'object' && !Array.isArray(data[key as keyof SiteContent])) {
-            merged[key] = { ...(merged[key] as Record<string, unknown>), ...(data[key as keyof SiteContent] as Record<string, unknown>) }
-          } else {
-            merged[key] = data[key as keyof SiteContent]
-          }
-        }
-        setDraft(merged as unknown as SiteContent)
-        setIsDirty(true)
-        showToast('JSON cargado exitosamente en el editor. Recuerda publicar los cambios.', 'success')
-      }}
-    />
-  )
+      case 'backups': return <BackupsEditor />
+      case 'developer': return (
+        <DeveloperEditor 
+          onImport={(data) => {
+            if (!draft) return
+            const merged = JSON.parse(JSON.stringify(draft)) as Record<string, unknown>
+            for (const key in data) {
+              if (data[key as keyof SiteContent] && typeof data[key as keyof SiteContent] === 'object' && !Array.isArray(data[key as keyof SiteContent])) {
+                merged[key] = { ...(merged[key] as Record<string, unknown>), ...(data[key as keyof SiteContent] as Record<string, unknown>) }
+              } else {
+                merged[key] = data[key as keyof SiteContent]
+              }
+            }
+            setDraft(merged as unknown as SiteContent)
+            setIsDirty(true)
+            showToast('JSON cargado exitosamente en el editor. Recuerda publicar los cambios.', 'success')
+          }}
+          onError={(msg) => showToast(msg, 'error')}
+        />
+      )
   }
 }
 
@@ -286,23 +277,28 @@ if (isLoggingOut) {
         />
       )}
 
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center px-6 py-4 border-b border-border/40 bg-card w-full shrink-0 z-40 relative h-[65px]">
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-1 rounded-md hover:bg-muted text-foreground transition-colors focus:outline-none cursor-pointer absolute left-6"
+          aria-label="Abrir menú"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="w-full flex justify-center items-center pointer-events-none">
+          <Logo size="sm" animate={false} />
+        </div>
+      </div>
+
       <div className={cn(
-          "h-[100dvh] flex flex-col w-full bg-background",
+          "flex-1 h-[calc(100vh-65px)] md:h-screen flex flex-col w-full bg-background",
           enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
           isCollapsed ? "md:pl-20" : "md:pl-64"
         )}>
           <div className="px-4 sm:px-8 pt-4 sm:pt-7 pb-3 sm:pb-4 border-b border-border/10 shrink-0 bg-background z-20 shadow-sm sticky top-0">
         
         <div className="flex flex-row items-start gap-3 w-full">
-          <button
-            type="button"
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden mt-1 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer shrink-0"
-            aria-label="Abrir menú"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
           <div className="flex-1 min-w-0">
             <CmsToolbar
               isDirty={isDirty}
@@ -353,43 +349,19 @@ if (isLoggingOut) {
         variant="danger"
       />
 
-      <Modal
+      <ConfirmDialog
         isOpen={!!pendingAction}
         onClose={() => setPendingAction(null)}
+        onConfirm={() => {
+          if (pendingAction) pendingAction()
+          setPendingAction(null)
+        }}
         title="Cambios sin guardar"
-        size="sm"
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start gap-3 text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-900/50">
-            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-            <p className="text-sm font-medium">
-              Tienes cambios pendientes de publicar. Si sales ahora, se perderán.
-            </p>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            ¿Estás seguro que deseas salir sin guardar?
-          </p>
-          <div className="flex gap-2 justify-end mt-2">
-            <button
-              type="button"
-              onClick={() => setPendingAction(null)}
-              className="text-xs font-semibold px-4 py-2 rounded-xl bg-muted text-muted-foreground hover:bg-muted-foreground/10 transition-all cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (pendingAction) pendingAction()
-                setPendingAction(null)}
-              }
-              className="text-xs font-bold px-4 py-2 rounded-xl bg-destructive text-white hover:bg-destructive/90 transition-all cursor-pointer"
-            >
-              Sí, salir
-            </button>
-          </div>
-        </div>
-      </Modal>
+        message="Tienes cambios pendientes de publicar. Si sales ahora, se perderán. ¿Estás seguro de que deseas salir sin guardar?"
+        confirmText="Sí, salir"
+        cancelText="Cancelar"
+        variant="danger"
+      />
 
       {toast && (
         <Toast

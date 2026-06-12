@@ -45,8 +45,22 @@ export default function CreateClientModal({
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={isEditing ? "Editar Cliente" : "Registrar Nuevo Cliente"} size="md">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={isEditing ? "Editar Cliente" : "Registrar Nuevo Cliente"}
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText={isEditing ? "Guardar Cambios" : "Registrar Cliente"}
+          isLoading={loading}
+          formId="client-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="client-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextField
           label="Nombre Completo"
           type="text"
@@ -92,11 +106,6 @@ export default function CreateClientModal({
           ]}
         />
 
-        <FormActions
-          onCancel={onClose}
-          submitText={isEditing ? "Guardar Cambios" : "Registrar Cliente"}
-          isLoading={loading}
-        />
       </form>
     </Modal>
   )

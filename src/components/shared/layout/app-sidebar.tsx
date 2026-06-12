@@ -53,35 +53,21 @@ export function AppSidebar({
         className={cn(
           "h-[100dvh] fixed left-0 top-0 bg-sidebar text-sidebar-foreground flex flex-col py-8 border-r border-sidebar-border z-50 shadow-xl overflow-hidden",
           enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-          isCollapsed ? "w-20 px-2" : "w-64 px-4",
+          isCollapsed ? "w-20 px-2" : "w-full md:w-64 px-4 md:px-4",
           "md:translate-x-0",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className={cn("mb-10 flex items-center shrink-0", isCollapsed ? "justify-center px-0 min-h-10" : "justify-between px-4 min-h-10")}>
+        <div className={cn("mb-10 flex items-center justify-between w-full px-4 min-h-10", isCollapsed && "justify-center px-0")}>
           {!isCollapsed ? (
             <>
               <div>
-                {onTitleClick ? (
-                  <button
-                    type="button"
-                    onClick={onTitleClick}
-                    className="block text-left hover:opacity-80 cursor-pointer focus:outline-none transition-opacity"
-                  >
-                    {typeof title === 'string' ? (
-                      <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none">{title}</span>
-                    ) : (
-                      title
-                    )}
-                  </button>
+                {typeof title === 'string' ? (
+                  <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left">
+                    {title}
+                  </span>
                 ) : (
-                  typeof title === 'string' ? (
-                    <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left">
-                      {title}
-                    </span>
-                  ) : (
-                    title
-                  )
+                  title
                 )}
                 
                 {subtitle && (
@@ -91,12 +77,12 @@ export function AppSidebar({
                 )}
               </div>
               
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 {onToggleCollapse && (
                   <button
                     onClick={onToggleCollapse}
-                    className="flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer focus:outline-none"
-                    title="Colapsar menú"
+                    className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer focus:outline-none"
+                    title="Collapse menu"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -106,7 +92,7 @@ export function AppSidebar({
                   <button
                     onClick={onCloseMobile}
                     className="md:hidden p-1.5 rounded-md hover:bg-sidebar-border/30 text-sidebar-foreground transition-colors focus:outline-none cursor-pointer"
-                    aria-label="Cerrar menú"
+                    aria-label="Close menu"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -118,7 +104,7 @@ export function AppSidebar({
               <button
                 onClick={onToggleCollapse}
                 className="flex w-10 h-10 rounded-xl bg-sidebar-accent hover:bg-sidebar-border/50 text-sidebar-foreground items-center justify-center transition-colors cursor-pointer"
-                title="Expandir menú"
+                title="Expand menu"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -207,7 +193,7 @@ export function AppSidebarItem({
         )}
       </div>
       <span className={cn(
-        "text-sm font-semibold truncate origin-left",
+        "text-sm font-semibold whitespace-normal md:whitespace-nowrap md:overflow-visible origin-left",
         enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
         isCollapsed ? "max-w-0 opacity-0 overflow-hidden" : "max-w-[200px] opacity-100"
       )}>

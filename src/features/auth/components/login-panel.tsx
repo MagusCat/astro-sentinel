@@ -133,7 +133,7 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
   }
 
   return (
-    <div className="max-w-md w-full mx-auto my-12 flex flex-col gap-6">
+    <div className="w-full h-full md:max-w-md md:w-full mx-auto md:my-12 flex flex-col gap-6">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes mode-switch {
           0% { opacity: 0; transform: scale(0.97) translateY(4px); filter: blur(2px); }
@@ -144,12 +144,15 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
         }
       `}} />
 
-      <div className="w-full max-w-[420px] bg-card border border-border rounded-2xl p-8 sm:p-10 shadow-xl mx-auto relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-secondary" />
-
-        <div className="flex justify-center mb-8">
-          <Logo size="lg" animate={true} centered={true} />
+      <div className="w-full h-full min-h-screen md:min-h-0 md:max-w-[420px] bg-card border-0 md:border md:border-border rounded-none md:rounded-2xl md:shadow-xl mx-auto relative md:overflow-hidden transition-all duration-300 md:hover:shadow-2xl flex flex-col">
+        
+        <div className="flex w-full bg-primary py-4 md:py-10 flex-col justify-center items-center shrink-0 sticky top-0 z-10 shadow-md">
+          <div className="hidden md:block">
+            <Logo size="lg" animate={false} centered={true} color="white" />
+          </div>
         </div>
+
+        <div className="p-8 sm:p-10 flex flex-col flex-1 justify-center">
 
         {loginSuccessUser ? (
           <div className="flex flex-col items-center justify-center gap-4 py-8 animate-in zoom-in-95 fade-in duration-500">
@@ -166,10 +169,11 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
           </div>
         ) : (
           <>
-            {adminEnabled && (
+            {adminEnabled && localLoginEnabled && (
               <ToggleButtonGroup
             value={loginType}
             onChange={(val) => setLoginType(val as 'local' | 'admin')}
+            variant="simple"
             options={[
               ...(localLoginEnabled ? [{ value: 'local', label: 'Personal', icon: <User className="w-4 h-4" /> }] : []),
               { value: 'admin', label: 'Admin', icon: <Lock className="w-4 h-4" /> },
@@ -285,6 +289,7 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
         </div>
         </>
         )}
+        </div>
 
       </div>
 

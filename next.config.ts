@@ -10,15 +10,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { dev }) => {
-    if (!dev) {
-      config.cache = false
-    }
-    return config
-  },
+
   experimental: {
     serverActions: {
-      bodySizeLimit: '20mb',
+      // Límite reducido para compatibilidad con Cloudflare Workers edge runtime.
+      // Para imágenes grandes, usar upload directo a Supabase Storage desde el cliente.
+      bodySizeLimit: '10mb',
     },
   }
 };

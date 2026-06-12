@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { Modal, LoadingState, EmptyState, Toast, ToastType, ConfirmDialog, TextField } from '@/components/shared'
+import { Modal, EmptyState, Toast, ToastType, ConfirmDialog, DatePicker, PriceDisplay, Skeleton } from '@/components/shared'
 import { Button } from '@/components/shared'
 import { ClientData, GroupedClientMemberships } from '../types'
 import { getClientPayments, getClientMemberships } from '../queries'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '@/features/admin/memberships/mutations'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
 import { User, Phone, Mail, Share2, Calendar, CreditCard, Pause, Play, Clock, Ban } from 'lucide-react'
+import { calcRemainingDays } from '@/features/admin/memberships/utils'
 
 interface ClientDetailsModalProps {
   client: ClientData
@@ -21,10 +22,22 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
   const [loading, setLoading] = useState(true)
   const [freezeLoading, setFreezeLoading] = useState<string | null>(null)
   const [membershipToFreezeId, setMembershipToFreezeId] = useState<string | null>(null)
-  const [freezeDays, setFreezeDays] = useState<number>(1)
-  const [freezeDaysError, setFreezeDaysError] = useState<string | null>(null)
+  const [targetDate, setTargetDate] = useState<string>('')
+  const [targetDateError, setTargetDateError] = useState<string | null>(null)
   const [membershipToCancel, setMembershipToCancel] = useState<{ id: string, isCurrent: boolean, hasFutures: boolean } | null>(null)
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
+
+  const getPreviewFreezeDays = () => {
+    if (!targetDate) return 0
+    const todayStr = new Date().toISOString().split('T')[0]
+    const todayDate = new Date(todayStr + 'T00:00:00')
+    const target = new Date(targetDate + 'T00:00:00')
+    if (target <= todayDate) return 0
+    const freezeMs = target.getTime() - todayDate.getTime()
+    return Math.ceil(freezeMs / (1000 * 60 * 60 * 24))
+  }
+
+  const previewFreezeDays = getPreviewFreezeDays()
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -42,19 +55,19 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
     loadData()
   }, [loadData])
 
-  const handleFreeze = async (membershipId: string, days: number) => {
+  const handleFreeze = async (membershipId: string, date: string) => {
     setFreezeLoading(membershipId)
-    const res = await freezeMembership(membershipId, days)
+    const res = await freezeMembership(membershipId, date)
     setFreezeLoading(null)
     
     if (res.success) {
       setToast({ message: 'Membresía pausada exitosamente.', type: 'success' })
       setMembershipToFreezeId(null)
-      setFreezeDays(1)
-      setFreezeDaysError(null)
+      setTargetDate('')
+      setTargetDateError(null)
       loadData()
     } else {
-      setFreezeDaysError(res.error || 'Error al pausar.')
+      setTargetDateError(res.error || 'Error al pausar.')
       setToast({ message: res.error || 'Error al pausar.', type: 'error' })
     }
   }
@@ -93,8 +106,8 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
       <Modal isOpen={true} onClose={onClose} title="Detalles del Cliente" size="4xl">
         <div className="flex flex-col md:flex-row gap-6 w-full md:overflow-hidden">
           
-          <div className="w-full md:w-[40%] flex flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
-            <div className="bg-muted/30 border border-border/50 rounded-xl p-5 flex flex-col gap-4">
+          <div className="contents md:flex w-full md:w-[40%] flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
+            <div className="order-1 md:order-none bg-muted/30 border border-border/50 rounded-xl p-5 flex flex-col gap-4">
               <div className="flex items-center gap-3 border-b border-border/50 pb-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <User className="w-6 h-6" />
@@ -123,7 +136,7 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
               </div>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-xl p-4 flex flex-col flex-1 min-h-[250px]">
+            <div className="order-3 md:order-none bg-card border border-border/50 rounded-xl p-4 flex flex-col flex-1 min-h-[250px]">
               <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 stroke-[2]" />
                 Últimos Pagos
@@ -131,7 +144,11 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
               
               <div className="flex-1 overflow-visible md:overflow-y-auto">
                 {loading ? (
-                  <div className="py-4"><LoadingState /></div>
+                  <div className="space-y-2.5">
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                  </div>
                 ) : payments.length === 0 ? (
                   <div className="py-8 text-center text-sm text-muted-foreground italic">Sin pagos registrados.</div>
                 ) : (
@@ -139,7 +156,7 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                     {payments.map((p) => (
                       <div key={p.id} className="flex justify-between items-center p-3 rounded-lg border border-border/40 bg-muted/10">
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm font-semibold text-foreground">C$ {Number(p.total_amount).toFixed(2)}</span>
+                          <PriceDisplay amount={p.total_amount} currency="C$ " variant="badge" />
                           <span className="text-sm text-muted-foreground uppercase">{p.payment_method}</span>
                         </div>
                         <span className="text-sm font-mono text-muted-foreground">
@@ -158,7 +175,7 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
             </div>
           </div>
 
-          <div className="w-full md:w-[60%] lg:w-2/3 flex flex-col gap-4 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
+          <div className="order-2 md:order-none w-full md:w-[60%] lg:w-2/3 flex flex-col gap-4 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
             <div className="flex items-center justify-between pb-2 border-b border-border/50">
               <h4 className="text-base font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <Calendar className="w-5 h-5 stroke-[2] text-primary" />
@@ -167,7 +184,10 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
             </div>
 
             {loading ? (
-              <div className="py-12"><LoadingState /></div>
+              <div className="space-y-4">
+                <Skeleton className="h-28 w-full rounded-xl" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+              </div>
             ) : classesWithMemberships.length === 0 ? (
               <div className="py-12 border border-border/50 rounded-xl bg-muted/20">
                 <EmptyState message="El cliente no tiene ninguna membresía activa o futura." />
@@ -184,7 +204,11 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                   const isCancelled = current.status === MEMBERSHIP_STATUS.CANCELLED
                   
                   let displayRemainingDays = current.remaining_days
-                  if (isCancelled) displayRemainingDays = 0
+                  if (isCancelled) {
+                    displayRemainingDays = 0
+                  } else if (current.status === MEMBERSHIP_STATUS.ACTIVE) {
+                    displayRemainingDays = calcRemainingDays(current.end_date)
+                  }
 
                   return (
                     <div key={group.class_name} className="flex flex-col gap-2">
@@ -242,23 +266,23 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                                 <Play className="w-4 h-4 mr-1.5 shrink-0 stroke-[2.5]" />
                                 {freezeLoading === current.id ? 'Reanudando...' : 'Reanudar'}
                               </Button>
-                            ) : (
+                            ) : displayRemainingDays >= 5 ? (
                               <Button 
                                 variant="ghost" 
                                 size="sm"
                                 className="flex-1 sm:flex-none text-foreground hover:bg-muted"
                                 onClick={() => {
                                   setMembershipToFreezeId(current.id)
-                                  setFreezeDays(1)
-                                  setFreezeDaysError(null)
+                                  setTargetDate('')
+                                  setTargetDateError(null)
                                 }}
-                                disabled={freezeLoading === current.id || futures.length > 0}
-                                title={futures.length > 0 ? "No puedes pausar si hay membresías en cola" : "Pausar"}
+                                disabled={freezeLoading === current.id}
+                                title="Pausar"
                               >
                                 <Pause className="w-4 h-4 mr-1.5 shrink-0 stroke-[2.5]" />
                                 {freezeLoading === current.id ? 'Pausando...' : 'Pausar'}
                               </Button>
-                            )}
+                            ) : null}
                             {(current.status === MEMBERSHIP_STATUS.ACTIVE || current.status === MEMBERSHIP_STATUS.FROZEN) && (
                               <Button 
                                 variant="destructive" 
@@ -327,36 +351,42 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
         onClose={() => setMembershipToFreezeId(null)}
         title="Pausar Membresía"
         size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Selecciona cuántos días deseas pausar esta membresía. El cliente perderá acceso inmediatamente y la duración se guardará en el registro de pausa.
-          </p>
-          <TextField
-            label="Días de pausa"
-            type="number"
-            min={1}
-            value={freezeDays}
-            onChange={(event) => {
-              const value = Number(event.target.value)
-              setFreezeDays(Number.isNaN(value) ? 1 : value)
-              setFreezeDaysError(null)
-            }}
-            error={freezeDaysError ?? undefined}
-            className="max-w-45"
-          />
-          <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
+        footer={
+          <>
             <Button variant="ghost" size="sm" onClick={() => setMembershipToFreezeId(null)} disabled={freezeLoading === membershipToFreezeId}>
               Volver
             </Button>
             <Button
               size="sm"
-              onClick={() => membershipToFreezeId && handleFreeze(membershipToFreezeId, freezeDays)}
-              disabled={freezeLoading === membershipToFreezeId || freezeDays < 1}
+              onClick={() => membershipToFreezeId && handleFreeze(membershipToFreezeId, targetDate)}
+              disabled={freezeLoading === membershipToFreezeId || !targetDate}
             >
               {freezeLoading === membershipToFreezeId ? 'Pausando...' : 'Confirmar pausa'}
             </Button>
-          </div>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Selecciona la fecha hasta la cual deseas pausar esta membresía. El cliente perderá acceso inmediatamente y la duración se calculará automáticamente.
+          </p>
+          <DatePicker
+            label="Fecha de reactivación"
+            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+            value={targetDate}
+            onChange={(event) => {
+              setTargetDate(event.target.value)
+              setTargetDateError(null)
+            }}
+            error={targetDateError ?? undefined}
+            className="max-w-45"
+          />
+          {previewFreezeDays > 0 && !targetDateError && (
+            <div className="bg-primary/5 border border-primary/20 text-primary rounded-xl p-3.5 text-sm font-medium flex items-center gap-3 mt-2">
+              <Pause className="w-5 h-5 text-primary shrink-0" />
+              <span>La membresía estará pausada por <strong className="font-bold font-mono text-foreground text-base">{previewFreezeDays}</strong> {previewFreezeDays === 1 ? 'día' : 'días'}.</span>
+            </div>
+          )}
         </div>
       </Modal>
 

@@ -3,6 +3,7 @@ import { useMediaQuery } from './use-media-query'
 
 export function useSidebarState() {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)')
+  const isMobile = useMediaQuery('(max-width: 767px)')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [enableTransitions, setEnableTransitions] = useState(false)
@@ -29,5 +30,10 @@ export function useSidebarState() {
     localStorage.setItem('sentinel-sidebar-collapsed', String(newVal))
   }
 
-  return { isCollapsed, isMounted, enableTransitions, toggleCollapse }
+  return { 
+    isCollapsed: isMobile ? false : isCollapsed, 
+    isMounted, 
+    enableTransitions, 
+    toggleCollapse 
+  }
 }

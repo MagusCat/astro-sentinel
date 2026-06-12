@@ -61,6 +61,7 @@ export const updateUserSchema = z.object({
     .string()
     .min(6, 'La nueva contraseña debe tener al menos 6 caracteres.')
     .optional(),
+  current_password_raw: z.string().optional(),
   role: roleField.optional(),
   auth_user_id: authUserIdField,
   is_active: z.boolean().optional(),

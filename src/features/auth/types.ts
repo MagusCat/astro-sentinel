@@ -1,6 +1,8 @@
+import type { AppRole } from '@/lib/config'
+
 export interface AuthenticatedUser {
   id: string
   full_name: string
-  role: string
+  role: AppRole
   username: string
 }

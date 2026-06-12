@@ -17,11 +17,12 @@ interface ProgressBarProps {
  *   </div>
  */
 export function ProgressBar({
-  value = 0,
-  indeterminate = false,
+  value,
+  indeterminate,
   className,
   barClassName,
 }: ProgressBarProps) {
+  const isIndeterminate = indeterminate ?? (value === undefined)
   return (
     <div
       className={cn(
@@ -32,14 +33,14 @@ export function ProgressBar({
       <div
         className={cn(
           "absolute h-full bg-primary rounded-full transition-all duration-500",
-          indeterminate && "animate-[progress-indeterminate_1.5s_ease-in-out_infinite]",
+          isIndeterminate ? "animate-progress-indeterminate" : "",
           barClassName
         )}
         style={
-          indeterminate
+          isIndeterminate
             ? undefined
             : {
-                width: `${Math.min(Math.max(value, 0), 100)}%`,
+                width: `${Math.min(Math.max(value ?? 0, 0), 100)}%`,
               }
         }
       />

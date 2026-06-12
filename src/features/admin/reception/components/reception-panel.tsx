@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, UserPlus, ShoppingCart, Search, AlertCircle, CreditCard, Activity, RefreshCw } from 'lucide-react'
 import { OverviewStats } from '@/features/admin/dashboard/types'
-import { DashboardListWidget } from '@/components/shared'
+import { DashboardListWidget, StatusBadge, PriceDisplay } from '@/components/shared'
 import { ClientData } from '@/features/admin/clients/types'
 import { Button } from '@/components/shared'
 import { SearchInput } from '@/components/shared'
@@ -54,7 +54,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div className="lg:col-span-2 bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between min-h-[330px] max-h-[330px]">
+        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between min-h-[330px] max-h-[330px]">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-primary/10 p-2 rounded-lg">
               <Search className="w-5 h-5 text-primary" />
@@ -75,7 +75,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
             />
           </div>
           
-          <div className="mt-4 flex flex-col gap-2 flex-1 overflow-y-auto pr-2 rounded-xl border border-border/50 bg-background/50 p-2 shadow-inner">
+          <div className="mt-4 flex flex-col gap-2 flex-1 overflow-y-auto pr-2">
             {searchTerm.length <= 2 ? (
               <div className="py-6 text-center text-sm text-muted-foreground/60 italic flex flex-col items-center justify-center flex-1 min-h-[120px]">
                 <Search className="w-6 h-6 mb-2 opacity-80" />
@@ -125,7 +125,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+        <div className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
           <Button 
             variant="default" 
             className="h-full min-h-[80px] flex items-center justify-start gap-4 rounded-2xl shadow-sm hover:shadow-md transition-all px-6 py-4"
@@ -176,13 +176,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
                 </span>
 
               </div>
-                <span className={`text-sm px-1.5 py-0.5 rounded-lg font-bold uppercase tracking-wider border ${
-                  membership.status === 'expired' 
-                    ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' 
-                    : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                }`}>
-                  {membership.status === 'expired' ? 'Vencida' : 'Pausada'}
-                </span>
+              <StatusBadge status={membership.status} />
             </div>
           )}
         />
@@ -199,7 +193,7 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
             <div key={idx} className="flex flex-col gap-1.5 p-3 border border-border rounded-xl bg-card hover:shadow-sm transition-shadow">
               <div className="flex justify-between items-center gap-2">
                 <span className="text-sm leading-tight font-semibold text-foreground truncate">{payment.clientName}</span>
-                <span className="text-sm font-bold font-mono text-emerald-600 bg-emerald-500/10 px-1.5 rounded">${payment.totalAmount.toFixed(2)}</span>
+                <PriceDisplay amount={payment.totalAmount} variant="badge" />
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground uppercase tracking-wider">{payment.paymentMethod}</span>

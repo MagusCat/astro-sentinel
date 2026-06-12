@@ -5,9 +5,16 @@ import { verifyDeviceToken } from '@/lib/auth/session'
 import { getDeviceToken } from '@/lib/cookies'
 import { ConnectedDevice } from './types'
 import { revokeDeviceSchema } from './schemas'
+import { getCurrentUser } from '@/features/auth/actions'
+import { Roles } from '@/lib/auth/roles'
 
 export async function getAuthorizedDevices(): Promise<{ success: boolean; data?: ConnectedDevice[]; currentDeviceId?: string; error?: string }> {
   try {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || !Roles.canAccessDeveloper(currentUser.role)) {
+      return { success: false, error: 'Acceso denegado: Se requieren permisos de mantenimiento.' }
+    }
+
     const supabase = await createClient()
 
     let currentDeviceId: string | undefined = undefined
@@ -51,6 +58,11 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
 
 export async function revokeDeviceById(deviceId: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || !Roles.canAccessDeveloper(currentUser.role)) {
+      return { success: false, error: 'Acceso denegado: Se requieren permisos de mantenimiento.' }
+    }
+
     const parsed = revokeDeviceSchema.safeParse({ deviceId })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }

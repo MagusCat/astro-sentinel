@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { Ban, Pause, Play } from 'lucide-react'
 import { MembershipsTableRow, MembershipsPanelData } from '../types'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '../mutations'
-import { DataTable, SearchInput, SelectField, ConfirmDialog, Modal, TextField, Toast, ToastType } from '@/components/shared'
+import { DataTable, SearchInput, SelectField, ConfirmDialog, Modal, DatePicker, Toast, ToastType, StatusBadge } from '@/components/shared'
 import ClassOccupancy from './class-occupancy'
 import { Button } from '@/components/shared'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
@@ -13,6 +13,7 @@ interface MembershipsTableProps {
   memberships: MembershipsTableRow[]
   onReload: () => void
   occupancy?: MembershipsPanelData['classOccupancy']
+  mobileMetrics?: React.ReactNode
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -31,7 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
   [MEMBERSHIP_STATUS.TRANSFERRED]: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
 }
 
-export default function MembershipsTable({ memberships, onReload, occupancy }: MembershipsTableProps) {
+export default function MembershipsTable({ memberships, onReload, occupancy, mobileMetrics }: MembershipsTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -41,7 +42,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
     action: 'unfreeze' | 'cancel'
     message: string
   } | null>(null)
-  const [pauseMembership, setPauseMembership] = useState<{ id: string; days: number } | null>(null)
+  const [pauseMembership, setPauseMembership] = useState<{ id: string; targetDate: string } | null>(null)
   const [pauseError, setPauseError] = useState<string | null>(null)
 
   const filteredData = useMemo(() => {
@@ -111,9 +112,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
       header: 'Estado',
       className: 'w-[8%] min-w-[70px] whitespace-nowrap',
       render: (row: MembershipsTableRow) => (
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider border ${STATUS_COLORS[row.status]}`}>
-          {STATUS_LABELS[row.status]}
-        </span>
+        <StatusBadge status={row.status} />
       )
     },
     {
@@ -130,7 +129,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
               disabled={isProcessing}
               title="Pausar"
               onClick={() => {
-                setPauseMembership({ id: row.id, days: 1 })
+                setPauseMembership({ id: row.id, targetDate: '' })
                 setPauseError(null)
               }}
             >
@@ -199,6 +198,12 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
         </div>
       </div>
 
+      {mobileMetrics && (
+        <div className="block lg:hidden">
+          {mobileMetrics}
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 w-full">
         {occupancy && (
           <div className="flex-none lg:w-55 xl:w-65 flex flex-col min-h-0 lg:h-full">
@@ -225,16 +230,14 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Selecciona la cantidad de días para pausar esta membresía. El cliente perderá acceso de inmediato hasta que la membresía se reanude.
+            Selecciona la fecha hasta la cual deseas pausar esta membresía. El cliente perderá acceso de inmediato hasta que la membresía se reanude.
           </p>
-          <TextField
-            label="Días de pausa"
-            type="number"
-            min={1}
-            value={pauseMembership?.days ?? 1}
+          <DatePicker
+            label="Fecha de reactivación"
+            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+            value={pauseMembership?.targetDate ?? ''}
             onChange={(event) => {
-              const value = Number(event.target.value)
-              setPauseMembership((prev) => prev ? { ...prev, days: Number.isNaN(value) ? 1 : value } : { id: '', days: 1 })
+              setPauseMembership((prev) => prev ? { ...prev, targetDate: event.target.value } : { id: '', targetDate: '' })
               setPauseError(null)
             }}
             error={pauseError ?? undefined}
@@ -248,12 +251,12 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
               size="sm"
               onClick={async () => {
                 if (!pauseMembership) return
-                if (pauseMembership.days < 1) {
-                  setPauseError('Ingresa una cantidad de días válida.')
+                if (!pauseMembership.targetDate) {
+                  setPauseError('Ingresa una fecha de reactivación válida.')
                   return
                 }
                 setIsProcessing(true)
-                const res = await freezeMembership(pauseMembership.id, pauseMembership.days)
+                const res = await freezeMembership(pauseMembership.id, pauseMembership.targetDate)
                 setIsProcessing(false)
                 setPauseMembership(null)
                 if (res.success) {
@@ -262,7 +265,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy }: M
                   setToast({ message: res.error || 'Error al pausar la membresía.', type: 'error' })
                 }
               }}
-              disabled={isProcessing || (pauseMembership?.days ?? 0) < 1}
+              disabled={isProcessing || !pauseMembership?.targetDate}
             >
               {isProcessing ? 'Pausando...' : 'Confirmar pausa'}
             </Button>

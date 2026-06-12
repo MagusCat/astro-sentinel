@@ -21,20 +21,7 @@ import {
   deleteAllAuthCookies,
 } from '@/lib/cookies'
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
-function getAdminClient() {
-  const { supabaseUrl } = getServiceConfig()
-  return createSupabaseClient(
-    supabaseUrl,
-    getSecret('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      global: {
-        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-}
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // ── Device Authorization
 export async function isDeviceAuthorized(): Promise<boolean> {
@@ -45,7 +32,7 @@ export async function isDeviceAuthorized(): Promise<boolean> {
   if (!deviceId) return false
 
   try {
-    const supabaseAdmin = getAdminClient()
+    const supabaseAdmin = createAdminClient()
     const { data } = await supabaseAdmin
       .from('authorized_devices')
       .select('device_id')
@@ -120,7 +107,7 @@ export async function authorizeDevice(
   }
 }
 
-export async function revokeDeviceAuthorization(): Promise<void> {
+export async function revokeDeviceAuthorization(): Promise<{ success: boolean; error?: string }> {
   try {
     const token = await getDeviceToken()
 
@@ -140,8 +127,10 @@ export async function revokeDeviceAuthorization(): Promise<void> {
     }
 
     await deleteDeviceCookie()
+    return { success: true }
   } catch (err) {
     console.error('Error al revocar autorización de dispositivo:', err)
+    return { success: false, error: 'Error interno al revocar dispositivo.' }
   }
 }
 
@@ -277,7 +266,9 @@ export async function authenticateAdmin(
       if (user) {
         userRecord = user
       }
-    } catch {
+    } catch (err) {
+      console.error('[Auth] Error fetching user record:', err)
+      return { success: false, error: 'Error interno al verificar credenciales.' }
     }
 
     if (!userRecord) {
@@ -320,18 +311,22 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   }
 }
 
-export async function logoutUser(): Promise<void> {
+export async function logoutUser(): Promise<{ success: boolean; error?: string }> {
   try {
     await deleteSessionCookie()
+    return { success: true }
   } catch (err) {
     console.error('Error al limpiar cookie de sesión:', err)
+    return { success: false, error: 'Error al limpiar sesión.' }
   }
 }
 
-export async function logoutUserFull(): Promise<void> {
+export async function logoutUserFull(): Promise<{ success: boolean; error?: string }> {
   try {
     await deleteAllAuthCookies()
+    return { success: true }
   } catch (err) {
     console.error('Error al limpiar sesión completa:', err)
+    return { success: false, error: 'Error al limpiar sesión completa.' }
   }
 }

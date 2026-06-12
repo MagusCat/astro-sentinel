@@ -11,6 +11,7 @@ interface FormActionsProps {
   isLoading?: boolean
   submitVariant?: "default" | "destructive" | "primary"
   className?: string
+  formId?: string
 }
 
 /**
@@ -27,6 +28,7 @@ export function FormActions({
   isLoading,
   submitVariant = "default",
   className,
+  formId,
 }: FormActionsProps) {
   return (
     <div className={cn("flex gap-2 justify-end mt-4", className)}>
@@ -43,6 +45,7 @@ export function FormActions({
       )}
       <Button
         type="submit"
+        form={formId}
         variant={submitVariant === "destructive" ? "destructive" : "default"}
         size="default"
         onClick={onSubmit}

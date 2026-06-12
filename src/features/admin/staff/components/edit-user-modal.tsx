@@ -10,6 +10,7 @@ import { Modal, TextField, SelectField, FormActions } from '@/components/shared'
 interface EditForm {
   full_name: string
   password_raw: string
+  current_password_raw?: string
   role: string
   auth_user_id: string
   is_active: boolean
@@ -48,8 +49,22 @@ export default function EditUserModal({
   ]
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Modificar Operador" size="md">
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Modificar Operador"
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText="Guardar Cambios"
+          isLoading={loading}
+          formId="edit-user-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="edit-user-form" onSubmit={onSubmit} className="flex flex-col gap-4">
         <TextField
           label="Nombre Completo"
           type="text"
@@ -68,6 +83,18 @@ export default function EditUserModal({
           value={selectedUser.username}
         />
 
+        {activeUser.id === selectedUser.id && (
+          <TextField
+            label="Contraseña Actual"
+            type="password"
+            required={!!form.password_raw}
+            placeholder="Requerida para confirmar cambios..."
+            value={form.current_password_raw || ''}
+            onChange={(e) => onChange({ ...form, current_password_raw: e.target.value })}
+            error={errors?.current_password_raw?.[0]}
+          />
+        )}
+
         <TextField
           label="Nueva Contraseña"
           type="password"
@@ -78,14 +105,23 @@ export default function EditUserModal({
           error={errors?.password_raw?.[0]}
         />
 
-        <SelectField
-          label="Rol de Sistema"
-          value={form.role}
-          disabled={activeUser.role === APP_ROLE.ADMIN}
-          onChange={(e) => onChange({ ...form, role: e.target.value || APP_ROLE.RECEPTION })}
-          error={errors?.role?.[0]}
-          options={roleOptions}
-        />
+        {activeUser.role === APP_ROLE.MAINTAINER ? (
+          <SelectField
+            label="Rol de Sistema"
+            value={form.role}
+            onChange={(e) => onChange({ ...form, role: e.target.value || APP_ROLE.RECEPTION })}
+            error={errors?.role?.[0]}
+            options={roleOptions}
+          />
+        ) : (
+          <TextField
+            label="Rol de Sistema"
+            type="text"
+            disabled
+            className="bg-muted/20 text-muted-foreground font-medium cursor-not-allowed"
+            value={roleOptions.find(o => o.value === form.role)?.label || form.role}
+          />
+        )}
 
         {form.role !== APP_ROLE.RECEPTION && activeUser.role === APP_ROLE.MAINTAINER && (
           <div className="flex flex-col gap-1.5 border-t border-border/20 pt-4 mt-2">
@@ -104,11 +140,6 @@ export default function EditUserModal({
           </div>
         )}
 
-        <FormActions
-          onCancel={onClose}
-          submitText="Guardar Cambios"
-          isLoading={loading}
-        />
       </form>
     </Modal>
   )

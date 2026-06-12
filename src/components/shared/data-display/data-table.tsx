@@ -124,36 +124,3 @@ export function DataTable<T>({
   )
 }
 
-interface TableSkeletonProps {
-  rows?: number
-  cols?: number
-  className?: string
-}
-
-/**
- * TableSkeleton – placeholder visual para carga de tablas.
- */
-export function TableSkeleton({ rows = 5, cols = 4, className }: TableSkeletonProps) {
-  return (
-    <div className={cn("w-full animate-pulse", className)}>
-      <div className="flex gap-2 mb-2">
-        {Array.from({ length: cols }).map((_, i) => (
-          <div
-            key={`sk-h-${i}`}
-            className="h-6 bg-muted rounded flex-1"
-          />
-        ))}
-      </div>
-      {Array.from({ length: rows }).map((_, r) => (
-        <div key={`sk-r-${r}`} className="flex gap-2 mb-1.5">
-          {Array.from({ length: cols }).map((_, c) => (
-            <div
-              key={`sk-c-${r}-${c}`}
-              className="h-10 bg-muted/60 rounded flex-1"
-            />
-          ))}
-        </div>
-      ))}
-    </div>
-  )
-}

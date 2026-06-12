@@ -57,8 +57,22 @@ export default function CreatePlanModal({ initialData, defaultClassId, onClose, 
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={initialData ? "Editar Plan de Pago" : "Crear Plan de Pago"} size="md">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={initialData ? "Editar Plan de Pago" : "Crear Plan de Pago"}
+      size="md"
+      footer={
+        <FormActions
+          onCancel={onClose}
+          submitText={initialData ? 'Guardar Cambios' : 'Crear Plan'}
+          isLoading={loading}
+          formId="plan-form"
+          className="mt-0"
+        />
+      }
+    >
+      <form id="plan-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
 
         <TextField
           label="Nombre del Plan"
@@ -91,11 +105,6 @@ export default function CreatePlanModal({ initialData, defaultClassId, onClose, 
           />
         </div>
 
-        <FormActions
-          onCancel={onClose}
-          submitText={initialData ? 'Guardar Cambios' : 'Crear Plan'}
-          isLoading={loading}
-        />
       </form>
 
       {toast && (

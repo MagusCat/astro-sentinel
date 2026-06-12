@@ -15,3 +15,15 @@ export function parseDuration(duration: string): number {
   if (unit === 'm') return val * 60
   return val
 }
+
+export function formatDate(dateStr: string | null) {
+  if (!dateStr) return null
+  try {
+    return new Date(dateStr).toLocaleDateString('es-ES', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    })
+  } catch {
+    return null
+  }
+}

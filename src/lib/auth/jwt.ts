@@ -10,7 +10,8 @@
 import { SignJWT } from 'jose/jwt/sign'
 import { jwtVerify } from 'jose/jwt/verify'
 import type { AuthenticatedUser } from '@/features/auth/types'
-import { APP_CONFIG, getSecret } from '@/lib/config'
+import { APP_CONFIG, getSecret, APP_ROLE } from '@/lib/config'
+import type { AppRole } from '@/lib/config'
 
 async function getSecretKey(): Promise<Uint8Array> {
   const secret = getSecret('SESSION_SECRET')
@@ -35,10 +36,10 @@ export async function createSessionToken(
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-  .setIssuer(APP_CONFIG.auth.jwtIssuer)
-  .setAudience(APP_CONFIG.auth.jwtAudience)
-  .setExpirationTime(APP_CONFIG.auth.sessionMaxAge)
-  .sign(key)
+    .setIssuer(APP_CONFIG.auth.jwtIssuer)
+    .setAudience(APP_CONFIG.auth.jwtAudience)
+    .setExpirationTime(APP_CONFIG.auth.sessionMaxAge)
+    .sign(key)
 }
 
 export async function verifySessionToken(
@@ -60,10 +61,15 @@ export async function verifySessionToken(
       return null
     }
 
+    const validRoles = Object.values(APP_ROLE)
+    if (!validRoles.includes(payload.role as AppRole)) {
+      return null
+    }
+
     return {
       id: payload.sub,
       full_name: payload.full_name,
-      role: payload.role,
+      role: payload.role as AppRole,
       username: payload.username,
     }
   } catch (err) {
@@ -79,10 +85,10 @@ export async function createDeviceToken(deviceId: string): Promise<string> {
   return new SignJWT({ device_id: deviceId })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-  .setIssuer(APP_CONFIG.auth.jwtIssuer)
-  .setAudience(APP_CONFIG.auth.jwtAudience)
-  .setExpirationTime(APP_CONFIG.auth.deviceMaxAge)
-  .sign(key)
+    .setIssuer(APP_CONFIG.auth.jwtIssuer)
+    .setAudience(APP_CONFIG.auth.jwtAudience)
+    .setExpirationTime(APP_CONFIG.auth.deviceMaxAge)
+    .sign(key)
 }
 
 export async function verifyDeviceToken(
