@@ -10,7 +10,6 @@ import {
   verifyDeviceToken,
 } from '@/lib/auth/session'
 import { credentialsSchema, localLoginSchema } from './schemas'
-import { getSecret, getServiceConfig } from '@/lib/config'
 import {
   setSessionCookie,
   setDeviceCookie,
@@ -33,17 +32,23 @@ export async function isDeviceAuthorized(): Promise<boolean> {
 
   try {
     const supabaseAdmin = createAdminClient()
-    const { data } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('authorized_devices')
       .select('device_id')
       .eq('device_id', deviceId)
       .maybeSingle()
 
+    if (error) {
+      console.error('[Auth] Error querying authorized_devices:', error.message)
+      return false
+    }
+
     if (!data) {
       await deleteDeviceCookie()
       return false
     }
-  } catch {
+  } catch (err) {
+    console.error('[Auth] Exception checking device authorization:', err)
     return false
   }
 
@@ -162,18 +167,25 @@ export async function authenticateUser(
       }
     }
 
-    const supabase = await createClient()
+    const supabaseAdmin = createAdminClient()
 
-    const { data: deviceData } = await supabase
+    const { data: deviceData, error: deviceError } = await supabaseAdmin
       .from('authorized_devices')
       .select('device_id')
       .eq('device_id', deviceId)
       .maybeSingle()
 
+    if (deviceError) {
+      console.error('[Auth] Error querying authorized device on user login:', deviceError.message)
+      return { success: false, error: 'Error al verificar la autorización de la terminal. Intente de nuevo.' }
+    }
+
     if (!deviceData) {
       await deleteDeviceCookie()
       return { success: false, error: 'La autorización de esta terminal ha sido revocada remotamente.' }
     }
+
+    const supabase = await createClient()
 
     const { data: user, error } = await supabase
       .from('users')

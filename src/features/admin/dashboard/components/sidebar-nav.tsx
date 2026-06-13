@@ -147,7 +147,7 @@ export default function SidebarNav({
         <>
           <AppSidebarGroup title="Recepción">
             <AppSidebarItem
-              label="Dashboard de Recepción"
+              label="Recepción"
               icon={Users}
               href="/dashboard?tab=reception"
               onClick={() => handleLinkClick('reception')}
