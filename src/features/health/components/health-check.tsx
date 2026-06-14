@@ -9,7 +9,7 @@ import {
   Server
 } from 'lucide-react'
 import { useHealthCheck } from '../hooks/use-health-check'
-import { Button } from '@/components/shared'
+import { Button } from '@/components/shared/form/button'
 
 export default function HealthCheck() {
   const { loading, result, scanSteps, triggerScan } = useHealthCheck()

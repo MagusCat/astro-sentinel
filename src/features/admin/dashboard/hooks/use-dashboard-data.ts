@@ -10,13 +10,22 @@ import { PaymentData } from '@/features/admin/payments/types'
 import { OverviewStats } from '../types'
 import { MembershipsPanelData } from '@/features/admin/memberships/types'
 
-export function useDashboardData() {
-  const [clients, setClients] = useState<ClientData[]>([])
-  const [plans, setPlans] = useState<PlanData[]>([])
-  const [classes, setClasses] = useState<ClassData[]>([])
-  const [payments, setPayments] = useState<PaymentData[]>([])
-  const [membershipsData, setMembershipsData] = useState<MembershipsPanelData | null>(null)
-  const [stats, setStats] = useState<OverviewStats>({
+export interface InitialDashboardData {
+  stats?: OverviewStats
+  clients?: ClientData[]
+  plans?: PlanData[]
+  classes?: ClassData[]
+  payments?: PaymentData[]
+  membershipsData?: MembershipsPanelData
+}
+
+export function useDashboardData(initialData?: InitialDashboardData) {
+  const [clients, setClients] = useState<ClientData[]>(initialData?.clients || [])
+  const [plans, setPlans] = useState<PlanData[]>(initialData?.plans || [])
+  const [classes, setClasses] = useState<ClassData[]>(initialData?.classes || [])
+  const [payments, setPayments] = useState<PaymentData[]>(initialData?.payments || [])
+  const [membershipsData, setMembershipsData] = useState<MembershipsPanelData | null>(initialData?.membershipsData || null)
+  const [stats, setStats] = useState<OverviewStats>(initialData?.stats || {
     activeMembershipsCount: 0,
     dailyRevenue: 0,
     topClass: 'Sin sesiones activas',
@@ -28,6 +37,7 @@ export function useDashboardData() {
     totalClassesCount: 0
   })
   const [loadingData, setLoadingData] = useState(false)
+
 
   const fetchDatabaseData = useCallback(async (tab?: string) => {
     setLoadingData(true)

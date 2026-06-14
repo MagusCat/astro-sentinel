@@ -2,12 +2,17 @@
 
 import React, { useState } from 'react'
 import { Plus, RefreshCw, Trash2 } from 'lucide-react'
-import { Button } from '@/components/shared'
+import { Button } from '@/components/shared/form/button'
 import { PlanData, ClassData } from '../types'
 import { deleteClass, deleteClassPlan } from '../mutations'
 import CreateClassModal from './create-class-modal'
 import CreatePlanModal from './create-plan-modal'
-import { ConfirmDialog, EmptyState, PageHeader, SectionCard, Toast, ToastType, PriceDisplay } from '@/components/shared'
+import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
+import { EmptyState } from '@/components/shared/feedback/empty-state'
+import { PageHeader } from '@/components/shared/layout/page-header'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import { PriceDisplay } from '@/components/shared/data-display/price-display'
 
 interface ClassPlansProps {
   plans: PlanData[]

@@ -1,5 +1,9 @@
 import React, { useState } from 'react'
-import { Modal, Toast, ToastType, TextField, TextareaField, FormActions } from '@/components/shared'
+import { Modal } from '@/components/shared/feedback/modal'
+import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import { TextField } from '@/components/shared/form/text-field'
+import { TextareaField } from '@/components/shared/form/textarea-field'
+import { FormActions } from '@/components/shared/form/form-actions'
 import { saveNewClass, updateClass } from '../mutations'
 import { ClassData } from '../types'
 

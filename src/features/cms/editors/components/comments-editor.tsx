@@ -3,8 +3,10 @@
 import React from 'react'
 import { Comments, Comment } from '../../core/types'
 import { MessageSquare } from 'lucide-react'
-import { SectionCard } from '@/components/shared'
-import { TextField, TextareaField, SelectField } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { TextField } from '@/components/shared/form/text-field'
+import { TextareaField } from '@/components/shared/form/textarea-field'
+import { SelectField } from '@/components/shared/form/select-field'
 import { CMS_LIMITS } from '../../core/config'
 import { Plus, Trash2 } from 'lucide-react'
 

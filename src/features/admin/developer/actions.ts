@@ -36,9 +36,11 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
       return { success: false, error: 'Error al obtener dispositivos autorizados.' }
     }
 
-    const { data: usersData } = await supabase
-      .from('users')
-      .select('auth_user_id, full_name, username')
+    const authUserIds = Array.from(new Set((data || []).map(d => d.authorized_by).filter(Boolean)))
+    const { data: usersData } = authUserIds.length > 0 
+      ? await supabase.from('users').select('auth_user_id, full_name, username').in('auth_user_id', authUserIds)
+      : { data: [] }
+
 
     const usersMap = new Map((usersData || []).map(u => [u.auth_user_id, u.full_name || u.username]))
 

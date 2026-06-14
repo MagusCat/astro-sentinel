@@ -10,8 +10,8 @@ export async function saveNewClient(
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
     const currentUser = await getCurrentUser()
-    if (!currentUser || !currentUser.role) {
-      return { success: false, error: 'Acceso denegado: Sesión inválida.' }
+    if (!currentUser || !Roles.canAccessDashboard(currentUser.role)) {
+      return { success: false, error: 'Acceso denegado: Sesión o rol inválido.' }
     }
 
     const parsed = createClientSchema.safeParse(clientData)
@@ -65,8 +65,8 @@ export async function updateClient(
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
     const currentUser = await getCurrentUser()
-    if (!currentUser || !currentUser.role) {
-      return { success: false, error: 'Acceso denegado: Sesión inválida.' }
+    if (!currentUser || !Roles.canAccessDashboard(currentUser.role)) {
+      return { success: false, error: 'Acceso denegado: Sesión o rol inválido.' }
     }
 
     const parsed = updateClientSchema.safeParse(clientData)

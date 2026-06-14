@@ -2,7 +2,10 @@
 
 import React from 'react'
 import { Users, Trophy, CreditCard, Clock, UserPlus } from 'lucide-react'
-import { DashboardListWidget, MetricCard, StatusBadge, PriceDisplay } from '@/components/shared'
+import { DashboardListWidget } from '@/components/shared/data-display/dashboard-list-widget'
+import { MetricCard } from '@/components/shared/data-display/metric-card'
+import { StatusBadge } from '@/components/shared/data-display/status-badge'
+import { PriceDisplay } from '@/components/shared/data-display/price-display'
 import { OverviewStats } from '../types'
 
 interface DashboardOverviewProps {

@@ -3,8 +3,10 @@
 import React, { useState } from 'react'
 import { Schedule, ScheduleClass, DayKey, TimeSlot } from '../../core/types'
 import { Plus, Trash2, Calendar, ChevronRight, Copy, ClipboardPaste, Settings2 } from 'lucide-react'
-import { SectionCard } from '@/components/shared'
-import { TextField, TextareaField, ConfirmDialog } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { TextField } from '@/components/shared/form/text-field'
+import { TextareaField } from '@/components/shared/form/textarea-field'
+import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
 
 interface Props { 
   value: Schedule

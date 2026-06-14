@@ -4,12 +4,12 @@ import { Roles } from '@/lib/auth/roles'
 import { SidebarNavProps } from '../types'
 import { useSidebarNav } from '../hooks/use-sidebar-nav'
 import { MAIN_LINKS, ADMIN_LINKS } from '../config'
-import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared'
+import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared/layout/app-sidebar'
 import { LogOut, Power, FileEdit, Terminal, Users, UserCheck, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
-import { Logo } from '@/components/shared'
+import { Logo } from '@/components/shared/layout/logo'
 
 export default function SidebarNav({
   activeUser,

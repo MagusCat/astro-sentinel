@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
-import { PwaRegister } from "@/components/shared";
+import { PwaRegister } from "@/components/shared/pwa-register";
 import "../styles/globals.css";
 
 const openSans = Open_Sans({

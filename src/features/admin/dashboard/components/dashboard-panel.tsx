@@ -1,13 +1,14 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { RefreshCw } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
 import { AuthenticatedUser } from '@/features/auth/types'
-import { useDashboardData } from '../hooks/use-dashboard-data'
-import { Button } from '@/components/shared'
-import { WarningAlert, ProgressBar } from '@/components/shared'
-import { Roles } from '@/lib/auth/roles'
+import { useDashboardData, InitialDashboardData } from '../hooks/use-dashboard-data'
+import { Button } from '@/components/shared/form/button'
+import { WarningAlert } from '@/components/shared/feedback/warning-alert'
+import { ProgressBar } from '@/components/shared/feedback/progress-bar'
+import { AuthGuard } from '@/lib/auth/guard'
+import { useTabSync } from '@/hooks/use-tab-sync'
 
 import DashboardOverview from './dashboard-overview'
 import ClientRegistry from '@/features/admin/clients/components/client-registry'
@@ -21,65 +22,69 @@ import MembershipsPanel from '@/features/admin/memberships/components/membership
 
 interface DashboardPanelProps {
   activeUser: AuthenticatedUser
+  initialData?: InitialDashboardData
 }
 
-export default function DashboardPanel({ activeUser }: DashboardPanelProps) {
-  const searchParams = useSearchParams()
+type DashboardTab = 
+  | 'overview' 
+  | 'clients' 
+  | 'plans' 
+  | 'payments' 
+  | 'admin_users' 
+  | 'developer' 
+  | 'reception' 
+  | 'checkout' 
+  | 'memberships'
 
-  const rawTab = searchParams.get('tab')
+const VALID_TABS: DashboardTab[] = [
+  'overview', 'clients', 'plans', 'payments', 'admin_users', 'developer', 'reception', 'checkout', 'memberships'
+]
+
+export default function DashboardPanel({ activeUser, initialData }: DashboardPanelProps) {
   const isReception = activeUser.role === 'reception'
-  const activeTab = (
-    rawTab === 'overview' ||
-    rawTab === 'clients' ||
-    rawTab === 'plans' ||
-    rawTab === 'payments' ||
-    rawTab === 'admin_users' ||
-    rawTab === 'developer' ||
-    rawTab === 'reception' ||
-    rawTab === 'checkout' ||
-    rawTab === 'memberships'
-  )
-    ? rawTab
-    : (isReception ? 'reception' : 'overview')
+  const defaultTab: DashboardTab = isReception ? 'reception' : 'overview'
 
-  const { clients, plans, classes, payments, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData()
+  const { activeTab } = useTabSync<DashboardTab>('tab', defaultTab, VALID_TABS)
+
+  const { clients, plans, classes, payments, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData(initialData)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [childLoading, setChildLoading] = useState(false)
   const isGlobalLoading = loadingData || childLoading
 
   useEffect(() => {
-    fetchDatabaseData(activeTab)
-  }, [activeTab, fetchDatabaseData])
+    const hasInitialDataForTab = (
+      (activeTab === 'overview' && initialData?.stats) ||
+      (activeTab === 'clients' && initialData?.clients?.length) ||
+      (activeTab === 'plans' && initialData?.plans?.length) ||
+      (activeTab === 'checkout' && initialData?.classes?.length) ||
+      (activeTab === 'payments' && initialData?.payments?.length) ||
+      (activeTab === 'memberships' && initialData?.membershipsData) ||
+      (activeTab === 'reception' && initialData?.stats)
+    )
 
-  const getHeaderInfo = () => {
-    switch (activeTab) {
-      case 'clients':
-        return { title: 'Control de Clientes' }
-      case 'plans':
-        return { title: 'Gestión de Clases y  Planes' }
-      case 'payments':
-        return { title: 'Historial de Pagos' }
-      case 'admin_users':
-        return { title: 'Gestión de Personal' }
-      case 'developer':
-        return { title: 'Auditoría' }
-      case 'reception':
-        return { title: 'Recepción' }
-      case 'checkout':
-        return { title: 'Registro de Pagos' }
-      case 'memberships':
-        return { title: 'Control de Membresías' }
-      case 'overview':
-        return { title: 'Administración' }
-      default:
-        return { title: '' }
+    if (!hasInitialDataForTab) {
+      fetchDatabaseData(activeTab)
     }
-  }
+  }, [activeTab, fetchDatabaseData, initialData])
 
-  const { title } = getHeaderInfo()
+  const title = useMemo(() => {
+    const labels: Record<DashboardTab, string> = {
+      clients: 'Control de Clientes',
+      plans: 'Gestión de Clases y Planes',
+      payments: 'Historial de Pagos',
+      admin_users: 'Gestión de Personal',
+      developer: 'Auditoría',
+      reception: 'Recepción',
+      checkout: 'Registro de Pagos',
+      memberships: 'Control de Membresías',
+      overview: 'Administración'
+    }
+    return labels[activeTab]
+  }, [activeTab])
 
-  const hasAdminAccess = Roles.canManageStaff(activeUser.role)
-  const hasDevAccess = Roles.canAccessDeveloper(activeUser.role)
+  const hasAdminAccess = AuthGuard.canManageStaff(activeUser.role)
+  const hasDevAccess = AuthGuard.canAccessDeveloper(activeUser.role)
+
 
   const renderAccessDenied = () => (
     <WarningAlert

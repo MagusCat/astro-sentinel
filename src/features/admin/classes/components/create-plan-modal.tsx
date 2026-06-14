@@ -1,7 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Modal, Toast, ToastType, TextField, FormActions } from '@/components/shared'
+import { Modal } from '@/components/shared/feedback/modal'
+import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import { TextField } from '@/components/shared/form/text-field'
+import { FormActions } from '@/components/shared/form/form-actions'
 import { saveNewClassPlan, updateClassPlan } from '../mutations'
 import { PlanData } from '../types'
 

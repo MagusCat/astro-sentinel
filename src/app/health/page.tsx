@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import HealthCheck from '@/features/health/components/health-check'
-import { Logo } from '@/components/shared'
+import Logo from '@/components/shared/layout/logo'
 import { getActiveModules } from '@/lib/modules'
 
 const { adminEnabled, cmsEnabled } = getActiveModules()

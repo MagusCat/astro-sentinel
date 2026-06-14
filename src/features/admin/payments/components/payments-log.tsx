@@ -3,7 +3,13 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { CreditCard, Filter, ChevronDown } from 'lucide-react'
 import { PaymentData, PaymentFilters } from '../types'
-import { DataTable, TableSkeleton, SearchInput, SelectField, TextField, EmptyState, PriceDisplay } from '@/components/shared'
+import { DataTable } from '@/components/shared/data-display/data-table'
+import { TableSkeleton } from '@/components/shared/feedback/skeleton'
+import { SearchInput } from '@/components/shared/form/search-input'
+import { SelectField } from '@/components/shared/form/select-field'
+import { TextField } from '@/components/shared/form/text-field'
+import { EmptyState } from '@/components/shared/feedback/empty-state'
+import { PriceDisplay } from '@/components/shared/data-display/price-display'
 import { getPayments } from '../queries'
 
 interface PaymentsLogProps {

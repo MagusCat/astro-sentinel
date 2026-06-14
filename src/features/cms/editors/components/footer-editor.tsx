@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { Footer } from '../../core/types'
-import { SectionCard } from '@/components/shared'
-import { TextField } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { TextField } from '@/components/shared/form/text-field'
 
 interface Props { 
   value: Footer

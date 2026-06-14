@@ -1,6 +1,6 @@
 import React from 'react'
 import { Users, AlertTriangle, Pause } from 'lucide-react'
-import { MetricCard } from '@/components/shared'
+import { MetricCard } from '@/components/shared/data-display/metric-card'
 import { MembershipsPanelData } from '../types'
 
 interface MembershipsMetricsProps {

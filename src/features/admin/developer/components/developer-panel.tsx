@@ -4,7 +4,12 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Smartphone, Trash2, Cpu, ServerCog, Zap } from 'lucide-react'
 import { ConnectedDevice } from '../types'
 import { getAuthorizedDevices, revokeDeviceById } from '../actions'
-import { Button, Toast, ToastType, ConfirmDialog, SectionCard, EmptyState, MetricCard } from '@/components/shared'
+import { Button } from '@/components/shared/form/button'
+import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { EmptyState } from '@/components/shared/feedback/empty-state'
+import { MetricCard } from '@/components/shared/data-display/metric-card'
 import { getActiveModules } from '@/lib/modules'
 
 interface DeveloperPanelProps {

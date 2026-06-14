@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react'
 import { Upload, Code, AlertTriangle } from 'lucide-react'
-import { SectionCard } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
 import { SiteContent } from '../../core/types'
 
 interface Props {

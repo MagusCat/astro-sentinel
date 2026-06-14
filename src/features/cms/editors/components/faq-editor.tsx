@@ -3,9 +3,10 @@
 import React from 'react'
 import { Faq, FaqItem } from '../../core/types'
 import { HelpCircle, Plus, Trash2 } from 'lucide-react'
-import { SectionCard } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
 import { CMS_LIMITS } from '../../core/config'
-import { TextField, TextareaField } from '@/components/shared'
+import { TextField } from '@/components/shared/form/text-field'
+import { TextareaField } from '@/components/shared/form/textarea-field'
 
 interface Props { 
   value: Faq

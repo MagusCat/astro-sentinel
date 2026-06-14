@@ -1,6 +1,6 @@
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/shared"
+import { Button } from "@/components/shared/form/button"
 import { RefreshCw } from "lucide-react"
 
 interface FormActionsProps {

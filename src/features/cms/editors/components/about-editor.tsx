@@ -3,8 +3,9 @@
 import React from 'react'
 import { About } from '../../core/types'
 import { Info } from 'lucide-react'
-import { SectionCard } from '@/components/shared'
-import { TextField, TextareaField } from '@/components/shared'
+import { SectionCard } from '@/components/shared/data-display/section-card'
+import { TextField } from '@/components/shared/form/text-field'
+import { TextareaField } from '@/components/shared/form/textarea-field'
 
 interface Props { 
   value: About

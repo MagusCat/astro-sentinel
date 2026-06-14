@@ -5,7 +5,10 @@ import { Link as LinkIcon } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { LocalUser } from '../types'
 import { APP_ROLE } from '@/lib/auth/roles'
-import { Modal, TextField, SelectField, FormActions } from '@/components/shared'
+import Modal from '@/components/shared/feedback/modal'
+import { TextField } from '@/components/shared/form/text-field'
+import { SelectField } from '@/components/shared/form/select-field'
+import { FormActions } from '@/components/shared/form/form-actions'
 
 interface EditForm {
   full_name: string

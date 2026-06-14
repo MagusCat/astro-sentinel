@@ -8,16 +8,7 @@
 
 import { z } from 'zod'
 import { APP_ROLE } from '@/lib/auth/roles'
-
-const fullNameField = z
-  .string()
-  .transform((s) => s.replace(/<[^>]*>/g, '').trim())  // strip HTML tags
-  .pipe(
-    z
-      .string()
-      .min(3, 'El nombre completo debe tener entre 3 y 100 caracteres.')
-      .max(100, 'El nombre completo debe tener entre 3 y 100 caracteres.')
-  )
+import { nameSchema, uuidSchema } from '@/lib/validation/common'
 
 const usernameField = z
   .string()
@@ -37,15 +28,13 @@ const roleField = z.enum([APP_ROLE.MAINTAINER, APP_ROLE.ADMIN, APP_ROLE.RECEPTIO
   errorMap: () => ({ message: 'El rol seleccionado no es válido en el sistema.' }),
 })
 
-const authUserIdField = z
-  .string()
-  .uuid('El ID de Supabase Auth debe ser un UUID de formato válido.')
+const authUserIdField = uuidSchema
   .nullable()
   .optional()
 
 /** Schema for creating a new staff user */
 export const createUserSchema = z.object({
-  full_name: fullNameField,
+  full_name: nameSchema,
   username: usernameField,
   password_raw: z
     .string()
@@ -56,7 +45,7 @@ export const createUserSchema = z.object({
 
 /** Schema for updating an existing staff user (all fields optional except constraints) */
 export const updateUserSchema = z.object({
-  full_name: fullNameField.optional(),
+  full_name: nameSchema.optional(),
   password_raw: z
     .string()
     .min(6, 'La nueva contraseña debe tener al menos 6 caracteres.')

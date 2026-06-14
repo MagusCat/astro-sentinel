@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import { RefreshCw, User, Lock, CheckCircle2 } from 'lucide-react'
-import { Logo, Toast, ToastType, TextField, ToggleButtonGroup, LoadingState, Button } from '@/components/shared'
+import Logo from '@/components/shared/layout/logo'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
+import { TextField } from '@/components/shared/form/text-field'
+import { ToggleButtonGroup } from '@/components/shared/form/toggle-button-group'
+import { LoadingState } from '@/components/shared/feedback/loading-state'
+import { Button } from '@/components/shared/form/button'
 import { authenticateUser, isDeviceAuthorized, authorizeDevice, authenticateAdmin } from '../actions'
 import { AuthenticatedUser } from '../types'
 

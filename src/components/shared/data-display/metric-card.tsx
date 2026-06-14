@@ -38,26 +38,27 @@ export function MetricCard({
 
   return (
     <div className={cn(
-      "bg-card border-l-4 border-y border-r border-border p-4 md:p-5 rounded-xl md:rounded-2xl relative overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-r-border/80 w-full h-full",
+      "@container bg-card border-l-4 border-y border-r border-border p-4 @[250px]:p-5 rounded-xl @[250px]:rounded-2xl relative overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-r-border/80 w-full h-full",
       borderClass,
       className
     )}>
-      <div className="flex flex-col justify-between h-full min-h-[80px] md:min-h-[90px]">
-        <div className="flex items-center justify-between mb-2 md:mb-3">
-          <p className="text-[11px] xs:text-[12px] md:text-xs lg:text-sm font-bold uppercase tracking-wider whitespace-normal mr-2 text-muted-foreground">
+      <div className="flex flex-col justify-between h-full min-h-[80px] @[250px]:min-h-[90px]">
+        <div className="flex items-center justify-between mb-2 @[250px]:mb-3">
+          <p className="text-[11px] @[150px]:text-[12px] @[250px]:text-xs @[350px]:text-sm font-bold uppercase tracking-wider whitespace-normal mr-2 text-muted-foreground">
             {title}
           </p>
-          <Icon className={cn("hidden xs:block w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-110 transition-transform duration-300", textClass, iconClassName)} />
+          <Icon className={cn("hidden @[180px]:block w-7 h-7 @[250px]:w-8 @[250px]:h-8 shrink-0 group-hover:scale-110 transition-transform duration-300", textClass, iconClassName)} />
         </div>
-        <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
+        <h3 className="text-2xl @[250px]:text-3xl @[350px]:text-4xl font-extrabold text-foreground tracking-tight">
           {value}
         </h3>
         {description && (
-          <span className="hidden sm:block text-xs font-normal text-muted-foreground mt-2">
+          <span className="hidden @[200px]:block text-xs font-normal text-muted-foreground mt-2">
             {description}
           </span>
         )}
       </div>
     </div>
   )
+
 }

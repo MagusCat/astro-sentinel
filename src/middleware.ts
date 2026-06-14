@@ -14,7 +14,16 @@ const { admin: adminEnabled, cms: cmsEnabled } = APP_CONFIG.modules
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  //TODO: I think this can be abstracted to general module feature flags in future.
+  // 1. Skip middleware for static assets early (redundant with matcher but safer)
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') // common for favicon.ico, images, etc.
+  ) {
+    return NextResponse.next()
+  }
+
+  // 2. Feature Flags
   if (!adminEnabled && pathname.startsWith('/dashboard')) {
     const destination = cmsEnabled ? '/editor' : '/login'
     return NextResponse.redirect(new URL(destination, request.url))
@@ -25,13 +34,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(destination, request.url))
   }
 
-  //TODO: This can setup on higher abstraction layers, so this middleware can be minimal.
+  // 3. Authentication & Authorization
   const isProtectedRoute =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/editor')
 
   if (isProtectedRoute) {
     const token = request.cookies.get(APP_CONFIG.auth.sessionCookieName)?.value
+    // Local JWT Verification (Stateless - No network hop)
     const session = token ? await verifySessionToken(token) : null
 
     if (!session) {
@@ -42,14 +52,18 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith('/editor') && !Roles.canAccessCms(session.role)) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-  }
 
-  if (request.method === 'GET') {
-    return await updateSession(request)
+    // 4. Supabase Session Sync (Only for protected routes where data access is imminent)
+    // We only call this on GET requests to keep the Supabase Auth cookies in sync 
+    // without penalizing public page performance.
+    if (request.method === 'GET') {
+      return await updateSession(request)
+    }
   }
 
   return NextResponse.next()
 }
+
 
 export const config = {
   matcher: [

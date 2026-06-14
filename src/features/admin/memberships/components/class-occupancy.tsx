@@ -1,7 +1,7 @@
 import React from 'react'
 import { Activity } from 'lucide-react'
 import { MembershipsPanelData } from '../types'
-import { EmptyState } from '@/components/shared'
+import { EmptyState } from '@/components/shared/feedback/empty-state'
 
 interface ClassOccupancyProps {
   occupancy: MembershipsPanelData['classOccupancy']

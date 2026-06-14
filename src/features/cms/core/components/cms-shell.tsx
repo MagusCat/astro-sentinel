@@ -12,7 +12,13 @@ import { deriveHeroSocialLinks, deriveContactItems, buildWhatsapp } from '../der
 
 import CmsToolbar from './cms-toolbar'
 import BackupsModal from '@/features/cms/backups/components/backups-modal'
-import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Logo } from '@/components/shared'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
+import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
+import { ProgressBar } from '@/components/shared/feedback/progress-bar'
+import { LoadingState } from '@/components/shared/feedback/loading-state'
+import SessionLoading from '@/components/shared/layout/session-loading'
+import Logo from '@/components/shared/layout/logo'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -35,6 +41,8 @@ import DeveloperEditor from '@/features/cms/editors/components/developer-editor'
 interface CmsShellProps {
   activeUser?: AuthenticatedUser
   webUrl?: string
+  initialContent?: SiteContent
+  initialLastPublished?: string | null
 }
 
 interface ToastState {
@@ -42,49 +50,53 @@ interface ToastState {
   type: ToastType
 }
 
+import { useTabSync } from '@/hooks/use-tab-sync'
 
+const VALID_SECTIONS: CmsSection[] = [
+  'base', 'hero', 'about', 'schedule', 'testimonials', 'faq', 'gallery', 'storage', 'backups', 'developer'
+]
 
-
-
-export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
+export default function CmsShell({ 
+  activeUser, 
+  webUrl, 
+  initialContent, 
+  initialLastPublished 
+}: CmsShellProps) {
   const router = useRouter()
-  const [activeSection, setActiveSection] = useState<CmsSection>('base')
+  const { activeTab: activeSection, setTab: navigateToSection } = useTabSync<CmsSection>('section', 'base', VALID_SECTIONS)
+  
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [pendingSection, setPendingSection] = useState<CmsSection | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [content, setContent] = useState<SiteContent | null>(null)
+  const [content, setContent] = useState<SiteContent | null>(initialContent || null)
   
   const { isCollapsed, isMounted, enableTransitions, toggleCollapse } = useSidebarState()
 
-  const [draft, setDraft] = useState<SiteContent | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [draft, setDraft] = useState<SiteContent | null>(initialContent || null)
+  const [loading, setLoading] = useState(!initialContent)
   const [publishing, setPublishing] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [showBackups, setShowBackups] = useState(false)
   const [confirmRestore, setConfirmRestore] = useState<string | null>(null)
-  const [lastPublished, setLastPublished] = useState<string | null>(null)
+  const [lastPublished, setLastPublished] = useState<string | null>(initialLastPublished || null)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   const showToast = (message: string, type: ToastType) => setToast({ message, type })
 
-  const navigateToSection = (section: CmsSection) => {
-    if (section === activeSection || isTransitioning) return
-    setPendingSection(section)
-    setIsTransitioning(true)
-    setIsMobileMenuOpen(false)
-  }
+  // Still keeping the visual transition state, but derived from the actual activeSection
+  const [displaySection, setDisplaySection] = useState<CmsSection>(activeSection)
 
   useEffect(() => {
-    if (!isTransitioning || !pendingSection) return
+    if (activeSection === displaySection) return
+    setIsTransitioning(true)
     const timer = setTimeout(() => {
-      setActiveSection(pendingSection)
-      setPendingSection(null)
+      setDisplaySection(activeSection)
       setIsTransitioning(false)
     }, 150)
     return () => clearTimeout(timer)
-  }, [isTransitioning, pendingSection])
+  }, [activeSection, displaySection])
+
 
   const loadContent = useCallback(async () => {
     setLoading(true)
@@ -103,7 +115,12 @@ export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
     setLoading(false)
   }, [])
 
-  useEffect(() => { loadContent() }, [loadContent])
+  useEffect(() => { 
+    if (!initialContent) {
+      loadContent() 
+    }
+  }, [loadContent, initialContent])
+
 
   const updateDraft = <K extends keyof SiteContent>(section: K, value: SiteContent[K]) => {
     setDraft((prev) => prev ? { ...prev, [section]: value } : prev)
@@ -198,7 +215,7 @@ export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
 
   const renderEditor = () => {
     if (!draft) return null
-    switch (activeSection) {
+    switch (displaySection) {
       case 'base': return (
         <div className="flex flex-col gap-12">
           <GlobalsEditor
@@ -320,7 +337,7 @@ if (isLoggingOut) {
 
       <div className="flex-1 min-h-0 px-4 sm:px-6 md:px-10 py-6 overflow-y-auto">
         {draft ? (
-          <div key={activeSection} className={cn(
+          <div key={displaySection} className={cn(
             isTransitioning
               ? "animate-out fade-out slide-out-to-bottom-2 duration-150 ease-in"
               : "animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out fill-mode-both"
@@ -331,6 +348,7 @@ if (isLoggingOut) {
           <LoadingState text="Cargando datos del sitio por primera vez..." />
         )}
       </div>
+
       </div>
 
       <BackupsModal

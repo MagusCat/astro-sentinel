@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { ArrowUp, ArrowDown, Trash2 } from 'lucide-react'
-import { ImageUploader, Toast, ToastType } from '@/components/shared'
+import ImageUploader from '@/components/shared/form/image-uploader'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
 
 interface ImageCardProps {
   url: string

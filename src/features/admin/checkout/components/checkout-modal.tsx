@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Modal, Toast, ToastType, SearchInput, PriceDisplay } from '@/components/shared'
-import { Button } from '@/components/shared'
+import { Modal } from '@/components/shared/feedback/modal'
+import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import { SearchInput } from '@/components/shared/form/search-input'
+import { PriceDisplay } from '@/components/shared/data-display/price-display'
+import { Button } from '@/components/shared/form/button'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { ClientData } from '@/features/admin/clients/types'
 import { PlanData, ClassData } from '@/features/admin/classes/types'

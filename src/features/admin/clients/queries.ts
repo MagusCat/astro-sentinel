@@ -12,9 +12,11 @@ export async function getClients(filters?: ClientFilters): Promise<{ data: Clien
       .select('*', { count: 'exact' })
 
     if (filters?.search) {
-      const searchTerm = `%${filters.search.trim()}%`
-      query = query.or(`full_name.ilike.${searchTerm},email.ilike.${searchTerm},phone_number.ilike.${searchTerm}`)
+      const safeSearchTerm = filters.search.trim().replace(/[,"]/g, '')
+      const searchTerm = `%${safeSearchTerm}%`
+      query = query.or(`full_name.ilike."${searchTerm}",email.ilike."${searchTerm}",phone_number.ilike."${searchTerm}"`)
     }
+
 
     if (filters?.sortBy) {
       query = query.order(filters.sortBy, { ascending: filters.sortOrder === 'asc' })
