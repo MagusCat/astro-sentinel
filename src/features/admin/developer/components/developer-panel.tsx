@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Smartphone, Trash2, Cpu, ServerCog, Zap, RefreshCcw, Terminal } from 'lucide-react'
+import { Smartphone, Trash2, Cpu, ServerCog, Zap } from 'lucide-react'
 import { ConnectedDevice } from '../types'
 import { getAuthorizedDevices, revokeDeviceById } from '../actions'
 import { Button, Toast, ToastType, ConfirmDialog, SectionCard, EmptyState, MetricCard } from '@/components/shared'

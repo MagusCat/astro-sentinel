@@ -61,7 +61,10 @@ export function AppSidebar({
         <div className={cn("mb-10 flex items-center justify-between w-full px-4 min-h-10", isCollapsed && "justify-center px-0")}>
           {!isCollapsed ? (
             <>
-              <div>
+              <div
+                onClick={onTitleClick}
+                className={cn(onTitleClick && "cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all duration-200")}
+              >
                 {typeof title === 'string' ? (
                   <span className="font-extrabold text-sidebar-foreground text-2xl tracking-tight leading-none block text-left">
                     {title}

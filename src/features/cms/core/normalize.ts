@@ -1,42 +1,48 @@
 import { SiteContent, SocialLink } from './types'
 import { DEFAULT_CONTENT } from './default-content'
 
+const AUTO_ICONS = ['phone', 'mail', 'map-pin']
+
 export function normalizeContent(raw: unknown): SiteContent {
-  const content = raw as SiteContent
+  const src = raw as Partial<SiteContent>
 
-  if (!content.globals) {
-    content.globals = DEFAULT_CONTENT.globals
-  }
+  const globals = src.globals ? { ...src.globals } : { ...DEFAULT_CONTENT.globals }
 
-  if (!content.hero) {
-    content.hero = DEFAULT_CONTENT.hero
-  } else if (!content.hero.socialLinks) {
-    content.hero.socialLinks = []
-  }
-
-  if (!content.contact) {
-    content.contact = DEFAULT_CONTENT.contact
-  } else {
-    if (!content.contact.whatsapp && (content.globals as unknown as Record<string, unknown>).whatsapp) {
-      content.contact.whatsapp = (content.globals as unknown as Record<string, unknown>).whatsapp as SiteContent['contact']['whatsapp']
-      delete (content.globals as unknown as Record<string, unknown>).whatsapp
-    }
-
-    if (!content.contact.whatsapp) {
-      content.contact.whatsapp = DEFAULT_CONTENT.contact.whatsapp
-    }
-
-    if (!content.contact.mapLink) {
-      content.contact.mapLink = ''
-    }
-  }
-
-  const AUTO_ICONS = ['phone', 'mail', 'map-pin']
-  if (content.globals.socialLinks) {
-    content.globals.socialLinks = content.globals.socialLinks.filter(
+  // Strip legacy auto-injected social links (phone, mail, map-pin) from globals
+  if (globals.socialLinks) {
+    globals.socialLinks = globals.socialLinks.filter(
       (l: SocialLink) => !AUTO_ICONS.some(ic => (l.icon || '').toLowerCase().includes(ic))
     )
   }
 
-  return content
+  const hero = src.hero
+    ? { ...src.hero, socialLinks: src.hero.socialLinks ?? [] }
+    : { ...DEFAULT_CONTENT.hero }
+
+  let contact = src.contact ? { ...src.contact } : { ...DEFAULT_CONTENT.contact }
+
+  // Migrate legacy whatsapp from globals to contact
+  const globalsRecord = globals as unknown as Record<string, unknown>
+  if (!contact.whatsapp && globalsRecord.whatsapp) {
+    contact = { ...contact, whatsapp: globalsRecord.whatsapp as SiteContent['contact']['whatsapp'] }
+    // Remove from globals copy (not the original input)
+    delete globalsRecord.whatsapp
+  }
+
+  if (!contact.whatsapp) {
+    contact = { ...contact, whatsapp: { ...DEFAULT_CONTENT.contact.whatsapp } }
+  }
+
+  if (!contact.mapLink) {
+    contact = { ...contact, mapLink: '' }
+  }
+
+  return {
+    ...DEFAULT_CONTENT,
+    ...src,
+    globals,
+    hero,
+    contact,
+  }
 }
+

@@ -3,9 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/features/auth/actions'
 import { Roles } from '@/lib/auth/roles'
-import { MembershipRecord } from './types'
 import { freezeMembershipSchema, unfreezeMembershipSchema } from './schemas'
-import { calcRemainingDays, getTodayStr, MEMBERSHIP_FIELDS } from './utils'
 
 export async function freezeMembership(
   membershipId: string,

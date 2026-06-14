@@ -226,3 +226,13 @@
 .animate-progress-indeterminate {
   animation: progress-indeterminate 1.5s ease-in-out infinite;
 }
+
+/* Login mode-switch animation */
+@keyframes mode-switch {
+  0% { opacity: 0; transform: scale(0.97) translateY(4px); filter: blur(2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+}
+
+.mode-animate {
+  animation: mode-switch 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

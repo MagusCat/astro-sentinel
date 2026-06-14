@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { logoutUser } from '@/features/auth/actions'
 import { SiteContent, CmsSection } from '../types'
@@ -12,7 +12,7 @@ import { deriveHeroSocialLinks, deriveContactItems, buildWhatsapp } from '../der
 
 import CmsToolbar from './cms-toolbar'
 import BackupsModal from '@/features/cms/backups/components/backups-modal'
-import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Modal, Logo } from '@/components/shared'
+import { Toast, ToastType, ConfirmDialog, ProgressBar, LoadingState, SessionLoading, Logo } from '@/components/shared'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -245,8 +245,9 @@ export default function CmsShell({ activeUser, webUrl }: CmsShellProps) {
           onError={(msg) => showToast(msg, 'error')}
         />
       )
+      default: return null
+    }
   }
-}
 
 if (isLoggingOut) {
     return <SessionLoading />

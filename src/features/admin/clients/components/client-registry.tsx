@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Plus, Eye, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/shared'
-import { SearchInput, DataTable, EmptyState, Toast, ToastType, Modal, PageHeader, TableSkeleton, ProgressBar } from '@/components/shared'
+import { SearchInput, DataTable, EmptyState, Toast, ToastType, Modal, PageHeader, TableSkeleton } from '@/components/shared'
 import { ClientData, ClientFilters } from '../types'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { Roles } from '@/lib/auth/roles'

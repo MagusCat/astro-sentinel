@@ -5,7 +5,7 @@ import { SidebarNavProps } from '../types'
 import { useSidebarNav } from '../hooks/use-sidebar-nav'
 import { MAIN_LINKS, ADMIN_LINKS } from '../config'
 import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared'
-import { LogOut, Power, FileEdit, Terminal, Users, CreditCard } from 'lucide-react'
+import { LogOut, Power, FileEdit, Terminal, Users, UserCheck, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
@@ -148,7 +148,7 @@ export default function SidebarNav({
           <AppSidebarGroup title="Recepción">
             <AppSidebarItem
               label="Recepción"
-              icon={Users}
+              icon={UserCheck}
               href="/dashboard?tab=reception"
               onClick={() => handleLinkClick('reception')}
               isActive={activeTab === 'reception' && !cmsMode}

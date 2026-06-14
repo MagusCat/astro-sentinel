@@ -1,0 +1,384 @@
+{
+  "globals": {
+    "siteTitle": "Studio Power",
+    "siteDescription": "Academia de Pole Sport y Danza Aérea",
+    "socialLinks": [
+      {
+        "alt": "Facebook",
+        "url": "https://facebook.com/test",
+        "icon": "mingcute:facebook-fill",
+        "title": "test",
+        "id": "036c4d57-31a3-4c23-b68a-b61ade1eaeac"
+      },
+      {
+        "alt": "Instagram",
+        "url": "https://instagram.com/test",
+        "icon": "mingcute:ins-fill",
+        "title": "test",
+        "id": "d5bb29d6-1538-4b31-a02e-8c953f2130ab"
+      }
+    ]
+  },
+  "header": {
+    "navItems": [
+      {
+        "section": "Inicio",
+        "url": "/"
+      },
+      {
+        "section": "Sobre Nosotros",
+        "url": "/#about-section"
+      },
+      {
+        "section": "Nuestras Clases",
+        "url": "/#schedule-section"
+      },
+      {
+        "section": "Galería",
+        "url": "/#gallery-section"
+      },
+      {
+        "section": "Preguntas Frecuentes",
+        "url": "/#faq-section"
+      }
+    ],
+    "contactItem": {
+      "section": "Contactanos",
+      "url": "/#contact-section"
+    }
+  },
+  "hero": {
+    "title": "Academia de Pole Sport",
+    "subtitle": "Pole Power",
+    "description": "Bienvenida a Studio Power, tu espacio de transformación donde la fuerza, la gracia y la confianza se encuentran. Descubre la libertad de expresarte a través del movimiento acrobático y empodérate en cada clase. Donde tu viaje hacia la versión más fuerte de ti misma comienza.",
+    "socialLinks": [
+      {
+        "alt": "Facebook",
+        "url": "https://facebook.com/test",
+        "icon": "mingcute:facebook-fill",
+        "title": "test",
+        "id": "036c4d57-31a3-4c23-b68a-b61ade1eaeac"
+      },
+      {
+        "alt": "Instagram",
+        "url": "https://instagram.com/test",
+        "icon": "mingcute:ins-fill",
+        "title": "test",
+        "id": "d5bb29d6-1538-4b31-a02e-8c953f2130ab"
+      }
+    ],
+    "carouselImages": []
+  },
+  "about": {
+    "heading": "Sobre Nosotros",
+    "paragraph_1": "En Studio Power somos mucho más que una academia de pole sport. Somos una comunidad dedicada a la transformación integral a través del movimiento acrobático, la fuerza y la expresión corporal. Desde 2020, hemos acompañado a cientos de mujeres en su viaje de autodescubrimiento y empoderamiento. Creemos que el entrenamiento va más allá del esfuerzo físico; es una herramienta poderosa de confianza personal y superación constante.",
+    "paragraph_2": "Nuestras instalaciones de clase mundial cuentan con equipamiento profesional de primer nivel incluyendo pértiga cromada, aluminio y acero inoxidable de diferentes diámetros, espejos de cuerpo completo, sistemas de aire acondicionado, pisos de caucho especializado para máxima seguridad, y áreas de entrenamiento complementario."
+  },
+  "art": {
+    "heading": "El arte de redescubrirte",
+    "items": [
+      {
+        "description": "Descubre la libertad de ser tú a través el arte de la danza.",
+        "icon": "mingcute:bird-line",
+        "title": "Liberaté"
+      },
+      {
+        "description": "Prioriza tu salud física y mental mientras te liberas del estrés.",
+        "icon": "mingcute:leaf-line",
+        "title": "Crecé"
+      },
+      {
+        "description": "Crea la disciplina y la resistencia para alcanzar cada objetivo.",
+        "icon": "mingcute:barbell-line",
+        "title": "Esfuerzaté"
+      },
+      {
+        "description": "Despierta la energía que llevas  y demuestra de lo que eres capaz.",
+        "icon": "mingcute:fire-line",
+        "title": "Empoderaté"
+      }
+    ]
+  },
+  "principles": {
+    "heading": "Nuestros Principios",
+    "description": "En Studio Power nos guiamos por valores fundamentales que definen nuestra academia y comunidad.",
+    "items": [
+      {
+        "title": "Seguridad Primero",
+        "description": "Tu seguridad es nuestra prioridad absoluta. Cada clase es supervisada cuidadosamente, con instructoras certificadas, equipamiento profesional y progresión controlada. Nunca comprometemos seguridad por velocidad de progreso.",
+        "icon": "mingcute:shield-check-line"
+      },
+      {
+        "title": "Inclusión Total",
+        "description": "Pole sport es para todos. Independientemente de tu edad, tamaño, flexibilidad o experiencia, hay un lugar para ti aquí. Celebramos la diversidad y ofrecemos modificaciones para cada cuerpo y capacidad.",
+        "icon": "mingcute:heart-line"
+      },
+      {
+        "title": "Progresión Respetable",
+        "description": "No te presionamos a avanzar antes de que estés lista. Tu progreso es único y válido. Creemos que la consistencia y la paciencia crean atletas fuertes y seguros que duran en el deporte.",
+        "icon": "mingcute:trending-up-line"
+      },
+      {
+        "title": "Comunidad Fuerte",
+        "description": "Aquí construimos amistad, no competencia destructiva. Tu hermana de clase es tu aliada, no tu rival. Juntas somos más fuertes, más valientes y más inspiradas.",
+        "icon": "mingcute:people-line"
+      },
+      {
+        "title": "Excelencia Técnica",
+        "description": "Nuestras instructoras son profesionales certificadas internacionalmente con años de experiencia competitiva y educativa. La excelencia técnica es nuestro estándar en cada clase.",
+        "icon": "mingcute:star-line"
+      },
+      {
+        "title": "Transformación Integral",
+        "description": "No es solo sobre fuerza física. El pole sport transforma tu confianza, autoestima, mentalidad y relación con tu cuerpo. Buscamos la transformación completa de la persona.",
+        "icon": "mingcute:magic-stick-line"
+      }
+    ]
+  },
+  "schedule": {
+    "heading": "Clases y Horarios",
+    "dayLabels": {
+      "L": "Lunes",
+      "M": "Martes",
+      "Mi": "Miércoles",
+      "J": "Jueves",
+      "V": "Viernes",
+      "S": "Sábado",
+      "D": "Domingo"
+    },
+    "classes": [
+      {
+        "name": "Pole Sport Básico",
+        "description": "Inicia tu camino en el pole sport aprendiendo las bases de seguridad, técnica de agarre, movimientos fundamentales en el suelo y primeras inversiones. Perfecta para principiantes sin experiencia previa. Desarrolla confianza, fuerza y coordinación desde el día uno.",
+        "details": [
+          "Apoyo constante en cada progresión técnica",
+          "Corrección personalizada de postura y forma",
+          "Variaciones adaptadas a tu nivel de flexibilidad"
+        ],
+        "scheduleDays": {
+          "L": {
+            "active": true,
+            "slots": [
+              {
+                "time": "08:00 - 09:30",
+                "period": "AM"
+              },
+              {
+                "time": "18:00 - 19:30",
+                "period": "PM"
+              }
+            ]
+          },
+          "M": {
+            "active": true,
+            "slots": [
+              {
+                "time": "09:00 - 10:30",
+                "period": "AM"
+              },
+              {
+                "time": "18:00 - 19:30",
+                "period": "PM"
+              }
+            ]
+          },
+          "Mi": {
+            "active": true,
+            "slots": [
+              {
+                "time": "08:00 - 09:30",
+                "period": "AM"
+              },
+              {
+                "time": "18:00 - 19:30",
+                "period": "PM"
+              }
+            ]
+          },
+          "J": {
+            "active": true,
+            "slots": [
+              {
+                "time": "09:00 - 10:30",
+                "period": "AM"
+              }
+            ]
+          },
+          "V": {
+            "active": true,
+            "slots": [
+              {
+                "time": "18:00 - 19:30",
+                "period": "PM"
+              }
+            ]
+          },
+          "S": {
+            "active": true,
+            "slots": [
+              {
+                "time": "10:00 - 11:30",
+                "period": "AM"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "Calistenia",
+        "description": "Un entrenamiento de alta intensidad que combina cardio, fuerza y acrobacias. Perfecto si buscas una experiencia de pole más orientada al fitness general. Menos técnica acrobática, más energía y resistencia.",
+        "details": [
+          "Entrenamiento HIIT con movimientos en pértiga",
+          "Enfoque en quema de calorías y resistencia",
+          "Movimientos circulares dinámicos y saltos"
+        ],
+        "scheduleDays": {
+          "L": {
+            "active": true,
+            "slots": [
+              {
+                "time": "19:45 - 20:45",
+                "period": "PM"
+              }
+            ]
+          },
+          "M": {
+            "active": true,
+            "slots": [
+              {
+                "time": "19:45 - 20:45",
+                "period": "PM"
+              }
+            ]
+          },
+          "J": {
+            "active": true,
+            "slots": [
+              {
+                "time": "20:00 - 21:00",
+                "period": "PM"
+              }
+            ]
+          },
+          "D": {
+            "active": true,
+            "slots": [
+              {
+                "time": "11:00 - 12:00",
+                "period": "AM"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "gallery": {
+    "heading": "Galería de Experiencias",
+    "images": []
+  },
+  "comments": {
+    "heading": "Lo que dicen de nuestra academia",
+    "items": [
+      {
+        "name": "Valentina M.",
+        "role": "Alumna Básico",
+        "content": "Las clases son increíbles. Comencé sin ninguna experiencia y el progreso en mi fuerza, flexibilidad y confianza es asombroso.",
+        "theme": "dark"
+      },
+      {
+        "name": "Camila R.",
+        "role": "Nivel Intermedio",
+        "content": "Encontré mi pasión aquí en Studio Power. Hace un año comencé para mejorar mi condición física.",
+        "theme": "highlight"
+      },
+      {
+        "name": "Andrea L.",
+        "role": "Alumna Avanzada",
+        "content": "Studio Power cambió mi vida. No solo me volví más fuerte físicamente, sino que ganué una confianza que no sabía que podía tener. Las instructoras son mentoras excepcionales. ",
+        "theme": "dark"
+      },
+      {
+        "name": "Daniela S.",
+        "role": "Fitness en Pértiga",
+        "content": "Buscaba un entrenamiento diferente y Studio Power superó todas mis expectativas. Las clases de fitness son intensas pero divertidas, quemos muchas calorías y la comunidad es increíble.",
+        "theme": "light"
+      },
+      {
+        "name": "María José T.",
+        "role": "Alumna con sesión privada",
+        "content": "Llevo 3 años en Studio Power y las sesiones privadas aceleración mi progreso enormemente. Las instructoras personalizas todo a tus necesidades específicas.",
+        "theme": "highlight"
+      }
+    ]
+  },
+  "faq": {
+    "heading": "Preguntas Frecuentes",
+    "description": "Resolvemos tus dudas principales sobre nuestras clases, inscripciones, seguridad y progresión en pole sport.",
+    "faqs": [
+      {
+        "question": "¿Necesito experiencia previa para empezar?",
+        "answer": "¡Absolutamente no! Nuestras clases de nivel básico están diseñadas específicamente para principiantes. Comenzamos desde cero, enseñando técnica fundamental, seguridad y construcción gradual de fuerza. Miles de mujeres han comenzado sin experiencia previa en Studio Power."
+      },
+      {
+        "question": "¿A qué edad puedo comenzar pole sport?",
+        "answer": "Aceptamos alumnas desde los 16 años en adelante. No hay límite de edad superior. Hemos tenido estudiantes desde los 16 hasta los 65+ años, todas experimentando transformaciones increíbles. La edad no es una limitación cuando hay dedicación."
+      },
+      {
+        "question": "¿Es peligroso el pole sport? ¿Cuáles son las medidas de seguridad?",
+        "answer": "El pole sport es completamente seguro cuando se practica con técnica correcta y en un ambiente controlado. En Studio Power, nuestras medidas de seguridad incluyen: instructoras certificadas internacionalmente, grupos pequeños (máx. 6 personas), colchonetas de protección especializada, piso antideslizante, y progresión cuidadosa de dificultad. Nunca avanzamos más rápido de lo que tu cuerpo puede manejar."
+      },
+      {
+        "question": "¿Qué ropa debo usar para las clases?",
+        "answer": "Recomendamos usar ropa que te permita movimiento libre: shorts cortos o leggings ajustados y un top/sports bra que deje los brazos y hombros libres. El contacto de piel con la pértiga es importante para agarre y seguridad. Usa zapatos deportivos de soporte para calentamiento pero entrena descalza o en calcetines de agarre en la pértiga."
+      },
+      {
+        "question": "¿Cuál es el progreso típico de un principiante?",
+        "answer": "Típicamente en 4 semanas verás mejoras en fuerza y coordinación, en 8 semanas habrás aprendido movimientos básicos, y en 3-4 meses completarás inversiones simples. El progreso depende de tu dedicación, frecuencia de entrenamiento y genética personal. Algunas avanzan más rápido, otras más lentamente, ¡y ambas rutas son válidas!"
+      },
+      {
+        "question": "¿Puedo entrenar pole sport mientras estoy embarazada?",
+        "answer": "Depende del trimestre y tu experiencia previa. Si eres principiante, se recomienda comenzar después del embarazo. Si ya eres competente, muchas alumnas entrenan durante el primer trimestre bajo supervisión médica. Siempre consulta con tu ginecólogo primero. Tenemos modificaciones para cada etapa."
+      }
+    ]
+  },
+  "contact": {
+    "heading": "Contáctanos",
+    "description": "¿Lista para transformar tu vida a través del pole sport? Contáctanos hoy para agendar tu clase de prueba gratuita. Nuestro equipo está aquí para responder todas tus preguntas y ayudarte a encontrar el programa perfecto para ti.",
+    "whatsapp": {
+      "message": "¡Hola! Me gustaría conocer más sobre Studio Power y agendar mi clase de prueba.",
+      "title": "¡Reserva tu Clase!"
+    },
+    "contact": [
+      {
+        "title": "Facebook",
+        "content": "https://facebook.com/test",
+        "icon": "mingcute:facebook-fill",
+        "url": "https://facebook.com/test"
+      },
+      {
+        "title": "Instagram",
+        "content": "https://instagram.com/test",
+        "icon": "mingcute:ins-fill",
+        "url": "https://instagram.com/test"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": 2026,
+    "owner": "Studio Power",
+    "footerItems": [
+      {
+        "label": "Términos y Condiciones",
+        "url": "/terms"
+      },
+      {
+        "label": "Política de Privacidad",
+        "url": "/privacy"
+      }
+    ]
+  },
+  "_metadata": {
+    "lastModifiedBy": "Mantenimiento"
+  }
+}

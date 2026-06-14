@@ -1,0 +1,9 @@
+- el proyecto tiene problemas de estilos
+- comentarios en español o ingles en lugares que no son necesarios
+- varios componentes o big componentes en features 
+- en admin y cms el propio sidebar deberian estar  normalizados pero son big componentes completos
+- secciones de logica son utilizadas en el front siendo graves problemas de seguridad y logica de negocios
+- como pausar membresia en front y no los propios proceso
+- algunos toas estan en ingles cuando deben estar en español
+- en cada feature secion agrega delimitadores de seccion como comentarios en los fuature seccion.
+- elimina y busca comentarios inutiles y borralos.

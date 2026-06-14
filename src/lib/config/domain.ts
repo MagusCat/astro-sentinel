@@ -31,4 +31,22 @@ export const Roles = {
 
   canManageAdmins: (role: string): boolean =>
     role === APP_ROLE.MAINTAINER,
+
+  /** Whether the actor can create a user with the given target role */
+  canCreateRole: (actorRole: string, targetRole: string): boolean => {
+    if (actorRole === APP_ROLE.MAINTAINER) return true
+    if (actorRole === APP_ROLE.ADMIN) return targetRole === APP_ROLE.RECEPTION
+    return false
+  },
+
+  /** Whether the given role requires a linked Supabase Auth account */
+  roleRequiresAuthLink: (role: string): boolean =>
+    role === APP_ROLE.ADMIN,
+
+  /** Whether the actor can delete a user with the given target role */
+  canDeleteUser: (actorRole: string, targetRole: string): boolean => {
+    if (actorRole === APP_ROLE.MAINTAINER) return true
+    if (actorRole === APP_ROLE.ADMIN) return targetRole === APP_ROLE.RECEPTION
+    return false
+  },
 } as const

@@ -17,6 +17,8 @@ export function enforceStaffUpdatePolicies(
 
   const payload: UpdatePayload = {}
 
+  // Sanitization is handled by Zod schemas — policies only enforce authorization.
+
   // 1. Admin Role policies
   if (currentUser.role === APP_ROLE.ADMIN) {
     // Admin cannot modify a Maintainer
@@ -27,11 +29,9 @@ export function enforceStaffUpdatePolicies(
     // Admin modifying another Admin: CAN ONLY toggle is_active!
     if (targetUser.role === APP_ROLE.ADMIN) {
       if (targetUser.id === currentUser.id) {
-        // Can modify their own name and password
-        if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name.replace(/<[^>]*>/g, '').trim()
+        if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name
         if (hashedPassword) payload.password_hash = hashedPassword
       } else {
-        // Modifying other admin -> ONLY is_active allowed!
         if (updatedFields.full_name || updatedFields.password_raw || updatedFields.role || updatedFields.auth_user_id) {
           return { error: 'Un Administrador solo puede activar o desactivar a otros Administradores.' }
         }
@@ -43,7 +43,7 @@ export function enforceStaffUpdatePolicies(
 
     // Admin modifying a receptionist: fully allowed
     if (targetUser.role === APP_ROLE.RECEPTION) {
-      if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name.replace(/<[^>]*>/g, '').trim()
+      if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name
       if (hashedPassword) payload.password_hash = hashedPassword
       if (updatedFields.is_active !== undefined) payload.is_active = updatedFields.is_active
     }
@@ -51,8 +51,7 @@ export function enforceStaffUpdatePolicies(
 
   // 2. Maintainer Role policies
   if (currentUser.role === APP_ROLE.MAINTAINER) {
-    // Can modify anything except changing usernames
-    if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name.replace(/<[^>]*>/g, '').trim()
+    if (updatedFields.full_name !== undefined) payload.full_name = updatedFields.full_name
     if (hashedPassword) payload.password_hash = hashedPassword
     if (updatedFields.is_active !== undefined) payload.is_active = updatedFields.is_active
     if (updatedFields.role !== undefined) payload.role = updatedFields.role

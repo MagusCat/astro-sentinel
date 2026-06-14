@@ -1,11 +1,27 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/features/auth/actions'
 import { OverviewStats, ClassHeadcountRow, InactiveMembershipViewRow, PaymentViewRow, ClientViewRow } from './types'
 import { APP_CONFIG } from '@/lib/config'
 
+const defaultStats: OverviewStats = {
+  activeMembershipsCount: 0,
+  dailyRevenue: 0,
+  topClass: 'Sin sesiones activas',
+  classHeadcounts: [],
+  inactiveMemberships: [],
+  recentPayments: [],
+  recentClients: [],
+  totalClientsCount: 0,
+  totalClassesCount: 0
+}
+
 export async function getOverviewStats(): Promise<OverviewStats> {
   try {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) return defaultStats
+
     const supabase = await createClient()
 
     const [
@@ -80,16 +96,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     }
   } catch (err) {
     console.error('Error fetching overview stats:', err)
-    return {
-      activeMembershipsCount: 0,
-      dailyRevenue: 0,
-      topClass: 'Sin sesiones activas',
-      classHeadcounts: [],
-      inactiveMemberships: [],
-      recentPayments: [],
-      recentClients: [],
-      totalClientsCount: 0,
-      totalClassesCount: 0
-    }
+    return defaultStats
   }
 }

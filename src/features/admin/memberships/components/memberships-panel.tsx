@@ -2,7 +2,7 @@ import React from 'react'
 import MembershipsMetrics from './memberships-metrics'
 import MembershipsTable from './memberships-table'
 import { MembershipsPanelData } from '../types'
-import { EmptyState, TableSkeleton, ProgressBar, Skeleton } from '@/components/shared'
+import { EmptyState, TableSkeleton, Skeleton } from '@/components/shared'
 
 interface MembershipsPanelProps {
   data: MembershipsPanelData | null

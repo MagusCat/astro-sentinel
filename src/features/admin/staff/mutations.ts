@@ -2,11 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/features/auth/actions'
-import { hashPassword } from '@/lib/auth/session'
+import { hashPassword, verifyPassword } from '@/lib/auth/session'
 import { createUserSchema, updateUserSchema } from './schemas'
 import { LOGICAL_DELETE_MARKER } from './constants'
 import { enforceStaffUpdatePolicies } from './policies'
-import { APP_ROLE } from '@/lib/auth/roles'
+import { Roles } from '@/lib/auth/roles'
 
 export async function saveNewUser(
   userData: { full_name: string; username: string; password_raw: string; role: string; auth_user_id?: string }
@@ -27,19 +27,15 @@ export async function saveNewUser(
       return { success: false, error: 'Acceso denegado: Sesión inválida.' }
     }
 
-    if (currentUser.role !== APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
+    if (!Roles.canManageStaff(currentUser.role)) {
       return { success: false, error: 'Acceso denegado: No autorizado.' }
     }
 
-    if (currentUser.role === APP_ROLE.ADMIN && clean.role !== APP_ROLE.RECEPTION) {
-      return { success: false, error: 'Acceso denegado: Un Administrador solo puede registrar Recepcionistas.' }
+    if (!Roles.canCreateRole(currentUser.role, clean.role)) {
+      return { success: false, error: 'Acceso denegado: No tienes permisos para registrar usuarios con ese rol.' }
     }
 
-    if (clean.role === APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
-      return { success: false, error: 'Acceso denegado: Solo un Desarrollador (Maintainer) puede registrar Administradores.' }
-    }
-
-    if (clean.role === APP_ROLE.ADMIN && !clean.auth_user_id?.trim()) {
+    if (Roles.roleRequiresAuthLink(clean.role) && !clean.auth_user_id?.trim()) {
       return { success: false, error: 'El ID de Supabase Auth es obligatorio para vincular la cuenta del Administrador.' }
     }
 
@@ -86,7 +82,7 @@ export async function updateUserData(
       return { success: false, error: 'Acceso denegado: Sesión inválida.' }
     }
 
-    if (currentUser.role !== APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
+    if (!Roles.canManageStaff(currentUser.role)) {
       return { success: false, error: 'Acceso denegado: No autorizado.' }
     }
 
@@ -117,8 +113,6 @@ export async function updateUserData(
         if (!updatedFields.current_password_raw) {
           return { success: false, error: 'Debe ingresar su contraseña actual para cambiarla.' }
         }
-        // Necesitamos importar verifyPassword pero ya está importado arriba
-        const { verifyPassword } = await import('@/lib/auth/session')
         const isMatch = await verifyPassword(updatedFields.current_password_raw, targetUser.password_hash)
         if (!isMatch) {
           return { success: false, error: 'La contraseña actual ingresada es incorrecta.' }
@@ -164,7 +158,7 @@ export async function deleteUserData(
       return { success: false, error: 'Acceso denegado: Sesión inválida.' }
     }
 
-    if (currentUser.role !== APP_ROLE.ADMIN && currentUser.role !== APP_ROLE.MAINTAINER) {
+    if (!Roles.canManageStaff(currentUser.role)) {
       return { success: false, error: 'Acceso denegado: No autorizado.' }
     }
 
@@ -184,13 +178,8 @@ export async function deleteUserData(
       return { success: false, error: 'No puedes eliminar tu propia cuenta en sesión.' }
     }
 
-    if (currentUser.role === APP_ROLE.ADMIN) {
-      if (targetUser.role === APP_ROLE.MAINTAINER || targetUser.role === APP_ROLE.ADMIN) {
-        return { success: false, error: 'Acceso denegado: Un Administrador no puede eliminar a otros Administradores o Programadores.' }
-      }
-      if (targetUser.role !== APP_ROLE.RECEPTION) {
-        return { success: false, error: 'Acceso denegado: Solo puedes eliminar cuentas de Recepcionistas.' }
-      }
+    if (!Roles.canDeleteUser(currentUser.role, targetUser.role)) {
+      return { success: false, error: 'Acceso denegado: No tienes permisos para eliminar a este usuario.' }
     }
 
     const { error: dError } = await supabase

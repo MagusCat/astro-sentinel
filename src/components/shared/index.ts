@@ -11,6 +11,7 @@ export { PageHeader } from "./layout/page-header"
 export { default as Logo } from "./layout/logo"
 export { default as SessionLoading } from "./layout/session-loading"
 export { AppSidebar, AppSidebarGroup, AppSidebarItem } from "./layout/app-sidebar"
+export { PwaRegister } from "./pwa-register"
 
 // ── Form ──────────────────────────────────────────────
 export { TextField } from "./form/text-field"

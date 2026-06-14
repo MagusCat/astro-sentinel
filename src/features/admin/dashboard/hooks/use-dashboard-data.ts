@@ -53,6 +53,11 @@ export function useDashboardData() {
         }
       }
 
+      if (tab === 'payments') {
+        const paymentsData = await getPayments()
+        setPayments(paymentsData.data)
+      }
+
       if (tab === 'memberships' || !tab || tab === 'reception') {
         const data = await getMembershipsPanelData()
         setMembershipsData(data)

@@ -16,22 +16,6 @@ interface MembershipsTableProps {
   mobileMetrics?: React.ReactNode
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  [MEMBERSHIP_STATUS.ACTIVE]: 'Activa',
-  [MEMBERSHIP_STATUS.EXPIRED]: 'Vencida',
-  [MEMBERSHIP_STATUS.FROZEN]: 'Pausada',
-  [MEMBERSHIP_STATUS.CANCELLED]: 'Cancelada',
-  [MEMBERSHIP_STATUS.TRANSFERRED]: 'Transferida'
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  [MEMBERSHIP_STATUS.ACTIVE]: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  [MEMBERSHIP_STATUS.EXPIRED]: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
-  [MEMBERSHIP_STATUS.FROZEN]: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
-  [MEMBERSHIP_STATUS.CANCELLED]: 'bg-red-500/10 text-red-600 border-red-500/20',
-  [MEMBERSHIP_STATUS.TRANSFERRED]: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
-}
-
 export default function MembershipsTable({ memberships, onReload, occupancy, mobileMetrics }: MembershipsTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')

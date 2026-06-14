@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { AuthenticatedUser } from '@/features/auth/types'
-import { Plus, Edit2, Trash2, Power, PowerOff, RefreshCw } from 'lucide-react'
+import { Plus, Edit2, Trash2, Power, PowerOff } from 'lucide-react'
 import { LocalUser } from '../types'
 import { getUsersList } from '../queries'
 import { saveNewUser, updateUserData, deleteUserData } from '../mutations'
-import { Toast, ToastType, Modal, FormActions, DataTable, PageHeader, TableSkeleton, ProgressBar } from '@/components/shared'
+import { Toast, ToastType, Modal, FormActions, DataTable, PageHeader, TableSkeleton } from '@/components/shared'
 import { Button } from '@/components/shared'
 import CreateUserModal from './create-user-modal'
 import EditUserModal from './edit-user-modal'

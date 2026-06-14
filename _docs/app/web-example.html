@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-dim": "#3d469f",
+            "outline-variant": "#a2afb6",
+            "secondary-dim": "#005a55",
+            "tertiary": "#652fe7",
+            "on-secondary": "#befff8",
+            "primary-container": "#929bfa",
+            "on-error-container": "#510017",
+            "on-tertiary": "#f7f0ff",
+            "tertiary-dim": "#5819db",
+            "surface-container-high": "#d4e5ef",
+            "secondary": "#006761",
+            "on-surface": "#243036",
+            "on-primary-fixed-variant": "#18217d",
+            "secondary-container": "#6ef4ea",
+            "primary-fixed-dim": "#858eec",
+            "on-secondary-container": "#005a55",
+            "on-primary-fixed": "#000005",
+            "error-dim": "#a70138",
+            "surface": "#edf8ff",
+            "inverse-primary": "#929bfa",
+            "surface-container-highest": "#cde0ea",
+            "primary": "#4953ac",
+            "surface-dim": "#c3d7e3",
+            "tertiary-fixed-dim": "#ab93ff",
+            "on-tertiary-fixed-variant": "#4000ad",
+            "secondary-fixed-dim": "#5ee6dc",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed": "#929bfa",
+            "error": "#b41340",
+            "tertiary-container": "#b8a3ff",
+            "secondary-fixed": "#6ef4ea",
+            "inverse-on-surface": "#929fa6",
+            "surface-bright": "#edf8ff",
+            "on-primary-container": "#0b1574",
+            "surface-container": "#dbebf4",
+            "inverse-surface": "#041015",
+            "surface-container-low": "#e4f3fc",
+            "surface-tint": "#4953ac",
+            "on-background": "#243036",
+            "on-tertiary-container": "#370096",
+            "on-error": "#ffefef",
+            "on-primary": "#f3f1ff",
+            "on-surface-variant": "#515d64",
+            "surface-variant": "#cde0ea",
+            "error-container": "#f74b6d",
+            "outline": "#6c7980",
+            "tertiary-fixed": "#b8a3ff",
+            "on-tertiary-fixed": "#1c0055",
+            "on-secondary-fixed": "#004642",
+            "background": "#edf8ff",
+            "on-secondary-fixed-variant": "#006560"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .headline-font { font-family: 'Manrope', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#e4f3fc] dark:bg-slate-900 flex flex-col py-6 z-50">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="theater_comedy">theater_comedy</span>
+</div>
+<div>
+<h1 class="font-['Manrope'] font-extrabold text-[#4953ac] text-lg leading-tight">Elite Dance</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold opacity-70">Admin Suite</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<!-- Dashboard is active -->
+<a class="flex items-center gap-3 px-4 py-3 text-[#4953ac] dark:text-[#929bfa] font-bold border-r-4 border-[#4953ac] bg-gradient-to-r from-transparent to-[#d4e5ef] dark:to-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] dark:hover:bg-slate-800 transition-all hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Inter'] font-medium text-sm">Students</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] dark:hover:bg-slate-800 transition-all hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="record_voice_over">record_voice_over</span>
+<span class="font-['Inter'] font-medium text-sm">Instructors</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] dark:hover:bg-slate-800 transition-all hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="theater_comedy">theater_comedy</span>
+<span class="font-['Inter'] font-medium text-sm">Classes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] dark:hover:bg-slate-800 transition-all hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-['Inter'] font-medium text-sm">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] dark:hover:bg-slate-800 transition-all hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] font-medium text-sm">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary-dim transition-colors mb-6 shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span>New Enrollment</span>
+</button>
+<a class="flex items-center gap-3 px-4 py-3 text-[#243036] dark:text-slate-400 opacity-80 hover:bg-[#d4e5ef] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-['Inter'] font-medium text-sm">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Anchor -->
+<header class="w-full h-16 sticky top-0 z-40 bg-[#edf8ff] dark:bg-slate-950 flex items-center justify-between px-8">
+<div class="flex items-center gap-8">
+<h2 class="font-['Manrope'] tracking-tight text-2xl font-bold text-[#4953ac] dark:text-[#929bfa]">The Kinetic Gallery</h2>
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-[#e4f3fc] border-none rounded-full py-1.5 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Search academy data..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="p-2 text-[#243036] hover:bg-[#d4e5ef] rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+</button>
+<button class="p-2 text-[#243036] hover:bg-[#d4e5ef] rounded-full transition-colors active:scale-95 duration-150 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant opacity-20 mx-2"></div>
+<button class="flex items-center gap-3 hover:bg-[#d4e5ef] p-1 rounded-full pr-4 transition-all">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Close-up portrait of a professional male administrator in a light blue shirt looking confidently at the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRU0giLxH2NrLMQT70JQupzEa78sK7cCj4kfcbRJfWZkRisYMk21F8imttgUOhnzNE45AbrDHzpxHx59NP1jOYPq_idkXXuskJP6HvBcDU_EumUMdRCxY2t3d-1uAjgqgmSn9t2jLIUIWmhddjw_Zg3kyct8gDQw_YqRBm0VSvX0p_bgRfP2FeU2h8WCtpcstc8Vj0_0mnnttLhrRglWss4vWgDGnj_LmNg5blGXCen0LLKpj-ezotK5eDceaqCN_Brmdyjsztow"/>
+<span class="text-sm font-semibold text-on-surface">Admin</span>
+</button>
+</div>
+</header>
+<div class="p-8 max-w-7xl mx-auto space-y-8">
+<!-- Welcome Header -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="headline-font text-4xl font-extrabold tracking-tight text-on-surface">Executive Overview</h1>
+<p class="text-on-surface-variant font-medium mt-1">Academy Performance • September 2023</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 bg-surface-container-low text-primary font-bold rounded-xl flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+<span>Report</span>
+</button>
+<button class="px-5 py-2.5 bg-primary text-on-primary font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>Add New Class</span>
+</button>
+</div>
+</div>
+<!-- Key Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Monthly Revenue -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="payments">payments</span>
+</div>
+<div class="relative z-10">
+<p class="text-on-surface-variant text-sm font-semibold mb-1">Monthly Revenue</p>
+<h3 class="headline-font text-3xl font-bold text-on-surface">$24,850</h3>
+<div class="flex items-center gap-1 mt-4 text-secondary font-bold text-xs">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span>
+<span>12.5% vs last month</span>
+</div>
+</div>
+</div>
+<!-- Active Students -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="group">group</span>
+</div>
+<div class="relative z-10">
+<p class="text-on-surface-variant text-sm font-semibold mb-1">Active Students</p>
+<h3 class="headline-font text-3xl font-bold text-on-surface">412</h3>
+<div class="flex items-center gap-1 mt-4 text-secondary font-bold text-xs">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span>
+<span>+8 new this week</span>
+</div>
+</div>
+</div>
+<!-- Retention Rate -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="verified_user">verified_user</span>
+</div>
+<div class="relative z-10">
+<p class="text-on-surface-variant text-sm font-semibold mb-1">Retention Rate</p>
+<h3 class="headline-font text-3xl font-bold text-on-surface">94.2%</h3>
+<div class="flex items-center gap-1 mt-4 text-error font-bold text-xs">
+<span class="material-symbols-outlined text-xs" data-icon="trending_down">trending_down</span>
+<span>0.5% vs last month</span>
+</div>
+</div>
+</div>
+<!-- Studio Occupancy -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="location_on">location_on</span>
+</div>
+<div class="relative z-10">
+<p class="text-on-surface-variant text-sm font-semibold mb-1">Studio Capacity</p>
+<h3 class="headline-font text-3xl font-bold text-on-surface">78%</h3>
+<div class="flex items-center gap-1 mt-4 text-secondary font-bold text-xs">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span>
+<span>Optimum Range</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Data Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Revenue Trends (Chart Placeholder) -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-xl">
+<div class="flex justify-between items-start mb-10">
+<div>
+<h4 class="headline-font text-xl font-bold text-on-surface">Revenue Performance</h4>
+<p class="text-sm text-on-surface-variant">Annual income visualization</p>
+</div>
+<select class="bg-surface-container-low border-none rounded-lg text-sm font-semibold py-1 focus:ring-0">
+<option>Last 6 Months</option>
+<option>Last Year</option>
+</select>
+</div>
+<!-- Signature Area Spline Chart Placeholder -->
+<div class="h-64 flex items-end justify-between gap-4 px-4">
+<div class="flex-1 bg-surface-container-low rounded-t-xl relative group transition-all hover:bg-primary-container/20" style="height: 45%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$18k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-on-surface-variant">APR</div>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-t-xl relative group transition-all hover:bg-primary-container/20" style="height: 60%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$21k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-on-surface-variant">MAY</div>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-t-xl relative group transition-all hover:bg-primary-container/20" style="height: 55%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$19.5k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-on-surface-variant">JUN</div>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-t-xl relative group transition-all hover:bg-primary-container/20" style="height: 75%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$23k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-on-surface-variant">JUL</div>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-t-xl relative group transition-all hover:bg-primary-container/20" style="height: 70%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$22.4k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-on-surface-variant">AUG</div>
+</div>
+<div class="flex-1 bg-primary rounded-t-xl relative group transition-all" style="height: 90%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-on-primary text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">$24.8k</div>
+<div class="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-bold text-primary">SEP</div>
+</div>
+</div>
+</div>
+<!-- Student Status Overview -->
+<div class="bg-surface-container-lowest p-8 rounded-xl">
+<h4 class="headline-font text-xl font-bold text-on-surface mb-1">Student Status</h4>
+<p class="text-sm text-on-surface-variant mb-8">Membership distribution</p>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-sm font-bold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Active
+                </span>
+<span class="text-sm font-bold">365 Students</span>
+</div>
+<div class="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-sm font-bold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error-container"></span> Overdue
+                </span>
+<span class="text-sm font-bold">28 Students</span>
+</div>
+<div class="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+<div class="bg-error-container h-full rounded-full" style="width: 7%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-sm font-bold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span> Frozen
+                </span>
+<span class="text-sm font-bold">19 Students</span>
+</div>
+<div class="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 5%"></div>
+</div>
+</div>
+</div>
+<div class="mt-12 p-5 bg-[#6ef4ea]/10 rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+</div>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-tight">Growth Suggestion</p>
+<p class="text-sm text-on-surface-variant leading-snug">Recovering 10 overdue students could increase revenue by <span class="font-bold text-on-surface">$1,200</span>.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Data Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- High Demand Classes -->
+<div class="bg-surface-container-lowest p-8 rounded-xl">
+<div class="flex justify-between items-center mb-8">
+<h4 class="headline-font text-xl font-bold text-on-surface">Class Demand Analytics</h4>
+<a class="text-primary text-sm font-bold hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-1">
+<div class="group flex items-center justify-between p-4 rounded-xl hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Advanced Contemporary</p>
+<p class="text-xs text-on-surface-variant">Mon, Wed • 18:00 - 19:30</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-secondary">98% Full</p>
+<div class="flex justify-end gap-1">
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+</div>
+</div>
+</div>
+<div class="group flex items-center justify-between p-4 rounded-xl hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="groups_2">groups_2</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Intro to Hip Hop</p>
+<p class="text-xs text-on-surface-variant">Tue, Thu • 16:00 - 17:00</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-secondary">92% Full</p>
+<div class="flex justify-end gap-1">
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-outline-variant opacity-30"></span>
+</div>
+</div>
+</div>
+<div class="group flex items-center justify-between p-4 rounded-xl hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="flare">flare</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Classical Ballet II</p>
+<p class="text-xs text-on-surface-variant">Daily • 10:00 - 12:00</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-on-surface">85% Full</p>
+<div class="flex justify-end gap-1">
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-secondary"></span>
+<span class="w-1 h-1 rounded-full bg-outline-variant opacity-30"></span>
+<span class="w-1 h-1 rounded-full bg-outline-variant opacity-30"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity / Alerts -->
+<div class="bg-surface-container-lowest p-8 rounded-xl">
+<div class="flex justify-between items-center mb-8">
+<h4 class="headline-font text-xl font-bold text-on-surface">Priority Alerts</h4>
+<span class="bg-error text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full">4 Urgent</span>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 p-4 rounded-xl bg-error/5 group hover:bg-error/10 transition-colors">
+<div class="w-10 h-10 rounded-xl bg-error/10 flex-shrink-0 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="event_busy">event_busy</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<p class="font-bold text-on-surface text-sm">Membership Expiration</p>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Today</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Elena Rodriguez • Professional Tier</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1 bg-error text-on-primary text-[10px] font-bold rounded-lg">Send Notice</button>
+<button class="px-3 py-1 bg-surface-container-low text-on-surface text-[10px] font-bold rounded-lg">Dismiss</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-xl group hover:bg-surface-container transition-colors">
+<div class="w-10 h-10 rounded-xl bg-primary-container/10 flex-shrink-0 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="credit_card_off">credit_card_off</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<p class="font-bold text-on-surface text-sm">Failed Payment</p>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">2h ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Marcus Chen • Monthly Recurring</p>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-xl group hover:bg-surface-container transition-colors">
+<div class="w-10 h-10 rounded-xl bg-secondary-container/10 flex-shrink-0 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<p class="font-bold text-on-surface text-sm">New Lead Inquiry</p>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">5h ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Sarah Jenkins • Interested in Adult Jazz</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Notification Toast (Example of Overlay) -->
+<div class="fixed bottom-8 right-8 bg-on-surface text-on-primary px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 z-50 backdrop-blur-xl bg-opacity-90">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+</div>
+<div>
+<p class="text-xs font-bold opacity-70 uppercase tracking-widest">System Message</p>
+<p class="text-sm font-medium">Daily backup completed successfully.</p>
+</div>
+<button class="ml-4 opacity-50 hover:opacity-100">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+</body></html>

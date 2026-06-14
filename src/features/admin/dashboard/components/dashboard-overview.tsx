@@ -4,7 +4,6 @@ import React from 'react'
 import { Users, Trophy, CreditCard, Clock, UserPlus } from 'lucide-react'
 import { DashboardListWidget, MetricCard, StatusBadge, PriceDisplay } from '@/components/shared'
 import { OverviewStats } from '../types'
-import { MEMBERSHIP_STATUS } from '@/lib/config'
 
 interface DashboardOverviewProps {
   stats: OverviewStats

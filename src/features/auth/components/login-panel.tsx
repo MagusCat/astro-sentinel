@@ -135,15 +135,6 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
 
   return (
     <div className="w-full h-full md:max-w-md md:w-full mx-auto md:my-12 flex flex-col gap-6">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes mode-switch {
-          0% { opacity: 0; transform: scale(0.97) translateY(4px); filter: blur(2px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
-        }
-        .mode-animate {
-          animation: mode-switch 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}} />
 
       <div className="w-full h-full md:h-auto md:max-w-[420px] bg-card border-0 md:border md:border-border rounded-none md:rounded-2xl md:shadow-xl mx-auto relative overflow-hidden transition-all duration-300 md:hover:shadow-2xl flex flex-col">
         
@@ -207,7 +198,6 @@ export default function LoginPanel({ onLoginSuccess }: LoginPanelProps) {
                         disabled={deviceLoading}
                         size="default"
                         className="w-full mt-2"
-                        variant="destructive"
                       >
                         {deviceLoading ? (
                           <span className="flex items-center gap-1.5">

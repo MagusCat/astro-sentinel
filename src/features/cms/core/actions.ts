@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/features/auth/actions'
 import { Roles } from '@/lib/auth/roles'
-import { SiteContent, CmsPublishResult, UploadImageConfig, SocialLink } from './types'
+import { SiteContent, CmsPublishResult, UploadImageConfig } from './types'
 import { DEFAULT_CONTENT } from './default-content'
 import { APP_CONFIG } from '@/lib/config'
 import { uploadImageSchema } from './schemas'
@@ -88,7 +88,10 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
 
     if (deployHookUrl) {
       try {
-        await fetch(deployHookUrl, { method: 'POST' })
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        await fetch(deployHookUrl, { method: 'POST', signal: controller.signal })
+        clearTimeout(timeoutId)
       } catch (hookError) {
         console.error('Failed to trigger deploy hook:', hookError)
       }
