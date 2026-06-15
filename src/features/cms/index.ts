@@ -4,6 +4,7 @@
 
 // Components
 export { default as CmsShell } from "./core/components/cms-shell"
+export { default as SetupRequired } from "./core/components/setup-required"
 
 // Types
 export * from "./core/types"

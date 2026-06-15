@@ -17,19 +17,24 @@ export const sanitizedString = z.string().transform((s) =>
 /**
  * Common Name Field — 3-100 chars, sanitized.
  */
-export const nameSchema = sanitizedString
-  .min(3, 'El nombre debe tener al menos 3 caracteres.')
-  .max(100, 'El nombre no puede exceder los 100 caracteres.')
+export const nameSchema = sanitizedString.pipe(
+  z.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres.')
+    .max(100, 'El nombre no puede exceder los 100 caracteres.')
+)
 
 /**
  * Common Phone Field — Extracts digits and validates minimum length.
  */
-export const phoneSchema = sanitizedString
-  .min(8, 'El número de teléfono debe ser válido.')
-  .max(30, 'El número de teléfono es demasiado largo.')
-  .refine((val) => val.replace(/\D/g, '').length >= 8, {
-    message: 'El número de teléfono debe tener al menos 8 dígitos válidos.',
-  })
+export const phoneSchema = sanitizedString.pipe(
+  z.string()
+    .min(8, 'El número de teléfono debe ser válido.')
+    .max(30, 'El número de teléfono es demasiado largo.')
+    .refine((val) => val.replace(/\D/g, '').length >= 8, {
+      message: 'El número de teléfono debe tener al menos 8 dígitos válidos.',
+    })
+)
+
 
 /**
  * Common Email Field — Sanitized and validated.

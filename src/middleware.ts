@@ -39,27 +39,47 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/editor')
 
-  if (isProtectedRoute) {
-    const token = request.cookies.get(APP_CONFIG.auth.sessionCookieName)?.value
-    // Local JWT Verification (Stateless - No network hop)
-    const session = token ? await verifySessionToken(token) : null
+  const isLoginPage = pathname === '/login'
 
-    if (!session) {
+  if (isProtectedRoute || isLoginPage) {
+    const hasSessionCookie = request.cookies.has(APP_CONFIG.auth.sessionCookieName)
+
+    // If on /login but potentially authenticated, allow through to let Server Component decide
+    // (This avoids loops if Middleware verification fails but Server Component succeeds)
+    if (isLoginPage && hasSessionCookie) {
+      return NextResponse.next()
+    }
+
+    // If on protected route but no cookie at all, send to login immediately
+    if (isProtectedRoute && !hasSessionCookie) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // RBAC: /editor requires admin or maintainer
-    if (pathname.startsWith('/editor') && !Roles.canAccessCms(session.role)) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
+    // If we have a cookie, we still want to do basic RBAC and session sync if possible.
+    // However, we'll be more graceful if full verification fails here.
+    if (hasSessionCookie) {
+      const token = request.cookies.get(APP_CONFIG.auth.sessionCookieName)?.value
+      const session = token ? await verifySessionToken(token) : null
 
-    // 4. Supabase Session Sync (Only for protected routes where data access is imminent)
-    // We only call this on GET requests to keep the Supabase Auth cookies in sync 
-    // without penalizing public page performance.
-    if (request.method === 'GET') {
-      return await updateSession(request)
+      if (session) {
+        // RBAC: /editor requires admin or maintainer
+        if (pathname.startsWith('/editor') && !Roles.canAccessCms(session.role)) {
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+
+        // 4. Supabase Session Sync
+        if (request.method === 'GET') {
+          return await updateSession(request)
+        }
+      } else {
+        // If the cookie is present but invalid, we don't redirect to /login HERE.
+        // We let the Server Component handle it to avoid loops caused by secret key mismatches.
+        return NextResponse.next()
+      }
     }
   }
+
+
 
   return NextResponse.next()
 }

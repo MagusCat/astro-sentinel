@@ -8,24 +8,33 @@ function Card({
   ...props
 }: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
   return (
-    <div
-      data-slot="card"
-      data-size={size}
+    <div 
       className={cn(
-        "group/card flex flex-col gap-5 overflow-hidden rounded-2xl bg-card py-6 text-sm text-card-foreground border border-border/80 shadow-sm hover:shadow-md transition-all duration-300 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        "group/card p-1.5 rounded-[2rem] bg-muted/30 border border-border/5 transition-all duration-700 ease-[var(--ease-haptic)] hover:bg-muted/50 flex flex-col",
+        size === "sm" && "rounded-[1.5rem] p-1",
         className
       )}
-      {...props}
-    />
+    >
+      <div
+        data-slot="card"
+        data-size={size}
+        className={cn(
+          "flex flex-col flex-1 gap-5 overflow-hidden rounded-[calc(2rem-0.375rem)] bg-card py-6 text-sm text-card-foreground border border-border/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] group-hover/card:shadow-md transition-all duration-700 ease-[var(--ease-haptic)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 data-[size=sm]:rounded-[calc(1.5rem-0.25rem)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-[calc(2rem-0.375rem)] *:[img:last-child]:rounded-b-[calc(2rem-0.375rem)]"
+        )}
+        {...props}
+      />
+    </div>
   )
 }
+
+
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1.5 rounded-t-2xl px-6 group-data-[size=sm]/card:px-4 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-5 group-data-[size=sm]/card:[.border-b]:pb-4",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1.5 rounded-t-2xl px-6 group-data-[size=sm]/card:px-4 [.border-b]:pb-5 group-data-[size=sm]/card:[.border-b]:pb-4",
         className
       )}
       {...props}
@@ -61,13 +70,14 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-action"
       className={cn(
-        "col-start-2 row-start-1 self-start justify-self-end mt-0",
+        "self-start mt-0",
         className
       )}
       {...props}
     />
   )
 }
+
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (

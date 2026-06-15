@@ -1,6 +1,6 @@
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "./card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card"
 
 interface SectionCardProps extends React.ComponentProps<"div"> {
   title?: string
@@ -8,6 +8,7 @@ interface SectionCardProps extends React.ComponentProps<"div"> {
   description?: string
   footer?: React.ReactNode
   size?: "default" | "sm"
+  headerClassName?: string
 }
 
 /**
@@ -17,31 +18,38 @@ interface SectionCardProps extends React.ComponentProps<"div"> {
  *   <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm flex flex-col gap-5">
  */
 export function SectionCard({
-  children,
   title,
-  titleAction,
   description,
+  titleAction,
   footer,
-  size = "default",
+  children,
   className,
+  headerClassName,
+  size,
   ...props
 }: SectionCardProps) {
   return (
     <Card
-      data-slot="section-card"
       size={size}
-      className={cn("shadow-sm transition-all duration-300 hover:shadow-md hover:border-border/80", className)}
-      {...(props as React.ComponentProps<"div">)}
+      className={cn("shadow-sm transition-all duration-300 hover:shadow-md hover:border-border/80 flex flex-col", className)}
+      {...props}
     >
       {(title || description || titleAction) && (
-        <CardHeader className="pb-0">
-          {titleAction && <CardAction>{titleAction}</CardAction>}
-          {title && <CardTitle>{title}</CardTitle>}
-          {description && <CardDescription>{description}</CardDescription>}
+        <CardHeader className={cn("pb-0 flex flex-col lg:flex-row lg:items-start justify-between gap-6 shrink-0", headerClassName)}>
+          <div className="flex-1 min-w-0 flex flex-col gap-1 text-left">
+            {title && <CardTitle className="text-left">{title}</CardTitle>}
+            {description && <CardDescription className="text-left">{description}</CardDescription>}
+          </div>
+          {titleAction && (
+            <div data-slot="card-action" className="w-full lg:w-auto flex justify-center lg:justify-end shrink-0">
+              {titleAction}
+            </div>
+          )}
         </CardHeader>
       )}
-      <CardContent>{children}</CardContent>
-      {footer && <CardFooter>{footer}</CardFooter>}
+
+      <CardContent className="flex-1 flex flex-col">{children}</CardContent>
+      {footer && <CardFooter className="shrink-0">{footer}</CardFooter>}
     </Card>
   )
 }

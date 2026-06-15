@@ -48,27 +48,27 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-in fade-in duration-500 ease-[var(--ease-haptic)]"
       onClick={onClose}
     >
       <div
-        className={`bg-card border-0 md:border border-border/40 w-full h-full max-h-screen md:h-auto md:max-h-[90vh] rounded-none md:rounded-xl shadow-xl ${SIZE_CLASSES[size]} flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden`}
+        className={`bg-card border-0 md:border border-border/40 w-full h-full max-h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[2rem] shadow-2xl ${SIZE_CLASSES[size]} flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-10 duration-700 ease-[var(--ease-haptic)] overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-border/10 px-6 pt-6 pb-4 shrink-0">
-          <h3 className="font-extrabold text-foreground text-sm">{title}</h3>
+        <div className="flex items-center justify-between border-b border-border/10 px-6 pt-8 pb-5 shrink-0">
+          <h3 className="font-extrabold text-foreground text-sm uppercase tracking-wider">{title}</h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-2 rounded-lg hover:bg-muted"
+            className="text-muted-foreground hover:text-foreground transition-all cursor-pointer p-2 rounded-full hover:bg-muted active:scale-90"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
-        <div className="overflow-y-auto min-h-0 flex-1 scrollbar-none px-6 py-4">{children}</div>
+        <div className="overflow-y-auto min-h-0 flex-1 scrollbar-none px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom)+1rem)]">{children}</div>
         {footer && (
-          <div className="sticky bottom-0 bg-card border-t border-border/10 p-4 px-6 flex gap-2 justify-end mt-auto shrink-0">
+          <div className="sticky bottom-0 bg-card/80 backdrop-blur-md border-t border-border/10 p-6 px-8 flex gap-3 justify-end mt-auto shrink-0 pb-[max(1.5rem,env(safe-area-inset-bottom)+0.5rem)]">
             {footer}
           </div>
         )}
@@ -76,4 +76,5 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
     </div>,
     document.body
   )
+
 }

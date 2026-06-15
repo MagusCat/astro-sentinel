@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Modal } from '@/components/shared/feedback/modal'
+import Modal from '@/components/shared/feedback/modal'
 import { TextField } from '@/components/shared/form/text-field'
 import { SelectField } from '@/components/shared/form/select-field'
 import { FormActions } from '@/components/shared/form/form-actions'

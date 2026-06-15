@@ -14,20 +14,31 @@ interface DashboardOverviewProps {
 
 export default function DashboardOverview({ stats }: DashboardOverviewProps) {
   return (
-    <div className="flex flex-col gap-4 w-full h-full flex-1 min-h-0 overflow-hidden">
-      <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-2 w-full max-w-full min-w-0">
+    <div className="flex flex-col gap-8 w-full h-full flex-1 min-h-0 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-[var(--ease-haptic)]">
+      
+      {/* Metrics Grid — Robust 2-column layout for Mobile/Tablet, 4 for Desktop */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 w-full">
+
         <MetricCard
           title="Miembros Activos"
           value={stats.activeMembershipsCount}
-          description="Alumnos con membresía vigente"
+          description="Suscripciones vigentes"
           icon={Users}
           color="blue"
         />
 
         <MetricCard
+          title="Ingresos del Día"
+          value={`$${stats.dailyRevenue}`}
+          description="Caja diaria estimada"
+          icon={CreditCard}
+          color="emerald"
+        />
+
+        <MetricCard
           title="Total Clases"
           value={stats.totalClassesCount}
-          description="Programas registrados"
+          description="Disciplinas activas"
           icon={Trophy}
           color="purple"
         />
@@ -35,31 +46,33 @@ export default function DashboardOverview({ stats }: DashboardOverviewProps) {
         <MetricCard
           title="Total Alumnos"
           value={stats.totalClientsCount}
-          description="Matrícula histórica"
+          description="Registro histórico"
           icon={Users}
           color="sky"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 min-h-0">
+
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
         <DashboardListWidget
           className="lg:col-span-2"
           title="Membresías Inactivas"
-          description="Usuarios con membresías vencidas, congeladas o canceladas"
+          description="Atención requerida: usuarios con estados irregulares"
           icon={Clock}
           iconColorClass="text-rose-500"
           items={stats.inactiveMemberships}
           emptyMessage="No hay membresías inactivas registradas."
           renderItem={(membership, idx) => (
-            <div key={idx} className="flex justify-between items-center p-2.5 border border-border rounded-xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-200">
+            <div key={idx} className="flex justify-between items-center p-3 border border-border/60 rounded-xl bg-card hover:bg-muted/30 hover:shadow-sm transition-all duration-500 ease-[var(--ease-haptic)]">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-semibold text-foreground">{membership.clientName}</span>
-                <span className="text-sm text-muted-foreground/75 font-semibold">
+                <span className="text-sm font-bold text-foreground">{membership.clientName}</span>
+                <span className="text-xs text-muted-foreground/90 font-medium">
                   {membership.className} • {membership.planName}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-mono text-muted-foreground">
+                <span className="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-tight">
                   {membership.endDate ? new Date(membership.endDate).toLocaleDateString('es-ES') : 'N/A'}
                 </span>
                 <StatusBadge status={membership.status} />
@@ -67,6 +80,7 @@ export default function DashboardOverview({ stats }: DashboardOverviewProps) {
             </div>
           )}
         />
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2 min-h-0">
           <DashboardListWidget

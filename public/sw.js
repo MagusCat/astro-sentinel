@@ -1,7 +1,5 @@
-const CACHE_NAME = 'sentinel-cache-v1'
+const CACHE_NAME = 'sentinel-cache-v2' // Incremented version to clear old cache
 const ASSETS_TO_CACHE = [
-  '/',
-  '/login',
   '/health',
   '/manifest.webmanifest'
 ]
@@ -41,7 +39,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip Next.js API/Server Action requests, admin/cms database queries or dynamic paths we want fresh
+  // Also skip root and login which handle auth redirects
   if (
+    url.pathname === '/' ||
+    url.pathname === '/login' ||
     url.pathname.includes('/_next/') || 
     url.pathname.startsWith('/api/') || 
     url.pathname.startsWith('/dashboard') || 
@@ -55,7 +56,8 @@ self.addEventListener('fetch', (event) => {
       if (cachedResponse) {
         // Fetch fresh version in background (Stale-While-Revalidate)
         fetch(request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
+          // Do not cache redirected responses or non-200 responses
+          if (networkResponse.status === 200 && !networkResponse.redirected) {
             caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse))
           }
         }).catch(() => { /* Ignore network errors */ })

@@ -8,7 +8,7 @@
   --breakpoint-xs: 480px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-open-sans);
+  --font-sans: var(--font-plus-jakarta);
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -47,45 +47,43 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  
+  /* Haptic Motion */
+  --ease-haptic: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
   /* White Snow & Deep Blue High-End Aesthetics */
   --background: #f8fafc; /* Soft slate/blue-grey */
-  --foreground: #1c2529; /* Deep charcoal */
+  --foreground: #0f172a; /* Deeper slate */
   --card: #ffffff; 
-  --card-foreground: #1c2529;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #1c2529;
-  --primary: #4953ac; /* Blue/Indigo for sidebar and accents */
+  --popover-foreground: #0f172a;
+  --primary: #334155; /* Slate 700 for a more technical/premium feel */
   --primary-foreground: #ffffff;
-  --secondary: #2563eb; /* Vibrant Blue */
+  --secondary: #6366f1; /* Indigo 600 */
   --secondary-foreground: #ffffff;
-  --muted: #f4f6f8; /* Soft neutral grey */
-  --muted-foreground: #5e6b73;
-  --accent: #652fe7; 
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #4f46e5; 
   --accent-foreground: #ffffff;
-  --destructive: #b41340; 
-  --border: #cbd5e1;
-  --input: #cbd5e1;
-  --ring: #4953ac;
-  --chart-1: #4953ac;
-  --chart-2: #2563eb;
-  --chart-3: #652fe7;
-  --chart-4: #5e6b73;
-  --chart-5: #1c2529;
-  --radius: 0.75rem; 
+  --destructive: #ef4444; 
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #6366f1;
+  --radius: 1rem; 
   
-  /* Menu Background Blue & Sections White */
-  --sidebar: #4953ac; /* Deep blue background for lateral menu */
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #4953ac;
-  --sidebar-accent: rgba(255, 255, 255, 0.15);
+  --sidebar: #1e293b; /* Slate 800 */
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-ring: #6366f1;
 }
+
 
 .dark {
   --background: #090e11;

@@ -5,7 +5,8 @@ import { History, Trash2, RefreshCw, UploadCloud, User } from 'lucide-react'
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { listContentBackups, restoreContentBackup, deleteContentBackup, getBackupAuthors } from '../../backups/actions'
 import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { Toast, type ToastType } from '@/components/shared/feedback/toast'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
 
 interface BackupFile {
   name: string

@@ -6,7 +6,8 @@ import { Database, Trash2, RefreshCw, Folder, HardDrive, Activity } from 'lucide
 import { SectionCard } from '@/components/shared/data-display/section-card'
 import { listSiteImages, deleteSiteImage, getBucketStats } from '../../media/actions'
 import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { Toast, type ToastType } from '@/components/shared/feedback/toast'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
 
 interface StorageFile {
   name: string

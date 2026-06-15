@@ -13,10 +13,10 @@ import type { AuthenticatedUser } from '@/features/auth/types'
 import { APP_CONFIG, getSecret, APP_ROLE } from '@/lib/config'
 import type { AppRole } from '@/lib/config'
 
-async function getSecretKey(): Promise<Uint8Array> {
+async function getSecretKey(): Promise<Uint8Array | null> {
   const secret = getSecret('SESSION_SECRET')
-  if (secret.length < 32) {
-    throw new Error('SESSION_SECRET must be at least 32 characters long.')
+  if (!secret || secret.length < 32) {
+    return null
   }
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret))
   return new Uint8Array(hash)
@@ -28,6 +28,8 @@ export async function createSessionToken(
   user: AuthenticatedUser
 ): Promise<string> {
   const key = await getSecretKey()
+  if (!key) throw new Error('Cannot sign JWT: SESSION_SECRET is missing or invalid.')
+  
   return new SignJWT({
     sub: user.id,
     full_name: user.full_name,
@@ -47,10 +49,13 @@ export async function verifySessionToken(
 ): Promise<AuthenticatedUser | null> {
   try {
     const key = await getSecretKey()
+    if (!key) return null
+
     const { payload } = await jwtVerify(token, key, {
       issuer: APP_CONFIG.auth.jwtIssuer,
       audience: APP_CONFIG.auth.jwtAudience
     })
+
 
     if (
       typeof payload.sub !== 'string' ||

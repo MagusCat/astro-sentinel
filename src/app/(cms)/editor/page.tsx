@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { getCurrentUser } from '@/features/auth/actions'
 import CmsShell from '@/features/cms/core/components/cms-shell'
+import SetupRequired from '@/features/cms/core/components/setup-required'
 import SessionLoading from '@/components/shared/layout/session-loading'
 import { getSiteContent, getLastPublicationDate } from '@/features/cms/core/actions'
 import { formatDate } from '@/lib/utils'
@@ -23,6 +24,11 @@ export default async function EditorPage() {
     getLastPublicationDate(),
   ])
 
+  // Resilience: If buckets are missing, show the setup guide instead of crashing
+  if (contentRes.isBucketMissing) {
+    return <SetupRequired />
+  }
+
   return (
     <Suspense fallback={<SessionLoading />}>
       <CmsShell 
@@ -34,3 +40,4 @@ export default async function EditorPage() {
     </Suspense>
   )
 }
+

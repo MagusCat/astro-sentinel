@@ -11,7 +11,7 @@ import { normalizeContent } from './normalize'
 import { revalidatePath } from 'next/cache'
 import { getServiceConfig } from '@/lib/config'
 
-export async function getSiteContent(): Promise<{ success: boolean; content?: SiteContent; error?: string }> {
+export async function getSiteContent(): Promise<{ success: boolean; content?: SiteContent; error?: string; isBucketMissing?: boolean }> {
   try {
     const supabase = await createClient()
 
@@ -20,6 +20,11 @@ export async function getSiteContent(): Promise<{ success: boolean; content?: Si
       .download(APP_CONFIG.keys.contentJson)
 
     if (error) {
+      // Check if bucket itself is missing
+      if (error.message.includes('Bucket not found')) {
+        return { success: false, error: 'Infraestructura de almacenamiento no inicializada.', isBucketMissing: true }
+      }
+
       if (error.message.includes('not found') || error.message.includes('404') || error.message.includes('Object not found')) {
         const initialJson = JSON.stringify(DEFAULT_CONTENT, null, 2)
         const { error: uploadError } = await supabase.storage
@@ -29,7 +34,12 @@ export async function getSiteContent(): Promise<{ success: boolean; content?: Si
             contentType: 'application/json'
           })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          if (uploadError.message.includes('Bucket not found')) {
+            return { success: false, error: 'Infraestructura de almacenamiento no inicializada.', isBucketMissing: true }
+          }
+          throw uploadError
+        }
         return { success: true, content: DEFAULT_CONTENT }
       }
       throw error
@@ -41,9 +51,11 @@ export async function getSiteContent(): Promise<{ success: boolean; content?: Si
     return { success: true, content }
   } catch (err) {
     console.error('getSiteContent error:', err)
-    return { success: false, error: err instanceof Error ? err.message : String(err) }
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, error: msg, isBucketMissing: msg.includes('Bucket not found') }
   }
 }
+
 
 export async function publishSiteContent(newContent: SiteContent): Promise<CmsPublishResult> {
   try {

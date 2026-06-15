@@ -43,7 +43,7 @@ export function AppSidebar({
     setIsMounted(true)
     const timer = setTimeout(() => {
       setEnableTransitions(true)
-    }, 100)
+    }, 150) // Slightly longer for stability
     return () => clearTimeout(timer)
   }, [])
 
@@ -51,13 +51,28 @@ export function AppSidebar({
     <SidebarContext.Provider value={{ isCollapsed, isMounted, enableTransitions }}>
       <aside
         className={cn(
-          "h-[100dvh] fixed left-0 top-0 bg-sidebar text-sidebar-foreground flex flex-col py-8 border-r border-sidebar-border z-50 shadow-xl overflow-hidden",
-          enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-          isCollapsed ? "w-20 px-2" : "w-full md:w-64 px-4 md:px-4",
+          "h-[100dvh] fixed left-0 top-0 bg-sidebar text-sidebar-foreground flex flex-col pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] border-r border-sidebar-border z-[100] shadow-2xl overflow-hidden",
+          "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          !enableTransitions && "md:transition-none",
+          isCollapsed ? "w-20 px-2" : "w-screen md:w-64 px-4 md:px-4",
           "md:translate-x-0",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <div className={cn("mb-10 flex items-center justify-between w-full px-4 min-h-10", isCollapsed && "justify-center px-0")}>
           {!isCollapsed ? (
             <>
@@ -196,20 +211,27 @@ export function AppSidebarItem({
         )}
       </div>
       <span className={cn(
-        "text-sm font-semibold whitespace-normal md:whitespace-nowrap md:overflow-visible origin-left",
-        enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-        isCollapsed ? "max-w-0 opacity-0 overflow-hidden" : "max-w-[200px] opacity-100"
+        "text-sm font-semibold leading-tight py-1 origin-left",
+        enableTransitions ? "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]" : "transition-none",
+        isCollapsed ? "w-0 h-0 opacity-0 overflow-hidden whitespace-nowrap invisible" : "w-auto h-auto opacity-100 whitespace-normal break-words visible"
       )}>
         {label}
       </span>
+
+
+
+
+
+
     </>
   )
 
   const baseClasses = cn(
-    "flex items-center rounded-xl cursor-pointer text-left overflow-hidden",
+    "flex items-center rounded-xl cursor-pointer text-left overflow-hidden active:scale-[0.98] transition-all duration-200",
     enableTransitions && "transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
     isCollapsed ? "justify-center p-3 gap-0" : "px-4 py-3 gap-3 w-full"
   )
+
   
   let stateClasses = "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
   if (isActive) {

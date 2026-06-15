@@ -95,10 +95,10 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
   )
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full flex-1 min-h-0 overflow-hidden">
-      <div className="flex items-center justify-between gap-4 border-b border-border/10 pb-4 w-full flex-none">
+    <div className="flex flex-col gap-4 w-full h-full flex-1">
+      <div className="flex items-center justify-between gap-4 border-b border-border/10 pb-4 w-full flex-none px-2">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground font-heading">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-heading">
             {title}
           </h1>
         </div>
@@ -121,8 +121,9 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
 
       <div
         key={activeTab}
-        className="w-full flex-1 min-h-0 flex flex-col animate-fade-in-up"
+        className="w-full flex-1 flex flex-col animate-fade-in-up"
       >
+
         {activeTab === 'overview' && (
           <DashboardOverview
             stats={stats}

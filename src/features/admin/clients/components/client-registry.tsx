@@ -6,8 +6,9 @@ import { Button } from '@/components/shared/form/button'
 import { SearchInput } from '@/components/shared/form/search-input'
 import { DataTable } from '@/components/shared/data-display/data-table'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
-import { Toast, ToastType } from '@/components/shared/feedback/toast'
-import { Modal } from '@/components/shared/feedback/modal'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
+import Modal from '@/components/shared/feedback/modal'
 import { PageHeader } from '@/components/shared/layout/page-header'
 import { TableSkeleton } from '@/components/shared/feedback/skeleton'
 import { ClientData, ClientFilters } from '../types'
@@ -158,22 +159,24 @@ export default function ClientRegistry({ clients, activeUser, onReload, refreshT
     <div className="flex flex-col gap-6 w-full max-w-full h-full flex-1 min-w-0">
       <PageHeader
         title="Gestión de Clientes"
-        description="Administra el registro y membresías de los clientes"
+        description="Administra el registro y membresías de los alumnos"
         actions={
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+          <>
             <SearchInput
-              placeholder="Buscar por nombre o correo..."
+              placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              containerClassName="w-full sm:max-w-md"
+              containerClassName="flex-1 min-w-[140px] @[640px]:min-w-[200px]"
             />
-            <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shrink-0">
-              <Plus className="w-4 h-4" />
-              Registrar Cliente
+            <Button onClick={() => setIsCreateOpen(true)} className="shrink-0 rounded-full h-10 @[640px]:h-11 px-4 @[640px]:px-6 text-[10px] @[640px]:text-xs font-black uppercase tracking-widest">
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              Nuevo
             </Button>
-          </div>
+          </>
         }
       />
+
+
 
       <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex-1 flex flex-col relative min-h-[300px]">
 

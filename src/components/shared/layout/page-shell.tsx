@@ -18,11 +18,13 @@ interface PageShellProps {
  */
 export function PageShell({ children, variant = "auth", className }: PageShellProps) {
   const variants: Record<NonNullable<PageShellProps["variant"]>, string> = {
-    auth: "min-h-screen bg-background text-foreground flex flex-col justify-center antialiased font-sans relative",
+    auth: "min-h-screen bg-background text-foreground flex flex-col justify-center antialiased font-sans relative pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]",
     admin:
-      "min-h-screen bg-background text-foreground antialiased flex flex-row w-full overflow-x-hidden",
-    cms: "h-screen overflow-hidden bg-background text-foreground antialiased flex flex-col w-full",
-    centered: "min-h-screen bg-background text-foreground flex flex-col justify-center antialiased font-sans",
+      "min-h-screen bg-background text-foreground antialiased flex flex-row w-full overflow-x-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]",
+    cms: "h-screen overflow-hidden bg-background text-foreground antialiased flex flex-col w-full pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]",
+    centered: "min-h-screen bg-background text-foreground flex flex-col justify-center antialiased font-sans pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]",
+
+
   }
 
   return <div className={cn(variants[variant], className)}>{children}</div>

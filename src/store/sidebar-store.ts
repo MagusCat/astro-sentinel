@@ -22,7 +22,7 @@ export type SidebarStore = SidebarState & SidebarActions
 export const useSidebarStore = create<SidebarStore>()(
   persist(
     (set) => ({
-      isCollapsed: false,
+      isCollapsed: true,
       isMounted: false,
       
       toggleCollapse: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
@@ -35,3 +35,4 @@ export const useSidebarStore = create<SidebarStore>()(
     }
   )
 )
+

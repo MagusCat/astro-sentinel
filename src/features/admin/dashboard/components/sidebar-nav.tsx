@@ -9,7 +9,7 @@ import { LogOut, Power, FileEdit, Terminal, Users, UserCheck, CreditCard } from 
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
-import { Logo } from '@/components/shared/layout/logo'
+import Logo from '@/components/shared/layout/logo'
 
 export default function SidebarNav({
   activeUser,
@@ -30,6 +30,15 @@ export default function SidebarNav({
   const isElevated = Roles.canManageStaff(activeUser.role)
 
   const handleLinkClick = (tab: string) => {
+    const isCurrentlyActive = tab === 'cms' 
+      ? cmsMode 
+      : (activeTab === tab && !cmsMode)
+
+    if (isCurrentlyActive) {
+      if (onCloseMobile) onCloseMobile()
+      return
+    }
+
     setTransitioningTab(tab)
     if (onCloseMobile) onCloseMobile()
   }

@@ -1,13 +1,24 @@
-import type { Metadata } from "next";
-import { Open_Sans } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { PwaRegister } from "@/components/shared/pwa-register";
+import { NavigationIndicator } from "@/components/shared/feedback/navigation-indicator";
 import "../styles/globals.css";
 
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#f8fafc",
+};
 
 export const metadata: Metadata = {
   title: "Sentinel",
@@ -19,20 +30,24 @@ export const metadata: Metadata = {
   },
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={openSans.variable} suppressHydrationWarning>
+    <html lang="es" className={plusJakartaSans.variable} suppressHydrationWarning>
       <body
-        className="antialiased"
+        className="antialiased font-sans"
         suppressHydrationWarning
       >
+        <NavigationIndicator />
         <PwaRegister />
         {children}
       </body>
+
     </html>
   );
 }
+

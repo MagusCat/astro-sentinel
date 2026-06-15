@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Modal } from '@/components/shared/feedback/modal'
-import { Toast, ToastType } from '@/components/shared/feedback/toast'
+import Modal from '@/components/shared/feedback/modal'
+import Toast from '@/components/shared/feedback/toast'
+import type { ToastType } from '@/components/shared/feedback/toast'
 import { SearchInput } from '@/components/shared/form/search-input'
 import { PriceDisplay } from '@/components/shared/data-display/price-display'
 import { Button } from '@/components/shared/form/button'

@@ -7,8 +7,10 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Sistema de Gestión y CMS para Academias de Artes Marciales',
     start_url: '/',
     display: 'standalone',
-    background_color: '#090e11',
-    theme_color: '#4953ac',
+    display_override: ['standalone', 'window-controls-overlay'],
+    background_color: '#f8fafc',
+    theme_color: '#6366f1',
+    orientation: 'any',
     icons: [
       {
         src: '/icon-192x192.png',
@@ -25,3 +27,4 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
   }
 }
+

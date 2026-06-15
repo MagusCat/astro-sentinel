@@ -130,32 +130,33 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
         <div className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
           <Button 
             variant="default" 
-            className="h-full min-h-[80px] flex items-center justify-start gap-4 rounded-2xl shadow-sm hover:shadow-md transition-all px-6 py-4"
+            className="h-full min-h-[90px] flex items-center justify-start gap-4 rounded-2xl shadow-sm hover:shadow-md transition-all px-6 py-4"
             onClick={() => handleNavigation('checkout')}
           >
             <div className="bg-primary-foreground/20 p-2.5 rounded-xl shrink-0">
               <ShoppingCart className="size-6 text-primary-foreground" />
             </div>
-            <div className="text-left">
-              <span className="block font-bold text-base text-primary-foreground leading-tight truncate">Nuevo Pago</span>
-              <span className="block text-sm font-normal text-primary-foreground/80 truncate">Cobrar mensualidad</span>
+            <div className="text-left min-w-0">
+              <span className="block font-black text-base text-primary-foreground leading-tight whitespace-normal">Nuevo Pago</span>
+              <span className="block text-xs font-semibold text-primary-foreground/70 leading-snug whitespace-normal mt-0.5">Cobrar mensualidad</span>
             </div>
           </Button>
 
           <Button 
             variant="outline" 
-            className="h-full min-h-[80px] flex items-center justify-start gap-4 rounded-2xl shadow-sm hover:shadow-md transition-all border-2 px-6 py-4 group"
+            className="h-full min-h-[90px] flex items-center justify-start gap-4 rounded-2xl shadow-sm hover:shadow-md transition-all border-2 px-6 py-4 group"
             onClick={() => handleNavigation('clients')}
           >
             <div className="bg-indigo-500/10 p-2.5 rounded-xl shrink-0 group-hover:bg-indigo-500/20 transition-colors">
               <UserPlus className="size-6 text-indigo-500" />
             </div>
-            <div className="text-left">
-              <span className="block font-bold text-base text-foreground leading-tight truncate">Nuevo Cliente</span>
-              <span className="block text-sm font-normal text-muted-foreground truncate">Inscribir alumno</span>
+            <div className="text-left min-w-0">
+              <span className="block font-black text-base text-foreground leading-tight whitespace-normal">Nuevo Cliente</span>
+              <span className="block text-xs font-semibold text-muted-foreground/80 leading-snug whitespace-normal mt-0.5">Inscribir alumno</span>
             </div>
           </Button>
         </div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0">

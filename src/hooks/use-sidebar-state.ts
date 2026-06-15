@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useLayoutEffect, useRef } from 'react'
 import { useMediaQuery } from './use-media-query'
 import { useSidebarStore } from '@/store/sidebar-store'
 
@@ -9,32 +9,32 @@ import { useSidebarStore } from '@/store/sidebar-store'
  * transition timing to prevent layout shifts.
  */
 export function useSidebarState() {
-  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)')
   const isMobile = useMediaQuery('(max-width: 767px)')
   
   // Use Zustand store for cross-component consistency
   const { isCollapsed, toggleCollapse, isMounted, setIsMounted } = useSidebarStore()
   
-  // Local state for transition delay
-  const [enableTransitions, setEnableTransitions] = useState(false)
+  // Local state for transition control
+  const [enableTransitions, setEnableTransitions] = useState(true)
+  const lastViewportRef = useRef<'mobile' | 'desktop' | null>(null)
 
-  useEffect(() => {
-    // Sync mounting state
+  // useLayoutEffect runs before paint. 
+  // We synchronously kill transitions ONLY if the breakpoint changed.
+  useLayoutEffect(() => {
     setIsMounted(true)
-
-    // Handle tablet auto-collapse only on first mount if not manually overridden
-    const saved = localStorage.getItem('sentinel-sidebar-state')
-    if (saved === null && isTablet) {
-      // Logic for default tablet behavior could go here if needed
+    const currentViewport = isMobile ? 'mobile' : 'desktop'
+    
+    // If viewport shifts (e.g. 767px -> 768px), kill transitions to prevent visual jumping
+    if (lastViewportRef.current !== null && lastViewportRef.current !== currentViewport) {
+      setEnableTransitions(false)
+      const timer = setTimeout(() => {
+        setEnableTransitions(true)
+      }, 300)
+      return () => clearTimeout(timer)
     }
-
-    // Delay transitions until after hydration + small buffer to prevent jumping
-    const timer = setTimeout(() => {
-      setEnableTransitions(true)
-    }, 150)
-
-    return () => clearTimeout(timer)
-  }, [setIsMounted, isTablet])
+    
+    lastViewportRef.current = currentViewport
+  }, [isMobile, setIsMounted])
 
   return { 
     isCollapsed: isMobile ? false : isCollapsed, 
@@ -43,3 +43,6 @@ export function useSidebarState() {
     toggleCollapse 
   }
 }
+
+
+

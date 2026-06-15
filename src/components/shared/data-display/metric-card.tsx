@@ -38,27 +38,41 @@ export function MetricCard({
 
   return (
     <div className={cn(
-      "@container bg-card border-l-4 border-y border-r border-border p-4 @[250px]:p-5 rounded-xl @[250px]:rounded-2xl relative overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-r-border/80 w-full h-full",
+      "@container bg-card border-l-4 border-y border-r border-border p-4 @[250px]:p-6 rounded-[2rem] relative overflow-hidden group transition-all duration-700 ease-[var(--ease-haptic)] hover:shadow-2xl hover:-translate-y-1 hover:border-r-border/80 w-full h-full min-h-[140px]",
       borderClass,
       className
     )}>
-      <div className="flex flex-col justify-between h-full min-h-[80px] @[250px]:min-h-[90px]">
-        <div className="flex items-center justify-between mb-2 @[250px]:mb-3">
-          <p className="text-[11px] @[150px]:text-[12px] @[250px]:text-xs @[350px]:text-sm font-bold uppercase tracking-wider whitespace-normal mr-2 text-muted-foreground">
-            {title}
-          </p>
-          <Icon className={cn("hidden @[180px]:block w-7 h-7 @[250px]:w-8 @[250px]:h-8 shrink-0 group-hover:scale-110 transition-transform duration-300", textClass, iconClassName)} />
+      <div className="flex flex-col h-full gap-2">
+        <div className="flex items-start justify-between w-full">
+          <div className="flex-1 min-w-0 pr-4">
+            <p className="text-[10px] @[200px]:text-[11px] @[300px]:text-xs font-black uppercase tracking-[0.15em] text-muted-foreground/60 mb-1">
+              {title}
+            </p>
+            <h3 className="text-2xl @[250px]:text-3xl @[350px]:text-4xl font-black text-foreground tracking-tighter leading-none">
+              {value}
+            </h3>
+          </div>
+          <div className={cn("p-2.5 rounded-2xl bg-muted/30 group-hover:bg-muted/50 transition-colors duration-500", !Icon && "hidden")}>
+            <Icon className={cn("w-5 h-5 @[250px]:w-6 @[250px]:h-6 group-hover:scale-110 transition-transform duration-500", textClass, iconClassName)} />
+          </div>
         </div>
-        <h3 className="text-2xl @[250px]:text-3xl @[350px]:text-4xl font-extrabold text-foreground tracking-tight">
-          {value}
-        </h3>
+
         {description && (
-          <span className="hidden @[200px]:block text-xs font-normal text-muted-foreground mt-2">
-            {description}
-          </span>
+          <div className="mt-auto pt-2 border-t border-border/5">
+            <span className="text-[10px] @[300px]:text-[11px] font-bold text-muted-foreground/80 leading-snug">
+              {description}
+            </span>
+          </div>
         )}
+      </div>
+
+      {/* Decorative background element for premium feel */}
+      <div className={cn("absolute -bottom-6 -right-6 w-24 h-24 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-700", textClass)}>
+        {Icon && <Icon className="w-full h-full rotate-12" />}
       </div>
     </div>
   )
+
+
 
 }
