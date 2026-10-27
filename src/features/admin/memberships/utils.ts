@@ -18,7 +18,3 @@ export function calcRemainingDays(endDateStr: string): number {
   
   return Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / MS_PER_DAY))
 }
-
-export function getTodayStr(): string {
-  return new Date().toISOString().split('T')[0]
-}

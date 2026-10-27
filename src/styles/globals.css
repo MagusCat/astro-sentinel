@@ -8,7 +8,7 @@
   --breakpoint-xs: 480px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-plus-jakarta);
+  --font-sans: var(--font-open-sans);
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -47,43 +47,46 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  
-  /* Haptic Motion */
   --ease-haptic: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
   /* White Snow & Deep Blue High-End Aesthetics */
   --background: #f8fafc; /* Soft slate/blue-grey */
-  --foreground: #0f172a; /* Deeper slate */
+  --foreground: #1c2529; /* Deep charcoal */
   --card: #ffffff; 
-  --card-foreground: #0f172a;
+  --card-foreground: #1c2529;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #334155; /* Slate 700 for a more technical/premium feel */
+  --popover-foreground: #1c2529;
+  --primary: #4953ac; /* Blue/Indigo for sidebar and accents */
   --primary-foreground: #ffffff;
-  --secondary: #6366f1; /* Indigo 600 */
+  --secondary: #2563eb; /* Vibrant Blue */
   --secondary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #4f46e5; 
+  --muted: #f4f6f8; /* Soft neutral grey */
+  --muted-foreground: #5e6b73;
+  --accent: #652fe7; 
   --accent-foreground: #ffffff;
-  --destructive: #ef4444; 
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #6366f1;
-  --radius: 1rem; 
+  --destructive: #b41340; 
+  --border: #cbd5e1;
+  --input: #cbd5e1;
+  --ring: #4953ac;
+  --chart-1: #4953ac;
+  --chart-2: #2563eb;
+  --chart-3: #652fe7;
+  --chart-4: #5e6b73;
+  --chart-5: #1c2529;
+  --radius: 0.75rem; 
   
-  --sidebar: #1e293b; /* Slate 800 */
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #6366f1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  /* Menu Background Blue & Sections White */
+  --sidebar: #4953ac; /* Deep blue background for lateral menu */
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #4953ac;
+  --sidebar-accent: rgba(255, 255, 255, 0.15);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #6366f1;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #ffffff;
 }
-
 
 .dark {
   --background: #090e11;
@@ -233,4 +236,73 @@
 
 .mode-animate {
   animation: mode-switch 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+/* ── Motion ───────────────────────────────────────────────────────────────── */
+
+/* Staggered entrance for list children: put .stagger-children on the parent */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in {
+  animation: pop-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .stagger-children > * { animation-delay: 0ms !important; }
+}
+
+/* ── Print: only .print-area (cash closing, tickets) ─────────────────────── */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0; padding: 24px; color: #000; background: #fff; }
+}
+
+/* ── POS ──────────────────────────────────────────────────────────────────── */
+@layer components {
+  .pos-product-card {
+    @apply relative flex flex-col items-start gap-2 rounded-2xl border-2 border-transparent bg-muted/30 p-4
+      text-left shadow-sm transition-all duration-200 hover:bg-muted/50 hover:shadow-md active:scale-[0.97]
+      disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  }
+  .pos-product-card-selected {
+    @apply border-primary/50 bg-primary/5;
+  }
+  .pos-qty-bubble {
+    @apply absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full bg-primary
+      text-xs font-black text-primary-foreground shadow-md;
+  }
+  .pos-chip {
+    @apply h-10 shrink-0 rounded-full border border-border bg-card px-4 text-sm font-semibold text-muted-foreground
+      transition-colors hover:bg-muted;
+  }
+  .pos-chip-active {
+    @apply border-primary bg-primary text-primary-foreground hover:bg-primary;
+  }
+  .pos-cart-line {
+    @apply flex items-center justify-between gap-3 rounded-xl bg-muted/40 p-3;
+  }
+  .whatsapp-button {
+    @apply inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-sm font-semibold
+      text-white transition-colors hover:bg-emerald-700;
+  }
 }

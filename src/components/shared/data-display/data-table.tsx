@@ -48,7 +48,33 @@ export function DataTable<T>({
 
   return (
     <div className={cn("w-full flex flex-col flex-1 min-h-0", className)}>
-      <div className="w-full overflow-auto flex-1 min-h-0">
+      {/* Phones and portrait tablets: one card per row, first column as the title */}
+      <div className="md:hidden flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 p-3 stagger-children">
+        {data.map((row, index) => (
+          <div
+            key={keyExtractor(row, index)}
+            className={cn("rounded-xl border border-border bg-card p-4 shadow-sm flex flex-col gap-2", rowClassName && rowClassName(row))}
+          >
+            {columns.map((col, colIndex) => {
+              const value = col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as React.ReactNode
+              if (colIndex === 0) {
+                return <div key={col.key} className="text-base font-semibold text-foreground">{value}</div>
+              }
+              if (!col.header) {
+                return <div key={col.key} className="flex flex-wrap justify-end gap-2 pt-2 border-t border-border/40">{value}</div>
+              }
+              return (
+                <div key={col.key} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground shrink-0">{col.header}</span>
+                  <span className="text-foreground/90 text-right min-w-0">{value}</span>
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block w-full overflow-auto flex-1 min-h-0">
         <table className={cn("w-full h-full text-left border-collapse text-xs relative", tableClassName || "min-w-max")}>
           <thead className="sticky top-0 z-10 shadow-sm bg-card">
             <tr className="bg-primary/5">
@@ -97,7 +123,7 @@ export function DataTable<T>({
       </div>
 
       {pagination && pagination.totalPages > 0 && (
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border/40 bg-muted/5 mt-auto shrink-0">
+        <div className="flex items-center justify-between gap-3 px-4 md:px-6 py-3 md:py-4 border-t border-border/40 bg-muted/5 mt-auto shrink-0">
           <span className="text-sm font-medium text-muted-foreground">
             Mostrando página {pagination.currentPage} de {pagination.totalPages}
             {pagination.totalCount !== undefined && ` (${pagination.totalCount} registros)`}
@@ -105,15 +131,17 @@ export function DataTable<T>({
           <div className="flex items-center gap-2">
             <button 
               onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+              aria-label="Página anterior"
               disabled={pagination.currentPage === 1 || pagination.disabled}
-              className="p-1.5 rounded-md border border-border bg-card text-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="size-10 inline-flex items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button 
               onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+              aria-label="Página siguiente"
               disabled={pagination.currentPage === pagination.totalPages || pagination.disabled}
-              className="p-1.5 rounded-md border border-border bg-card text-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="size-10 inline-flex items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

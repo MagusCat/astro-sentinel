@@ -10,12 +10,16 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { UserProvider } from '@/features/auth/context'
+import { CurrencyProvider } from '@/lib/currency-context'
+import type { CurrencySettings } from '@/lib/currency'
 import { logoutUser, logoutUserFull } from '@/features/auth/actions'
 import SidebarNav from '@/features/admin/dashboard/components/sidebar-nav'
-import SessionLoading from '@/components/shared/layout/session-loading'
+import CommandPalette, { openCommandPalette } from '@/features/admin/dashboard/components/command-palette'
+import { SessionLoading } from '@/components/shared';
+
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { useNavigationStore } from '@/store/navigation-store'
@@ -23,16 +27,21 @@ import { cn } from '@/lib/utils'
 
 interface AdminShellProps {
   activeUser: AuthenticatedUser
+  initialCollapsed?: boolean
+  currencySettings: CurrencySettings
   children: React.ReactNode
 }
 
-export default function AdminShell({ activeUser, children }: AdminShellProps) {
+export default function AdminShell({ activeUser, initialCollapsed = true, currencySettings, children }: AdminShellProps) {
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   const { isNavigating } = useNavigationStore()
-  
-  const { isCollapsed, isMounted, enableTransitions, toggleCollapse } = useSidebarState()
+
+  // initialCollapsed viene del servidor (cookie): el ancho correcto en el primer
+  // paint, sin flash. Ya no escondemos el shell con opacity-0.
+  const { isCollapsed, enableTransitions, toggleCollapse } = useSidebarState(initialCollapsed)
 
   // iPad (768px) and above now get the sidebar
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -106,19 +115,24 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
   return (
     // UserProvider makes activeUser available to ALL descendant pages via useActiveUser()
     <UserProvider activeUser={activeUser}>
-      <div className={cn(
-        "min-h-screen bg-background text-foreground antialiased flex flex-col md:flex-row w-full overflow-hidden transition-opacity duration-200",
-        isMounted ? "opacity-100" : "opacity-0"
-      )}>
+    <CurrencyProvider settings={currencySettings}>
+      <div className="min-h-screen bg-background text-foreground antialiased flex flex-col md:flex-row w-full overflow-hidden">
 
         {/* Mobile Header — hidden on md: (768px+) where sidebar appears */}
-        <div className="md:hidden fixed top-0 left-0 right-0 flex items-center px-6 py-4 border-b border-border/40 bg-card w-full z-40 h-[65px]">
+        <div className="md:hidden fixed top-0 left-0 right-0 flex items-center justify-between px-6 py-4 border-b border-border/40 bg-card w-full z-40 h-[65px]">
           <button
             onClick={() => setIsMobileOpen(true)}
             className="p-1 rounded-md hover:bg-muted text-foreground transition-colors focus:outline-none cursor-pointer"
-            aria-label="Open menu"
+            aria-label="Abrir menú"
           >
             <Menu className="w-6 h-6" />
+          </button>
+          <button
+            onClick={openCommandPalette}
+            className="p-2 rounded-md hover:bg-muted text-foreground transition-colors cursor-pointer"
+            aria-label="Buscar alumno o sección"
+          >
+            <Search className="w-5 h-5" />
           </button>
         </div>
 
@@ -130,7 +144,7 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
           />
         )}
 
-
+        <CommandPalette role={activeUser.role} open={isPaletteOpen} onOpenChange={setIsPaletteOpen} />
 
         <SidebarNav
           activeUser={activeUser}
@@ -143,7 +157,7 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
         />
 
         <div className={cn(
-          "flex-1 h-[calc(100dvh-65px)] md:h-screen md:max-h-screen flex flex-col w-full bg-background overflow-hidden mt-[65px] md:mt-0",
+          "flex-1 min-w-0 h-[calc(100dvh-65px)] md:h-screen md:max-h-screen flex flex-col w-full bg-background overflow-hidden mt-[65px] md:mt-0",
           enableTransitions 
             ? "transition-[padding-left,transform,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]" 
             : "transition-none",
@@ -151,10 +165,9 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
           isMobileOpen && "pointer-events-none select-none"
         )}>
 
-
           <main className={cn(
-            "w-full h-full flex-1 px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start items-stretch relative z-10",
-            isMobileOpen ? "overflow-hidden" : "overflow-y-auto"
+            "w-full h-full flex-1 min-w-0 px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 py-6 flex flex-col justify-start items-stretch relative z-10",
+            isMobileOpen ? "overflow-hidden" : "overflow-y-auto overflow-x-hidden"
           )}>
 
             {/* Content Loading Overlay — Fixed to cover full viewport during scroll */}
@@ -172,6 +185,7 @@ export default function AdminShell({ activeUser, children }: AdminShellProps) {
         </div>
 
       </div>
+    </CurrencyProvider>
     </UserProvider>
   )
 }

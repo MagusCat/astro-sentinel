@@ -1,16 +1,10 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Plus, Eye, Edit2, Trash2 } from 'lucide-react'
-import { Button } from '@/components/shared/form/button'
-import { SearchInput } from '@/components/shared/form/search-input'
-import { DataTable } from '@/components/shared/data-display/data-table'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import Modal from '@/components/shared/feedback/modal'
-import { PageHeader } from '@/components/shared/layout/page-header'
-import { TableSkeleton } from '@/components/shared/feedback/skeleton'
+import { Button, DataTable, EmptyState, Modal, PageHeader, SearchInput, TableSkeleton, Toast, ToastType } from '@/components/shared';
+
 import { ClientData, ClientFilters } from '../types'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { Roles } from '@/lib/auth/roles'
@@ -33,8 +27,15 @@ export default function ClientRegistry({ clients, activeUser, onReload, refreshT
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   
-  const [searchQuery, setSearchQuery] = useState('')
+  const searchParams = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '')
   const debouncedSearch = useDebounce(searchQuery, 400)
+
+  // The command palette deep-links here with ?q=<name>.
+  const queryParam = searchParams.get('q')
+  useEffect(() => {
+    if (queryParam !== null) setSearchQuery(queryParam)
+  }, [queryParam])
   
   const [filters, setFilters] = useState<ClientFilters>({
     page: 1,
@@ -80,14 +81,13 @@ export default function ClientRegistry({ clients, activeUser, onReload, refreshT
 
   const totalPages = Math.ceil(totalCount / filters.limit)
 
-  const handleCreateClient = async (form: { full_name: string; phone_number: string; email: string; registration_source: string }) => {
+  const handleCreateClient = async (form: { full_name: string; phone_number: string; email: string }) => {
     setActionLoading(true)
     try {
       const res = await saveNewClient({
         full_name: form.full_name,
         phone_number: form.phone_number || undefined,
-        email: form.email || undefined,
-        registration_source: form.registration_source || undefined
+        email: form.email || undefined
       })
       if (res.success) {
         showSuccess('¡Cliente registrado exitosamente!')
@@ -107,15 +107,14 @@ export default function ClientRegistry({ clients, activeUser, onReload, refreshT
     }
   }
 
-  const handleEditClient = async (form: { full_name: string; phone_number: string; email: string; registration_source: string }) => {
+  const handleEditClient = async (form: { full_name: string; phone_number: string; email: string }) => {
     if (!clientToEdit) return { success: false }
     setActionLoading(true)
     try {
       const res = await updateClient(clientToEdit.id, {
         full_name: form.full_name,
         phone_number: form.phone_number || undefined,
-        email: form.email || undefined,
-        registration_source: form.registration_source || undefined
+        email: form.email || undefined
       })
       if (res.success) {
         showSuccess('¡Cliente actualizado exitosamente!')
@@ -175,8 +174,6 @@ export default function ClientRegistry({ clients, activeUser, onReload, refreshT
           </>
         }
       />
-
-
 
       <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm w-full max-w-full flex-1 flex flex-col relative min-h-[300px]">
 

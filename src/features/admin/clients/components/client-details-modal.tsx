@@ -1,21 +1,17 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import Modal from '@/components/shared/feedback/modal'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { DatePicker } from '@/components/shared/form/date-picker'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
-import { Skeleton } from '@/components/shared/feedback/skeleton'
-import { Button } from '@/components/shared/form/button'
-import { ClientData, GroupedClientMemberships } from '../types'
-import { getClientPayments, getClientMemberships } from '../queries'
+import { Button, ConfirmDialog, DatePicker, EmptyState, Modal, PriceDisplay, Skeleton, Toast, ToastType } from '@/components/shared';
+
+import { ClientData, GroupedClientMemberships, ClientMembershipView } from '../types'
+import { getClientPayments, getClientMemberships, getAllClientMemberships } from '../queries'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '@/features/admin/memberships/mutations'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
-import { User, Phone, Mail, Share2, Calendar, CreditCard, Pause, Play, Clock, Ban } from 'lucide-react'
+import { User, Phone, Mail, Calendar, CalendarCheck, CreditCard, Pause, Play, Clock, Ban, History } from 'lucide-react'
+import { getClientAttendance } from '@/features/admin/attendance/queries'
+import { formatCalendarDate } from '@/lib/dates'
 import { calcRemainingDays } from '@/features/admin/memberships/utils'
+import { addDays, todayStr } from '@/lib/dates'
 
 interface ClientDetailsModalProps {
   client: ClientData
@@ -32,12 +28,17 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
   const [targetDate, setTargetDate] = useState<string>('')
   const [targetDateError, setTargetDateError] = useState<string | null>(null)
   const [membershipToCancel, setMembershipToCancel] = useState<{ id: string, isCurrent: boolean, hasFutures: boolean } | null>(null)
+  
+  const [showFullHistory, setShowFullHistory] = useState(false)
+  const [attendance, setAttendance] = useState<{ date: string; className: string }[]>([])
+  const [allMemberships, setAllMemberships] = useState<ClientMembershipView[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null)
 
   const getPreviewFreezeDays = () => {
     if (!targetDate) return 0
-    const todayStr = new Date().toISOString().split('T')[0]
-    const todayDate = new Date(todayStr + 'T00:00:00')
+    const todayDate = new Date(todayStr() + 'T00:00:00')
     const target = new Date(targetDate + 'T00:00:00')
     if (target <= todayDate) return 0
     const freezeMs = target.getTime() - todayDate.getTime()
@@ -48,10 +49,12 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const [paymentsRes, membershipsData] = await Promise.all([
+    const [paymentsRes, membershipsData, attendanceData] = await Promise.all([
       getClientPayments(client.id),
-      getClientMemberships(client.id)
+      getClientMemberships(client.id),
+      getClientAttendance(client.id)
     ])
+    setAttendance(attendanceData)
     setPayments(paymentsRes.data)
     setTotalPayments(paymentsRes.count)
     setMemberships(membershipsData)
@@ -61,6 +64,14 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  const loadHistory = async () => {
+    setHistoryLoading(true)
+    const data = await getAllClientMemberships(client.id)
+    setAllMemberships(data)
+    setHistoryLoading(false)
+    setShowFullHistory(true)
+  }
 
   const handleFreeze = async (membershipId: string, date: string) => {
     setFreezeLoading(membershipId)
@@ -81,7 +92,6 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
 
   const handleUnfreeze = async (membershipId: string) => {
     setFreezeLoading(membershipId)
-    // Descongelamos sin pago nuevo ni extraDays
     const res = await unfreezeMembership(membershipId)
     setFreezeLoading(null)
     
@@ -113,14 +123,14 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
       <Modal isOpen={true} onClose={onClose} title="Detalles del Cliente" size="4xl">
         <div className="flex flex-col md:flex-row gap-6 w-full md:overflow-hidden">
           
-          <div className="contents md:flex w-full md:w-[40%] flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
+          <div className="contents md:flex w-full md:w-[40%] lg:w-[38%] flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-2 min-w-0">
             <div className="order-1 md:order-none bg-muted/30 border border-border/50 rounded-xl p-5 flex flex-col gap-4">
               <div className="flex items-center gap-3 border-b border-border/50 pb-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground leading-tight">{client.full_name}</h3>
+                  <h3 className="text-lg font-bold text-foreground leading-tight truncate">{client.full_name}</h3>
                   <span className="text-sm text-muted-foreground font-mono uppercase tracking-wider">
                     Registrado: {new Date(client.created_at).toLocaleDateString('es-ES')}
                   </span>
@@ -135,10 +145,6 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                 <div className="flex items-center gap-3 text-sm text-foreground">
                   <div className="bg-muted text-muted-foreground p-1.5 rounded-md"><Mail className="w-4 h-4 stroke-[2.5]" /></div>
                   <span className="truncate font-medium">{client.email || 'No especificado'}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-foreground">
-                  <div className="bg-muted text-muted-foreground p-1.5 rounded-md"><Share2 className="w-4 h-4 stroke-[2.5]" /></div>
-                  <span className="truncate font-medium">{client.registration_source || 'Medio desconocido'}</span>
                 </div>
               </div>
             </div>
@@ -163,7 +169,7 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                     {payments.map((p) => (
                       <div key={p.id} className="flex justify-between items-center p-3 rounded-lg border border-border/40 bg-muted/10">
                         <div className="flex flex-col gap-1">
-                          <PriceDisplay amount={p.total_amount} currency="C$ " variant="badge" />
+                          <PriceDisplay amount={p.total_amount} variant="badge" />
                           <span className="text-sm text-muted-foreground uppercase">{p.payment_method}</span>
                         </div>
                         <span className="text-sm font-mono text-muted-foreground">
@@ -180,14 +186,38 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
                 )}
               </div>
             </div>
+
+            <div className="order-4 md:order-none bg-card border border-border/50 rounded-xl p-4 flex flex-col">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                <CalendarCheck className="w-5 h-5 stroke-[2]" />
+                Asistencias recientes ({attendance.length})
+              </h4>
+              {loading ? (
+                <Skeleton className="h-10 w-full rounded-lg" />
+              ) : attendance.length === 0 ? (
+                <div className="py-4 text-center text-sm text-muted-foreground italic">Sin asistencias registradas.</div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {attendance.map((a, i) => (
+                    <span key={`${a.date}-${i}`} title={a.className} className="text-xs font-mono px-2 py-1 rounded-md bg-primary/10 text-primary">
+                      {formatCalendarDate(a.date, { day: '2-digit', month: 'short' })}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="order-2 md:order-none w-full md:w-[60%] lg:w-2/3 flex flex-col gap-4 overflow-visible md:overflow-y-auto pr-0 md:pr-2">
+          <div className="order-2 md:order-none w-full md:w-[60%] lg:w-[62%] flex flex-col gap-4 overflow-visible md:overflow-y-auto pr-0 md:pr-2 min-w-0">
             <div className="flex items-center justify-between pb-2 border-b border-border/50">
               <h4 className="text-base font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <Calendar className="w-5 h-5 stroke-[2] text-primary" />
                 Membresías por Disciplina
               </h4>
+              <Button variant="neutral" size="sm" onClick={loadHistory} className="h-8 text-[10px] font-bold uppercase tracking-widest gap-2">
+                <History className="w-3.5 h-3.5" />
+                Historial
+              </Button>
             </div>
 
             {loading ? (
@@ -379,7 +409,7 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
           </p>
           <DatePicker
             label="Fecha de reactivación"
-            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+            min={addDays(todayStr(), 1)}
             value={targetDate}
             onChange={(event) => {
               setTargetDate(event.target.value)
@@ -394,6 +424,54 @@ export default function ClientDetailsModal({ client, onClose }: ClientDetailsMod
               <span>La membresía estará pausada por <strong className="font-bold font-mono text-foreground text-base">{previewFreezeDays}</strong> {previewFreezeDays === 1 ? 'día' : 'días'}.</span>
             </div>
           )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showFullHistory}
+        onClose={() => setShowFullHistory(false)}
+        title={`Historial de Membresías: ${client.full_name}`}
+        size="2xl"
+      >
+        <div className="flex flex-col gap-4">
+          {historyLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+            </div>
+          ) : allMemberships.length === 0 ? (
+            <EmptyState message="No hay registros históricos." />
+          ) : (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+              {allMemberships.map((m) => (
+                <div key={m.id} className="p-3 border border-border/40 rounded-xl bg-muted/10 flex justify-between items-center">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">{m.class_name}</span>
+                      <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border border-border/50 ${
+                        m.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' :
+                        m.status === 'expired' ? 'bg-rose-500/10 text-rose-600' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {m.status}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{m.plan_name}</span>
+                  </div>
+                  <div className="text-right flex flex-col gap-0.5">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-tighter">
+                      {new Date(m.start_date + 'T00:00:00').toLocaleDateString('es-ES')} - {new Date(m.end_date + 'T00:00:00').toLocaleDateString('es-ES')}
+                    </span>
+                    <span className="font-bold text-sm text-foreground">{m.duration_days || 0} días</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-4 flex justify-end">
+            <Button variant="neutral" onClick={() => setShowFullHistory(false)}>Cerrar</Button>
+          </div>
         </div>
       </Modal>
 

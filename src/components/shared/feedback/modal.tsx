@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -44,6 +44,8 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
     }
   }, [isOpen, handleKeyDown])
 
+  const titleId = useId()
+
   if (!isOpen) return null
 
   return createPortal(
@@ -52,11 +54,14 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
       onClick={onClose}
     >
       <div
-        className={`bg-card border-0 md:border border-border/40 w-full h-full max-h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[2rem] shadow-2xl ${SIZE_CLASSES[size]} flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-10 duration-700 ease-[var(--ease-haptic)] overflow-hidden`}
+        className={`bg-card border-0 md:border border-border/40 w-full h-full max-h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-4xl shadow-2xl ${SIZE_CLASSES[size]} flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-10 duration-700 ease-[var(--ease-haptic)] overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div className="flex items-center justify-between border-b border-border/10 px-6 pt-8 pb-5 shrink-0">
-          <h3 className="font-extrabold text-foreground text-sm uppercase tracking-wider">{title}</h3>
+          <h3 id={titleId} className="font-extrabold text-foreground text-sm uppercase tracking-wider">{title}</h3>
           <button
             type="button"
             onClick={onClose}

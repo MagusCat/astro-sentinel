@@ -1,23 +1,31 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireRole } from '@/lib/auth/guard'
 import { PaymentFilters, PaymentsResponse } from './types'
+import { dayRangeISO } from '@/lib/dates'
+
+/** Strips PostgREST filter metacharacters from a user-supplied search term. */
+function sanitizeSearchTerm(raw: string): string {
+  return raw.trim().replace(/[,"()*]/g, '')
+}
 
 export async function getPayments(filters?: PaymentFilters): Promise<PaymentsResponse> {
   try {
-    const supabase = await createClient()
-    
+    const { supabase } = await requireRole()
+
     let query = supabase
-      .from('vw_payments_extended')
-      .select('*', { count: 'exact' })
+      .from('payments')
+      .select('*, clients(full_name, email), users!payments_processed_by_fkey(full_name, role)', { count: 'exact' })
 
     if (filters) {
       if (filters.searchTerm) {
-        query = query.or(`client_name.ilike.%${filters.searchTerm}%,client_email.ilike.%${filters.searchTerm}%`)
+        const term = sanitizeSearchTerm(filters.searchTerm)
+        query = query.or(`clients.full_name.ilike."%${term}%",clients.email.ilike."%${term}%"`)
       }
       if (filters.paymentMethod) query = query.eq('payment_method', filters.paymentMethod)
-      if (filters.startDate) query = query.gte('transaction_date', `${filters.startDate}T00:00:00`)
-      if (filters.endDate) query = query.lte('transaction_date', `${filters.endDate}T23:59:59`)
+      // Local (academy) days, not UTC: an evening payment belongs to the day it was made.
+      if (filters.startDate) query = query.gte('transaction_date', dayRangeISO(filters.startDate, filters.startDate).start)
+      if (filters.endDate) query = query.lt('transaction_date', dayRangeISO(filters.endDate, filters.endDate).end)
 
       const sortColumn = filters.sortBy || 'transaction_date'
       const ascending = filters.sortOrder === 'asc'
@@ -35,19 +43,36 @@ export async function getPayments(filters?: PaymentFilters): Promise<PaymentsRes
 
     if (error) throw error
 
-    const formattedData = (data || []).map((p: { id: string; total_amount: number; payment_method: string; transaction_date: string; client_name: string | null; user_name: string | null; user_role: string | null }) => ({
+    const formattedData = (data || []).map((p: {
+      id: string
+      total_amount: number
+      payment_method: string
+      transaction_date: string
+      category: string | null
+      metadata: unknown
+      discount_amount: number | string | null
+      voided_at: string | null
+      void_reason: string | null
+      clients?: { full_name: string | null, email: string | null } | null
+      users?: { full_name: string | null, role: string | null } | null
+    }) => ({
       id: p.id,
       total_amount: Number(p.total_amount),
       payment_method: p.payment_method,
       transaction_date: p.transaction_date,
-      client_name: p.client_name || 'Anónimo',
-      user_name: p.user_name || 'Sistema',
-      user_role: p.user_role || 'operator'
+      client_name: p.clients?.full_name || 'Anónimo',
+      user_name: p.users?.full_name || 'Sistema',
+      user_role: p.users?.role || 'operator',
+      category: p.category || undefined,
+      metadata: p.metadata as Record<string, unknown> | unknown[] | null | undefined,
+      discount_amount: Number(p.discount_amount ?? 0),
+      voided_at: p.voided_at,
+      void_reason: p.void_reason,
     }))
 
     return { data: formattedData, count: count || 0 }
   } catch (err) {
-    console.error('Error fetching payments:', err)
+    console.error('Error fetching payments:', err instanceof Error ? err.message : String(err))
     return { data: [], count: 0 }
   }
 }

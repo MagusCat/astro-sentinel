@@ -7,9 +7,18 @@ export const APP_CONFIG = {
     sessionCookieName: 'sentinel_session',
     deviceCookieName: 'sentinel_device_token',
     sessionMaxAge: '7d',
-    deviceMaxAge: '365d',
+    deviceMaxAge: '30d',
     bcryptRounds: 12,
     enableLocalLogin: true,
+  },
+  currency: {
+    base: 'USD',
+    baseLocale: 'en-US',
+    local: 'NIO',
+    localLocale: 'es-NI',
+  },
+  locale: {
+    timeZone: 'America/Managua',
   },
   buckets: {
     content: 'site-content',

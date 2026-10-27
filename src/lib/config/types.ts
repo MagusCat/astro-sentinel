@@ -11,6 +11,13 @@ export interface AuthConfig {
   enableLocalLogin: boolean
 }
 
+export interface CurrencyConfig {
+  base: string
+  baseLocale: string
+  local: string
+  localLocale: string
+}
+
 export interface BucketsConfig {
   content: string
   images: string
@@ -37,8 +44,15 @@ export interface ModulesConfig {
   anyEnabled: boolean
 }
 
+export interface LocaleConfig {
+  /** IANA zone of the academy. Must match the DB timezone (migration 20261027090000). */
+  timeZone: string
+}
+
 export interface AppConfig {
   auth: AuthConfig
+  currency: CurrencyConfig
+  locale: LocaleConfig
   buckets: BucketsConfig
   keys: KeysConfig
   dashboard: DashboardConfig

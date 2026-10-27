@@ -6,6 +6,11 @@ export interface PaymentData {
   client_name: string
   user_name: string
   user_role: string
+  category?: string
+  metadata?: Record<string, unknown> | unknown[] | null
+  discount_amount?: number
+  voided_at?: string | null
+  void_reason?: string | null
 }
 
 export interface PaymentFilters {

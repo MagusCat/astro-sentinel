@@ -14,3 +14,8 @@ export const createPaymentSchema = z.object({
 })
 
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>
+
+export const voidPaymentSchema = z.object({
+  payment_id: z.string().uuid('ID de pago inválido.'),
+  reason: z.string().trim().min(5, 'Indica el motivo de la anulación (mínimo 5 caracteres).').max(300),
+})

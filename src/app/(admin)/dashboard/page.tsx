@@ -1,5 +1,6 @@
 import React from 'react'
 import { getCurrentUser } from '@/features/auth/actions'
+import { Roles } from '@/lib/auth/roles'
 import DashboardPanel from '@/features/admin/dashboard/components/dashboard-panel'
 import { redirect } from 'next/navigation'
 
@@ -30,7 +31,7 @@ export default async function DashboardPage(props: {
   }
 
   const rawTab = typeof searchParams.tab === 'string' ? searchParams.tab : undefined
-  const isReception = activeUser.role === 'reception'
+  const isReception = Roles.isReception(activeUser.role)
   const activeTab = (
     rawTab === 'overview' ||
     rawTab === 'clients' ||
@@ -40,7 +41,13 @@ export default async function DashboardPage(props: {
     rawTab === 'developer' ||
     rawTab === 'reception' ||
     rawTab === 'checkout' ||
-    rawTab === 'memberships'
+    rawTab === 'memberships' ||
+    rawTab === 'inventory' ||
+    rawTab === 'store' ||
+    rawTab === 'reports' ||
+    rawTab === 'settings' ||
+    rawTab === 'attendance' ||
+    rawTab === 'schedule'
   )
     ? rawTab
     : (isReception ? 'reception' : 'overview')
@@ -54,7 +61,7 @@ export default async function DashboardPage(props: {
     } else if (activeTab === 'clients') {
       const clientsData = await getClients({ page: 1, limit: 15 })
       initialData.clients = clientsData.data
-    } else if (activeTab === 'plans' || activeTab === 'checkout') {
+    } else if (activeTab === 'plans' || activeTab === 'checkout' || activeTab === 'attendance' || activeTab === 'schedule') {
       const [plansData, classesRes] = await Promise.all([
         getClassPlans(),
         getClassesList()

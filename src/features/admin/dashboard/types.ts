@@ -5,7 +5,7 @@ export interface OverviewStats {
   classHeadcounts: { className: string; activeStudents: number }[]
   inactiveMemberships: { clientName: string; status: string; endDate: string | null; planName: string; className: string }[]
   recentPayments: { clientName: string; totalAmount: number; paymentMethod: string; transactionDate: string }[]
-  recentClients: { fullName: string; createdAt: string; registrationSource: string | null }[]
+  recentClients: { fullName: string; createdAt: string }[]
   totalClientsCount: number
   totalClassesCount: number
 }
@@ -39,6 +39,12 @@ export const VALID_TABS = [
   'checkout',
   'reception',
   'memberships',
+  'store',
+  'reports',
+  'settings',
+  'inventory',
+  'attendance',
+  'schedule'
 ] as const
 
 export type TabId = typeof VALID_TABS[number]
@@ -71,7 +77,6 @@ export interface PaymentRow {
 export interface ClientRow {
   full_name: string
   created_at: string
-  registration_source: string | null
 }
 
 export interface InactiveMembershipViewRow {
@@ -92,7 +97,24 @@ export interface PaymentViewRow {
 export interface ClientViewRow {
   full_name: string
   created_at: string
-  registration_source: string | null
+}
+
+export interface DashboardSnapshots {
+  revenueTrend: number[]
+  inventoryHealth: {
+    healthy: number
+    low: number
+    outOfStock: number
+    total: number
+  }
+  membershipLifecycle: {
+    signups: number[]
+    expirations: number[]
+  }
+  alerts: {
+    lowStockCount: number
+    expiringSoonCount: number
+  }
 }
 
 export interface UploadImageConfig {

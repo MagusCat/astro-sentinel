@@ -2,17 +2,16 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, UserPlus, ShoppingCart, Search, AlertCircle, CreditCard, Activity, RefreshCw } from 'lucide-react'
+import { Clock, UserPlus, ShoppingCart, Search, AlertCircle, CreditCard, Activity, RefreshCw, FileText } from 'lucide-react'
 import { OverviewStats } from '@/features/admin/dashboard/types'
-import { DashboardListWidget } from '@/components/shared/data-display/dashboard-list-widget'
-import { StatusBadge } from '@/components/shared/data-display/status-badge'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
+import { Button, DashboardListWidget, PriceDisplay, SearchInput, StatusBadge } from '@/components/shared';
+
 import { ClientData } from '@/features/admin/clients/types'
-import { Button } from '@/components/shared/form/button'
-import { SearchInput } from '@/components/shared/form/search-input'
+import ClientDetailsModal from '@/features/admin/clients/components/client-details-modal'
+
 import { searchClients } from '@/features/admin/clients/queries'
 import { useDebounce } from '@/hooks/use-debounce'
- 
+import RemindersWidget from './reminders-widget'
 
 interface ReceptionPanelProps {
   stats: OverviewStats
@@ -23,10 +22,15 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<ClientData[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [selectedClientForDetails, setSelectedClientForDetails] = useState<ClientData | null>(null)
   const debouncedSearch = useDebounce(searchTerm, 300)
 
   const handleNavigation = (tab: string) => {
     router.push(`?tab=${tab}`)
+  }
+
+  const handleCobrar = (client: ClientData) => {
+    router.push(`?tab=checkout&clientId=${encodeURIComponent(client.id)}`)
   }
 
   useEffect(() => {
@@ -111,14 +115,32 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-start gap-2">
-                      <span className={`text-sm px-2 py-1 rounded-full font-bold tracking-wider border uppercase mt-0.5 ${
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold tracking-wider border uppercase ${
                         hasActivePlan 
                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
                           : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
                       }`}>
                         {hasActivePlan ? 'Activo' : 'Inactivo'}
                       </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs gap-1.5 rounded-lg"
+                        onClick={() => setSelectedClientForDetails(client)}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Ver Ficha
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-8 text-xs gap-1.5 rounded-lg"
+                        onClick={() => handleCobrar(client)}
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        Cobrar
+                      </Button>
                     </div>
                   </div>
                 )
@@ -159,8 +181,10 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0">
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 flex-1 min-h-0">
+
+        <RemindersWidget />
+
         <DashboardListWidget
           className="h-full"
           listClassName="h-[250px]"
@@ -206,6 +230,13 @@ export default function ReceptionPanel({ stats }: ReceptionPanelProps) {
           )}
         />
       </div>
+
+      {selectedClientForDetails && (
+        <ClientDetailsModal
+          client={selectedClientForDetails}
+          onClose={() => setSelectedClientForDetails(null)}
+        />
+      )}
     </div>
   )
 }

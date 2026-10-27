@@ -44,6 +44,16 @@ export const emailSchema = z.string()
   .pipe(z.string().email('Formato de correo electrónico inválido.'))
 
 /**
+ * Discount proposed by a manager. Only an upper-bound sanity check here: the RPC
+ * re-validates the role and that it does not exceed the price read from the DB.
+ */
+export const discountSchema = z.number().min(0, 'El descuento no puede ser negativo.').max(1_000_000).default(0)
+
+export const paymentMethodSchema = z.enum(['efectivo', 'tarjeta', 'transferencia'], {
+  errorMap: () => ({ message: 'El método de pago seleccionado no es válido.' }),
+})
+
+/**
  * UUID Field — Standard format.
  */
 export const uuidSchema = z.string().uuid('ID de formato inválido.')

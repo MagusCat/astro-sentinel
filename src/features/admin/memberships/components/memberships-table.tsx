@@ -4,18 +4,12 @@ import React, { useState, useMemo } from 'react'
 import { Ban, Pause, Play } from 'lucide-react'
 import { MembershipsTableRow, MembershipsPanelData } from '../types'
 import { freezeMembership, unfreezeMembership, cancelMembership } from '../mutations'
-import { DataTable } from '@/components/shared/data-display/data-table'
-import { SearchInput } from '@/components/shared/form/search-input'
-import { SelectField } from '@/components/shared/form/select-field'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import Modal from '@/components/shared/feedback/modal'
-import { DatePicker } from '@/components/shared/form/date-picker'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { StatusBadge } from '@/components/shared/data-display/status-badge'
+import { Button, ConfirmDialog, DataTable, DatePicker, Modal, SearchInput, SelectField, StatusBadge, Toast, ToastType } from '@/components/shared';
+
 import ClassOccupancy from './class-occupancy'
-import { Button } from '@/components/shared/form/button'
+
 import { MEMBERSHIP_STATUS } from '@/lib/config'
+import { addDays, todayStr } from '@/lib/dates'
 
 interface MembershipsTableProps {
   memberships: MembershipsTableRow[]
@@ -157,7 +151,6 @@ export default function MembershipsTable({ memberships, onReload, occupancy, mob
     }
   ]
 
-
   return (
     <div className="flex flex-col gap-4 h-full flex-1 min-h-0 w-full">
       <div className="bg-card border border-border p-4 lg:p-5 rounded-xl shadow-sm flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between shrink-0">
@@ -226,7 +219,7 @@ export default function MembershipsTable({ memberships, onReload, occupancy, mob
           </p>
           <DatePicker
             label="Fecha de reactivación"
-            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+            min={addDays(todayStr(), 1)}
             value={pauseMembership?.targetDate ?? ''}
             onChange={(event) => {
               setPauseMembership((prev) => prev ? { ...prev, targetDate: event.target.value } : { id: '', targetDate: '' })

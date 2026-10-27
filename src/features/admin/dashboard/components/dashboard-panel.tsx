@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
-import { RefreshCw } from 'lucide-react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
+import { RefreshCw, Search } from 'lucide-react'
+import { openCommandPalette } from './command-palette'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { useDashboardData, InitialDashboardData } from '../hooks/use-dashboard-data'
-import { Button } from '@/components/shared/form/button'
-import { WarningAlert } from '@/components/shared/feedback/warning-alert'
-import { ProgressBar } from '@/components/shared/feedback/progress-bar'
-import { AuthGuard } from '@/lib/auth/guard'
+import { Button, ProgressBar, WarningAlert } from '@/components/shared';
+
+import { Roles } from '@/lib/auth/roles'
 import { useTabSync } from '@/hooks/use-tab-sync'
 
 import DashboardOverview from './dashboard-overview'
@@ -19,6 +19,13 @@ import DeveloperPanel from '@/features/admin/developer/components/developer-pane
 import CheckoutPanel from '@/features/admin/checkout/components/checkout-panel'
 import ReceptionPanel from '@/features/admin/reception/components/reception-panel'
 import MembershipsPanel from '@/features/admin/memberships/components/memberships-panel'
+import InventoryPanel from '@/features/admin/products/components/inventory-panel'
+import ProductCheckoutPanel from '@/features/admin/products/components/product-checkout-panel'
+import SalesReports from './sales-reports'
+import CashClosing from './cash-closing'
+import CurrencySettings from '@/features/admin/settings/components/currency-settings'
+import AttendancePanel from '@/features/admin/attendance/components/attendance-panel'
+import SchedulePanel from '@/features/admin/schedule/components/schedule-panel'
 
 interface DashboardPanelProps {
   activeUser: AuthenticatedUser
@@ -35,37 +42,53 @@ type DashboardTab =
   | 'reception' 
   | 'checkout' 
   | 'memberships'
+  | 'inventory'
+  | 'store'
+  | 'reports'
+  | 'settings'
+  | 'attendance'
+  | 'schedule'
 
 const VALID_TABS: DashboardTab[] = [
-  'overview', 'clients', 'plans', 'payments', 'admin_users', 'developer', 'reception', 'checkout', 'memberships'
+  'overview', 'clients', 'plans', 'payments', 'admin_users', 'developer', 'reception', 'checkout', 'memberships', 'inventory', 'store', 'reports', 'settings', 'attendance', 'schedule'
 ]
 
 export default function DashboardPanel({ activeUser, initialData }: DashboardPanelProps) {
-  const isReception = activeUser.role === 'reception'
+  const isReception = Roles.isReception(activeUser.role)
   const defaultTab: DashboardTab = isReception ? 'reception' : 'overview'
 
   const { activeTab } = useTabSync<DashboardTab>('tab', defaultTab, VALID_TABS)
 
-  const { clients, plans, classes, payments, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData(initialData)
+  const { clients, plans, classes, payments, products, snapshots, stats, membershipsData, loadingData, fetchDatabaseData } = useDashboardData(initialData)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [childLoading, setChildLoading] = useState(false)
   const isGlobalLoading = loadingData || childLoading
 
-  useEffect(() => {
-    const hasInitialDataForTab = (
-      (activeTab === 'overview' && initialData?.stats) ||
-      (activeTab === 'clients' && initialData?.clients?.length) ||
-      (activeTab === 'plans' && initialData?.plans?.length) ||
-      (activeTab === 'checkout' && initialData?.classes?.length) ||
-      (activeTab === 'payments' && initialData?.payments?.length) ||
-      (activeTab === 'memberships' && initialData?.membershipsData) ||
-      (activeTab === 'reception' && initialData?.stats)
-    )
+  const initialFetchDone = useRef(false)
 
-    if (!hasInitialDataForTab) {
-      fetchDatabaseData(activeTab)
+  useEffect(() => {
+    // El tab inicial ya viene sembrado por el prefetch del servidor (initialData):
+    // se evita SOLO su primer refetch. Cualquier cambio de tab posterior recarga
+    // sus datos desde el servidor. El estado local (no initialData) es la fuente de
+    // verdad de lo que se pinta, así que si no recargamos aquí, la sección queda en
+    // blanco hasta un refresh manual — que es justo el bug que esto corrige.
+    if (!initialFetchDone.current) {
+      initialFetchDone.current = true
+      const seeded = Boolean(
+        ((activeTab === 'overview' || activeTab === 'reception') && initialData?.stats) ||
+        (activeTab === 'clients' && initialData?.clients) ||
+        (activeTab === 'plans' && initialData?.plans) ||
+        ((activeTab === 'checkout' || activeTab === 'attendance' || activeTab === 'schedule') && initialData?.classes) ||
+        (activeTab === 'payments' && initialData?.payments) ||
+        (activeTab === 'memberships' && initialData?.membershipsData)
+      )
+      if (seeded) return
     }
-  }, [activeTab, fetchDatabaseData, initialData])
+    fetchDatabaseData(activeTab)
+    // fetchDatabaseData es estable (useCallback); initialData solo importa en el
+    // primer render, capturado arriba.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
   const title = useMemo(() => {
     const labels: Record<DashboardTab, string> = {
@@ -77,14 +100,19 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
       reception: 'Recepción',
       checkout: 'Registro de Pagos',
       memberships: 'Control de Membresías',
-      overview: 'Administración'
+      overview: 'Administración',
+      inventory: 'Inventario de Tienda',
+      store: 'Punto de Venta',
+      reports: 'Informes y Cierre de Caja',
+      settings: 'Moneda y Tasas',
+      attendance: 'Asistencia',
+      schedule: 'Horarios y Profesores'
     }
     return labels[activeTab]
   }, [activeTab])
 
-  const hasAdminAccess = AuthGuard.canManageStaff(activeUser.role)
-  const hasDevAccess = AuthGuard.canAccessDeveloper(activeUser.role)
-
+  const hasAdminAccess = Roles.canManageStaff(activeUser.role)
+  const hasDevAccess = Roles.canAccessDeveloper(activeUser.role)
 
   const renderAccessDenied = () => (
     <WarningAlert
@@ -103,6 +131,12 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
           </h1>
         </div>
 
+        <div className="flex items-center gap-2">
+        <Button variant="neutral" onClick={openCommandPalette} className="hidden md:inline-flex gap-2" title="Buscar (Ctrl+K)">
+          <Search className="w-4 h-4" />
+          <span className="text-muted-foreground">Buscar</span>
+          <kbd className="hidden lg:inline text-[10px] font-mono text-muted-foreground border border-border rounded px-1.5 py-0.5">Ctrl K</kbd>
+        </Button>
         <Button
           variant="neutral"
           size="icon"
@@ -115,6 +149,7 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
         >
           <RefreshCw className={`w-4 h-4 ${isGlobalLoading ? 'animate-spin' : ''}`} />
         </Button>
+        </div>
       </div>
 
       <ProgressBar indeterminate={isGlobalLoading} className="-mt-3 mb-1 flex-none" />
@@ -127,6 +162,7 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
         {activeTab === 'overview' && (
           <DashboardOverview
             stats={stats}
+            snapshots={snapshots}
           />
         )}
 
@@ -144,10 +180,34 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
           />
         )}
 
+        {activeTab === 'store' && (
+          <ProductCheckoutPanel
+            products={products}
+            activeUser={activeUser}
+            onReload={() => fetchDatabaseData('store')}
+          />
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="flex flex-col gap-6">
+            <CashClosing />
+            <SalesReports snapshots={snapshots} />
+          </div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <InventoryPanel
+            products={products}
+            alerts={snapshots?.alerts}
+            onReload={() => fetchDatabaseData('inventory')}
+          />
+        )}
+
         {activeTab === 'memberships' && (
           <MembershipsPanel 
             data={membershipsData}
             isLoading={loadingData}
+            alerts={snapshots?.alerts}
             onReload={() => fetchDatabaseData('memberships')}
           />
         )}
@@ -167,12 +227,32 @@ export default function DashboardPanel({ activeUser, initialData }: DashboardPan
         )}
         
         {activeTab === 'payments' && (
-          <PaymentsLog payments={payments} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
+          <PaymentsLog payments={payments} refreshTrigger={refreshTrigger} setLoading={setChildLoading} canManage={hasAdminAccess} />
         )}
 
         {activeTab === 'admin_users' && (
           hasAdminAccess ? (
             <UserManagement activeUser={activeUser} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
+          ) : (
+            renderAccessDenied()
+          )
+        )}
+
+        {activeTab === 'attendance' && (
+          <AttendancePanel classes={classes} canManage={hasAdminAccess} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
+        )}
+
+        {activeTab === 'schedule' && (
+          hasAdminAccess ? (
+            <SchedulePanel classes={classes} refreshTrigger={refreshTrigger} setLoading={setChildLoading} />
+          ) : (
+            renderAccessDenied()
+          )
+        )}
+
+        {activeTab === 'settings' && (
+          hasAdminAccess ? (
+            <CurrencySettings activeUser={activeUser} />
           ) : (
             renderAccessDenied()
           )

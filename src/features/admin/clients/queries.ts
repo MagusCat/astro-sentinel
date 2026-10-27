@@ -1,19 +1,27 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireRole } from '@/lib/auth/guard'
 import { ClientData, ClientMembershipView, GroupedClientMemberships, ClientFilters } from './types'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
+import { todayStr } from '@/lib/dates'
+
+/**
+ * Strips PostgREST filter metacharacters from a user-supplied search term so it
+ * cannot break out of the `.or(...)` expression (filter injection).
+ */
+function sanitizeSearchTerm(raw: string): string {
+  return raw.trim().replace(/[,"()*]/g, '')
+}
 
 export async function getClients(filters?: ClientFilters): Promise<{ data: ClientData[], count: number }> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole()
     let query = supabase
       .from('vw_client_status')
       .select('*', { count: 'exact' })
 
     if (filters?.search) {
-      const safeSearchTerm = filters.search.trim().replace(/[,"]/g, '')
-      const searchTerm = `%${safeSearchTerm}%`
+      const searchTerm = `%${sanitizeSearchTerm(filters.search)}%`
       query = query.or(`full_name.ilike."${searchTerm}",email.ilike."${searchTerm}",phone_number.ilike."${searchTerm}"`)
     }
 
@@ -43,13 +51,13 @@ export async function getClients(filters?: ClientFilters): Promise<{ data: Clien
 export async function searchClients(query: string): Promise<ClientData[]> {
   try {
     if (!query || query.trim().length < 2) return []
-    
-    const searchTerm = `%${query.trim()}%`
-    const supabase = await createClient()
+
+    const { supabase } = await requireRole()
+    const searchTerm = `%${sanitizeSearchTerm(query)}%`
     const { data, error } = await supabase
       .from('vw_client_status')
       .select('*')
-      .or(`full_name.ilike.${searchTerm},email.ilike.${searchTerm},phone_number.ilike.${searchTerm}`)
+      .or(`full_name.ilike."${searchTerm}",email.ilike."${searchTerm}",phone_number.ilike."${searchTerm}"`)
       .order('created_at', { ascending: false })
       .limit(10)
 
@@ -63,7 +71,7 @@ export async function searchClients(query: string): Promise<ClientData[]> {
 
 export async function getClientPayments(clientId: string): Promise<{ data: { id: string; total_amount: number; payment_method: string; transaction_date: string }[], count: number }> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole()
     const { data, error, count } = await supabase
       .from('payments')
       .select('id, total_amount, payment_method, transaction_date', { count: 'exact' })
@@ -79,9 +87,54 @@ export async function getClientPayments(clientId: string): Promise<{ data: { id:
   }
 }
 
+interface MembershipViewRow {
+  id: string
+  status: string
+  start_date: string
+  end_date: string
+  remaining_days: number
+  frozen_days?: number | null
+  class_plan_id: string
+  plan_name: string | null
+  duration_days: number | null
+  class_id: string | null
+  class_name: string | null
+}
+
+export async function getAllClientMemberships(clientId: string): Promise<ClientMembershipView[]> {
+  try {
+    const { supabase } = await requireRole()
+    const { data, error } = await supabase
+      .from('vw_memberships_extended')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('start_date', { ascending: false })
+
+    if (error) throw error
+
+    return (data as unknown as MembershipViewRow[] || []).map((m) => ({
+      id: m.id,
+      status: m.status as ClientMembershipView['status'],
+      start_date: m.start_date,
+      end_date: m.end_date,
+      remaining_days: m.remaining_days,
+      frozen_days: m.frozen_days ?? 0,
+      class_plan_id: m.class_plan_id,
+      plan_name: m.plan_name || 'Desconocido',
+      duration_days: m.duration_days || 0,
+      class_id: m.class_id || '',
+      class_name: m.class_name || 'Clase Desconocida',
+      class_description: null
+    }))
+  } catch (err) {
+    console.error('Error fetching all client memberships:', err)
+    return []
+  }
+}
+
 export async function getClientMemberships(clientId: string): Promise<GroupedClientMemberships[]> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole()
     const { data, error } = await supabase
       .from('vw_memberships_extended')
       .select('*')
@@ -90,7 +143,7 @@ export async function getClientMemberships(clientId: string): Promise<GroupedCli
       .order('start_date', { ascending: true })
 
     if (error) throw error
-    
+
     const rawMemberships: ClientMembershipView[] = (data || []).map((m: { id: string; status: string; start_date: string; end_date: string; remaining_days: number; frozen_days?: number | null; class_plan_id: string; plan_name: string | null; duration_days: number | null; class_id: string | null; class_name: string | null }) => ({
       id: m.id,
       status: m.status as ClientMembershipView['status'],
@@ -106,14 +159,14 @@ export async function getClientMemberships(clientId: string): Promise<GroupedCli
       class_description: null
     }))
 
-    const todayStr = new Date().toISOString().split('T')[0]
-    const relevantMemberships = rawMemberships.filter(m => m.status !== MEMBERSHIP_STATUS.CANCELLED || m.end_date >= todayStr)
-    
+    const today = todayStr()
+    const relevantMemberships = rawMemberships.filter(m => m.status !== MEMBERSHIP_STATUS.CANCELLED || m.end_date >= today)
+
     const membershipsByClass = relevantMemberships.reduce((acc, mem) => {
       if (!acc[mem.class_id]) {
         acc[mem.class_id] = { class_name: mem.class_name, current: null, future: [] }
       }
-      
+
       if (!acc[mem.class_id].current) {
         acc[mem.class_id].current = mem
       } else {

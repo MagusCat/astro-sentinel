@@ -18,6 +18,8 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border?: string 
   frozen: { bg: "bg-cyan-500/10", text: "text-cyan-600", border: "border-cyan-500/20" },
   cancelled: { bg: "bg-red-500/10", text: "text-red-600", border: "border-red-500/20" },
   transferred: { bg: "bg-indigo-500/10", text: "text-indigo-600", border: "border-indigo-500/20" },
+  out_of_stock: { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" },
+  voided: { bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-500/20" },
 }
 
 const LABEL_MAP: Record<string, string> = {
@@ -28,6 +30,8 @@ const LABEL_MAP: Record<string, string> = {
   transferred: 'Transferida',
   inactive: 'Inactivo',
   pending: 'Pendiente',
+  out_of_stock: 'Agotado',
+  voided: 'Anulado',
 }
 
 /**

@@ -1,18 +1,17 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Modal from '@/components/shared/feedback/modal'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { SearchInput } from '@/components/shared/form/search-input'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
-import { Button } from '@/components/shared/form/button'
+import { Button, Modal, PriceDisplay, SearchInput, TextField, Toast, ToastType } from '@/components/shared';
+import { Roles } from '@/lib/auth/roles'
+import { sumMoney } from '@/lib/format'
+
 import { AuthenticatedUser } from '@/features/auth/types'
 import { ClientData } from '@/features/admin/clients/types'
 import { PlanData, ClassData } from '@/features/admin/classes/types'
 import { searchClients } from '@/features/admin/clients/queries'
 import { checkClientMembership } from '../queries'
 import { processCheckout } from '../mutations'
+import { generateTicketPDF } from '@/features/admin/products/utils'
 import { useDebounce } from '@/hooks/use-debounce'
 import { MEMBERSHIP_STATUS } from '@/lib/config'
 import { CheckCircle2, Download, CreditCard, User, AlertCircle, Zap } from 'lucide-react'
@@ -36,10 +35,18 @@ export default function CheckoutModal({
   selectedClass,
   selectedPlan,
   clients,
+  activeUser,
   onClose,
   onSuccess
 }: CheckoutModalProps) {
+  const canDiscount = Roles.canManageStaff(activeUser.role)
+  const [discountInput, setDiscountInput] = useState('')
+  // Presentation only: the RPC re-validates the discount and computes the real charge in SQL.
+  const discount = Math.min(Math.max(Number(discountInput) || 0, 0), selectedPlan.price)
+  const previewTotal = sumMoney([selectedPlan.price, -discount])
+  const [amountCharged, setAmountCharged] = useState<number | null>(null)
   const [clientId, setClientId] = useState<string>('')
+  const [selectedClientObj, setSelectedClientObj] = useState<ClientData | null>(null)
   const [clientSearch, setClientSearch] = useState<string>('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [searchResults, setSearchResults] = useState<ClientData[]>([])
@@ -53,6 +60,7 @@ export default function CheckoutModal({
   
   const [isSuccess, setIsSuccess] = useState(false)
   const [finalEndDateStr, setFinalEndDateStr] = useState<string>('')
+  const [paymentId, setPaymentId] = useState<string>('')
 
   const [existingMembership, setExistingMembership] = useState<{ endDate: string; status: string } | null>(null)
   const [checkingMembership, setCheckingMembership] = useState(false)
@@ -119,16 +127,16 @@ export default function CheckoutModal({
     const res = await processCheckout({
       client_id: clientId,
       class_plan_id: selectedPlan.id,
-      class_id: selectedClass.id,
       payment_method: paymentMethod,
-      total_amount: selectedPlan.price,
-      duration_days: selectedPlan.duration_days
+      discount: discount || undefined,
     })
     
     setLoading(false)
 
-    if (res.success && res.finalEndDate) {
+    if (res.success && res.finalEndDate && res.payment_id) {
       setFinalEndDateStr(res.finalEndDate)
+      setPaymentId(res.payment_id)
+      setAmountCharged(res.amount_charged ?? previewTotal)
       setToast({ message: 'Pago procesado exitosamente', type: 'success' })
       setIsSuccess(true)
       onSuccess() // Trigger parent to reload database in background
@@ -138,7 +146,7 @@ export default function CheckoutModal({
   }
 
   if (isSuccess) {
-    const selectedClient = clients.find(c => c.id === clientId)
+    const selectedClient = selectedClientObj || clients.find(c => c.id === clientId)
     const today = new Date()
     
     const [year, month, day] = finalEndDateStr.split('-').map(Number)
@@ -181,7 +189,7 @@ export default function CheckoutModal({
 
             <div className="flex justify-between items-center border-t border-border/50 pt-3 mt-1">
               <span className="text-muted-foreground uppercase text-sm font-bold tracking-wider">Total Pagado</span>
-              <PriceDisplay amount={selectedPlan.price} className="text-lg text-primary" variant="neutral" />
+              <PriceDisplay amount={amountCharged ?? selectedPlan.price} className="text-lg text-primary" variant="neutral" />
             </div>
             <div className="flex justify-end mt-[-8px]">
               <span className="text-sm uppercase text-muted-foreground">Método: {paymentMethod}</span>
@@ -192,7 +200,26 @@ export default function CheckoutModal({
             <Button variant="neutral" className="flex-1" onClick={onClose}>
               Cerrar
             </Button>
-            <Button className="flex-1" disabled title="Próximamente">
+            <Button 
+              className="flex-1"
+              onClick={() => {
+                const methodLabel = PAYMENT_METHODS.find(m => m.id === paymentMethod)?.label || paymentMethod
+                generateTicketPDF({
+                  id: paymentId,
+                  clientName: selectedClient?.full_name || 'Cliente',
+                  date: new Date().toISOString(),
+                  paymentMethod: methodLabel,
+                  items: [{
+                    name: `${selectedClass.name} - ${selectedPlan.plan_name}`,
+                    quantity: 1,
+                    price: selectedPlan.price
+                  }],
+                  total: amountCharged ?? selectedPlan.price,
+                  type: 'MEMBERSHIP',
+                  discount: discount || undefined,
+                })
+              }}
+            >
               <Download className="w-4 h-4 mr-2" />
               Descargar PDF
             </Button>
@@ -224,8 +251,10 @@ export default function CheckoutModal({
                 <span className="text-sm text-muted-foreground font-medium">{selectedPlan.plan_name} ({selectedPlan.duration_days} días)</span>
               </div>
               <div className="text-right flex flex-col">
-                <PriceDisplay amount={selectedPlan.price} variant="highlight" />
-                <span className="text-sm text-muted-foreground">Monto Total</span>
+                <PriceDisplay amount={previewTotal} variant="highlight" showSecondary />
+                <span className="text-sm text-muted-foreground">
+                  {discount > 0 ? <>Precio <PriceDisplay amount={selectedPlan.price} /> − descuento</> : 'Monto Total'}
+                </span>
               </div>
             </div>
           </div>
@@ -244,6 +273,7 @@ export default function CheckoutModal({
                   onChange={(e) => {
                     setClientSearch(e.target.value)
                     setClientId('') // Reset selected client if they type
+                    setSelectedClientObj(null)
                     setShowDropdown(true)
                   }}
                   onFocus={() => setShowDropdown(true)}
@@ -266,6 +296,7 @@ export default function CheckoutModal({
                           onClick={() => {
                             setClientId(c.id)
                             setClientSearch(c.full_name)
+                            setSelectedClientObj(c)
                             setShowDropdown(false)
                           }}
                         >
@@ -306,6 +337,22 @@ export default function CheckoutModal({
               </div>
             </div>
 
+            {canDiscount && (
+              <TextField
+                label="Descuento (solo administradores)"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={selectedPlan.price}
+                step="0.01"
+                placeholder="0.00"
+                value={discountInput}
+                onChange={(e) => setDiscountInput(e.target.value)}
+                disabled={loading}
+                helperText="Queda registrado en el pago y en el cierre de caja."
+              />
+            )}
+
             {existingMembership && (
               <div className="bg-muted border border-border/50 rounded-lg p-4 flex gap-3 animate-fade-in-up mt-2">
                 <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
@@ -333,8 +380,8 @@ export default function CheckoutModal({
             <Button variant="neutral" onClick={onClose} disabled={loading || checkingMembership}>
               Cancelar
             </Button>
-            <Button onClick={handleProcess} disabled={loading || checkingMembership}>
-              {loading ? 'Procesando...' : 'Confirmar Pago'}
+            <Button onClick={handleProcess} isLoading={loading} disabled={checkingMembership}>
+              Confirmar Pago
             </Button>
           </div>
         </div>
