@@ -1,10 +1,6 @@
 import React, { useState } from 'react'
-import Modal from '@/components/shared/feedback/modal'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { TextField } from '@/components/shared/form/text-field'
-import { TextareaField } from '@/components/shared/form/textarea-field'
-import { FormActions } from '@/components/shared/form/form-actions'
+import { FormActions, Modal, TextField, TextareaField, Toast, ToastType } from '@/components/shared';
+
 import { saveNewClass, updateClass } from '../mutations'
 import { ClassData } from '../types'
 

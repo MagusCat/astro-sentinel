@@ -49,4 +49,16 @@ export const Roles = {
     if (actorRole === APP_ROLE.ADMIN) return targetRole === APP_ROLE.RECEPTION
     return false
   },
+
+  canManageInventory: (role: string): boolean =>
+    ([APP_ROLE.MAINTAINER, APP_ROLE.ADMIN] as AppRole[]).includes(role as AppRole),
+
+  canManageClients: (role: string): boolean =>
+    ([APP_ROLE.MAINTAINER, APP_ROLE.ADMIN, APP_ROLE.RECEPTION] as AppRole[]).includes(role as AppRole),
+
+  canProcessPayments: (role: string): boolean =>
+    ([APP_ROLE.MAINTAINER, APP_ROLE.ADMIN, APP_ROLE.RECEPTION] as AppRole[]).includes(role as AppRole),
+
+  isReception: (role: string): boolean =>
+    role === APP_ROLE.RECEPTION,
 } as const

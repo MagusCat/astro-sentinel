@@ -4,7 +4,31 @@ Sentinel is a state-of-the-art academy management platform built to streamline t
 
 ---
 
-## 🚀 Phase 0 Accomplishments (Completed)
+## 🔐 Modelo de seguridad de datos
+
+**El navegador nunca habla con Supabase.** La autorización vive en un único
+sitio del servidor: el helper [`requireRole()`](src/lib/auth/guard.ts).
+
+- **Sesión.** El login local (usuario + bcrypt) y el de administrador emiten un
+  JWT propio en una cookie `httpOnly` (`sentinel_session`). Las credenciales se
+  verifican contra Supabase Auth con un cliente que **no persiste sesión**
+  ([`verify.ts`](src/lib/supabase/verify.ts)), así que no queda ninguna cookie
+  `sb-*` legible por JavaScript en la terminal.
+- **Acceso a datos.** Toda server action obtiene su cliente de `requireRole()`,
+  que revalida el usuario contra la BD (expulsa cuentas desactivadas al
+  instante) y devuelve un cliente **service role**. `anon`/`authenticated` no
+  tienen ningún acceso al esquema `public` — las migraciones de
+  [`supabase/migrations/`](supabase/migrations/) cierran RLS en deny-all.
+- **Invariante.** Ninguna server action puede tocar la BD sin pasar por
+  `requireRole()`; el gate `pnpm check:guards` lo verifica en CI.
+
+> El código de la aplicación vive bajo `src/` (App Router en `src/app/`, dominios
+> en `src/features/`, utilidades en `src/lib/`). Los apartados históricos de
+> "Phase 0" más abajo describen el arranque del proyecto y no el árbol actual.
+
+---
+
+##  Phase 0 Accomplishments (Completed)
 
 We have successfully initialized the workspace, configured the technical stack, resolved OS-level execution restrictions, and created the foundational Supabase database connectivity layer.
 
@@ -56,7 +80,7 @@ We solved this using a double-layered shim strategy:
 
 ---
 
-## 💻 Development & Operations
+##  Development & Operations
 
 ### Environment Configuration
 Copy the sample template to configure your local keys:
@@ -113,5 +137,5 @@ sentinel/
 
 ---
 
-## 🎨 Premium Aesthetics Philosophy
+##  Premium Aesthetics Philosophy
 The main screen utilizes a sleek glassmorphic layout, slate gradients, and a glowing cyan accent scheme that perfectly balances accessibility with modern professional web design. Hovering over cards, running diagnostics, and checking progress indicators are accompanied by fluid CSS transitions and interactive loading indicators.

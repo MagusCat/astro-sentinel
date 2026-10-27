@@ -87,6 +87,7 @@ export async function verifySessionToken(
 // ── Device Authorization
 export async function createDeviceToken(deviceId: string): Promise<string> {
   const key = await getSecretKey()
+  if (!key) throw new Error('Cannot sign device token: SESSION_SECRET is missing or invalid.')
   return new SignJWT({ device_id: deviceId })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -101,6 +102,7 @@ export async function verifyDeviceToken(
 ): Promise<string | null> {
   try {
     const key = await getSecretKey()
+    if (!key) return null
     const { payload } = await jwtVerify(token, key, {
       issuer: APP_CONFIG.auth.jwtIssuer,
       audience: APP_CONFIG.auth.jwtAudience

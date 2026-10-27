@@ -2,18 +2,25 @@ import React from 'react'
 import MembershipsMetrics from './memberships-metrics'
 import MembershipsTable from './memberships-table'
 import { MembershipsPanelData } from '../types'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import { TableSkeleton, Skeleton } from '@/components/shared/feedback/skeleton'
+import { ContextualBanner, EmptyState, Skeleton, TableSkeleton } from '@/components/shared';
 
 interface MembershipsPanelProps {
   data: MembershipsPanelData | null
   isLoading: boolean
+  alerts?: { expiringSoonCount: number }
   onReload: () => void
 }
 
-export default function MembershipsPanel({ data, isLoading, onReload }: MembershipsPanelProps) {
+export default function MembershipsPanel({ data, isLoading, alerts, onReload }: MembershipsPanelProps) {
   return (
-    <div className="relative flex flex-col gap-4 h-full flex-1 min-h-0">
+    <div className="relative flex flex-col gap-6 h-full flex-1 min-h-0">
+
+      {alerts && alerts.expiringSoonCount > 0 && (
+        <ContextualBanner 
+          variant="warning"
+          message={`Auditoría: ${alerts.expiringSoonCount} membresías vencerán en las próximas 72 horas.`}
+        />
+      )}
 
       {isLoading && !data ? (
         <div className="space-y-6 w-full">

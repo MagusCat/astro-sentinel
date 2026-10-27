@@ -1,23 +1,18 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
 import { classSchema, classPlanSchema } from './schemas'
 
 export async function saveNewClass(data: { name: string; description?: string }): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const parsed = classSchema.safeParse(data)
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('classes')
       .insert({
@@ -28,17 +23,13 @@ export async function saveNewClass(data: { name: string; description?: string })
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al crear disciplina: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al crear disciplina.') }
   }
 }
 
 export async function saveNewClassPlan(data: { class_id: string; plan_name: string; duration_days: number; price: number }): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const parsed = classPlanSchema.safeParse(data)
     if (!parsed.success) {
@@ -49,7 +40,6 @@ export async function saveNewClassPlan(data: { class_id: string; plan_name: stri
       return { success: false, error: 'Debes seleccionar una disciplina base.' }
     }
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('class_plans')
       .insert({
@@ -62,19 +52,14 @@ export async function saveNewClassPlan(data: { class_id: string; plan_name: stri
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al crear plan de pago: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al crear plan de pago.') }
   }
 }
 
 export async function deleteClass(class_id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('classes')
       .update({ is_active: false })
@@ -83,19 +68,14 @@ export async function deleteClass(class_id: string): Promise<{ success: boolean;
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar la clase: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar la clase.') }
   }
 }
 
 export async function deleteClassPlan(plan_id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('class_plans')
       .update({ is_active: false })
@@ -104,24 +84,19 @@ export async function deleteClassPlan(plan_id: string): Promise<{ success: boole
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar el plan de pago: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar el plan de pago.') }
   }
 }
 
 export async function updateClass(class_id: string, data: { name: string; description?: string }): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const parsed = classSchema.safeParse(data)
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('classes')
       .update({
@@ -133,24 +108,19 @@ export async function updateClass(class_id: string, data: { name: string; descri
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al actualizar la disciplina: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al actualizar la disciplina.') }
   }
 }
 
 export async function updateClassPlan(plan_id: string, data: { plan_name: string; duration_days: number; price: number }): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos insuficientes.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const parsed = classPlanSchema.safeParse(data)
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('class_plans')
       .update({
@@ -163,7 +133,6 @@ export async function updateClassPlan(plan_id: string, data: { plan_name: string
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al actualizar plan de pago: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al actualizar plan de pago.') }
   }
 }

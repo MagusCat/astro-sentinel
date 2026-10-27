@@ -10,8 +10,8 @@ function Card({
   return (
     <div 
       className={cn(
-        "group/card p-1.5 rounded-[2rem] bg-muted/30 border border-border/5 transition-all duration-700 ease-[var(--ease-haptic)] hover:bg-muted/50 flex flex-col",
-        size === "sm" && "rounded-[1.5rem] p-1",
+        "group/card p-1.5 rounded-4xl bg-muted/30 transition-all duration-700 ease-[var(--ease-haptic)] hover:bg-muted/50 flex flex-col shadow-sm hover:shadow-md",
+        size === "sm" && "rounded-3xl p-1",
         className
       )}
     >
@@ -19,7 +19,7 @@ function Card({
         data-slot="card"
         data-size={size}
         className={cn(
-          "flex flex-col flex-1 gap-5 overflow-hidden rounded-[calc(2rem-0.375rem)] bg-card py-6 text-sm text-card-foreground border border-border/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] group-hover/card:shadow-md transition-all duration-700 ease-[var(--ease-haptic)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 data-[size=sm]:rounded-[calc(1.5rem-0.25rem)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-[calc(2rem-0.375rem)] *:[img:last-child]:rounded-b-[calc(2rem-0.375rem)]"
+          "flex flex-col flex-1 gap-5 overflow-hidden rounded-[calc(2rem-0.375rem)] bg-card py-6 text-sm text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-700 ease-[var(--ease-haptic)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 data-[size=sm]:rounded-[calc(1.5rem-0.25rem)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-[calc(2rem-0.375rem)] *:[img:last-child]:rounded-b-[calc(2rem-0.375rem)]"
         )}
         {...props}
       />

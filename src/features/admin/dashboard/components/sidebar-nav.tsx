@@ -4,12 +4,11 @@ import { Roles } from '@/lib/auth/roles'
 import { SidebarNavProps } from '../types'
 import { useSidebarNav } from '../hooks/use-sidebar-nav'
 import { MAIN_LINKS, ADMIN_LINKS } from '../config'
-import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared/layout/app-sidebar'
+import { AppSidebar, AppSidebarGroup, AppSidebarItem, Logo } from '@/components/shared';
+
 import { LogOut, Power, FileEdit, Terminal, Users, UserCheck, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
-
-import Logo from '@/components/shared/layout/logo'
 
 export default function SidebarNav({
   activeUser,
@@ -22,9 +21,9 @@ export default function SidebarNav({
   onToggleCollapse
 }: SidebarNavProps) {
   const { activeTab, transitioningTab, setTransitioningTab, navigateToAdmin, getRoleText } = useSidebarNav(activeUser.role)
-  const { localLoginEnabled } = getActiveModules()
+  const { localLoginEnabled, cmsEnabled } = getActiveModules()
 
-  const isReception = activeUser.role === 'reception'
+  const isReception = Roles.isReception(activeUser.role)
   const showAdminMenu = Roles.canManageStaff(activeUser.role)
   const showDevMenu = Roles.canAccessDeveloper(activeUser.role)
   const isElevated = Roles.canManageStaff(activeUser.role)
@@ -50,9 +49,9 @@ export default function SidebarNav({
 
   const footerContent = (
     <>
-      {(showAdminMenu || showDevMenu) && (
+      {((showAdminMenu && cmsEnabled) || showDevMenu) && (
         <div className={cn("mb-4", isCollapsed ? "space-y-3" : "space-y-2")}>
-          {showAdminMenu && (
+          {showAdminMenu && cmsEnabled && (
             <AppSidebarItem
               label="Editor de Sitio Web"
               icon={FileEdit}

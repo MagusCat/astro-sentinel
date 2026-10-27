@@ -12,7 +12,9 @@ export const uploadSiteImageSchema = z.object({
   mimeType: z
     .string()
     .min(1, 'El tipo MIME es requerido.')
-    .regex(/^image\//, 'El tipo MIME debe ser de imagen.'),
+    .refine((val) => ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'].includes(val), {
+      message: 'El tipo MIME no es una imagen permitida.',
+    }),
 })
 
 export const deleteSiteImageSchema = z.object({

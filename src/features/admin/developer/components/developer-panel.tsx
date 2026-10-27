@@ -4,13 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Smartphone, Trash2, Cpu, ServerCog, Zap } from 'lucide-react'
 import { ConnectedDevice } from '../types'
 import { getAuthorizedDevices, revokeDeviceById } from '../actions'
-import { Button } from '@/components/shared/form/button'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import { MetricCard } from '@/components/shared/data-display/metric-card'
+import { Button, ConfirmDialog, EmptyState, MetricCard, SectionCard, Toast, ToastType } from '@/components/shared';
+
 import { getActiveModules } from '@/lib/modules'
 
 interface DeveloperPanelProps {
@@ -118,15 +113,26 @@ export default function DeveloperPanel({ refreshTrigger, setLoading: setLoadingP
       <SectionCard
         title="Sesiones Activas"
         titleAction={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadDevices}
-            disabled={isLoadingDevices}
-            className="rounded-full"
-          >
-            Actualizar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowClearCacheConfirm(true)}
+              className="rounded-full gap-1.5 text-muted-foreground hover:text-rose-600 hover:border-rose-200"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Limpiar Caché Local
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadDevices}
+              disabled={isLoadingDevices}
+              className="rounded-full"
+            >
+              Actualizar
+            </Button>
+          </div>
         }
         className="shrink-0"
         size="sm"
@@ -185,9 +191,6 @@ export default function DeveloperPanel({ refreshTrigger, setLoading: setLoadingP
           </div>
         )}
       </SectionCard>
-
-
-
 
       {confirmRevokeId && (
         <ConfirmDialog

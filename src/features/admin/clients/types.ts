@@ -5,7 +5,6 @@ export interface ClientData {
   full_name: string
   phone_number: string | null
   email: string | null
-  registration_source: string | null
   is_active: boolean
   created_at: string
   has_active_membership?: boolean

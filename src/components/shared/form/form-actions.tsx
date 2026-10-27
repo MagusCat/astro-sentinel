@@ -1,7 +1,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/shared/form/button"
-import { RefreshCw } from "lucide-react"
+import { Button } from '@/components/shared';
+
 
 interface FormActionsProps {
   onCancel?: () => void
@@ -9,6 +9,7 @@ interface FormActionsProps {
   cancelText?: string
   submitText?: string
   isLoading?: boolean
+  disabled?: boolean
   submitVariant?: "default" | "destructive" | "primary"
   className?: string
   formId?: string
@@ -26,6 +27,7 @@ export function FormActions({
   cancelText = "Cancelar",
   submitText = "Guardar",
   isLoading,
+  disabled,
   submitVariant = "default",
   className,
   formId,
@@ -49,16 +51,10 @@ export function FormActions({
         variant={submitVariant === "destructive" ? "destructive" : "default"}
         size="default"
         onClick={onSubmit}
-        disabled={isLoading}
+        isLoading={isLoading}
+        disabled={disabled || isLoading}
       >
-        {isLoading ? (
-          <span className="flex items-center gap-1.5">
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            Guardando...
-          </span>
-        ) : (
-          submitText
-        )}
+        {submitText}
       </Button>
     </div>
   )

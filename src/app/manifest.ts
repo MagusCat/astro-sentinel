@@ -2,14 +2,14 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Sentinel CMS',
+    name: 'Sentinel Dashboard',
     short_name: 'Sentinel',
-    description: 'Sistema de Gestión y CMS para Academias de Artes Marciales',
+    description: 'Terminal Operativa de Gestión',
     start_url: '/',
     display: 'standalone',
     display_override: ['standalone', 'window-controls-overlay'],
     background_color: '#f8fafc',
-    theme_color: '#6366f1',
+    theme_color: '#112E81',
     orientation: 'any',
     icons: [
       {

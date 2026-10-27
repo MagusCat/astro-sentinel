@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { nameSchema, phoneSchema, sanitizedString } from '@/lib/validation/common'
+import { nameSchema, phoneSchema } from '@/lib/validation/common'
 
 export const createClientSchema = z.object({
   full_name: nameSchema,
@@ -12,14 +12,6 @@ export const createClientSchema = z.object({
     .transform((s) => (s ? s.trim() : null))
     .refine((val) => !val || z.string().email().safeParse(val).success, {
       message: 'El correo electrónico ingresado no tiene un formato válido.',
-    }),
-
-  registration_source: sanitizedString
-    .optional()
-    .nullable()
-    .transform((s) => (s ? s : null))
-    .refine((val) => !val || val.length <= 50, {
-      message: 'El medio de inscripción no puede exceder los 50 caracteres.',
     }),
 })
 

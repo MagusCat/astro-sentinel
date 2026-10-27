@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Database, Trash2, RefreshCw, Folder, HardDrive, Activity } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
+import { ConfirmDialog, SectionCard, Toast, ToastType } from '@/components/shared';
+
 import { listSiteImages, deleteSiteImage, getBucketStats } from '../../media/actions'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
 
 interface StorageFile {
   name: string

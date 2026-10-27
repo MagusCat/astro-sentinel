@@ -5,9 +5,7 @@ import { Hero, HeroCarouselImage } from '../../core/types'
 import { LayoutTemplate, Images, Plus } from 'lucide-react'
 import { ImageCard } from '../../core/components/image-card'
 import { CMS_LIMITS } from '../../core/config'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { TextField } from '@/components/shared/form/text-field'
-import { TextareaField } from '@/components/shared/form/textarea-field'
+import { SectionCard, TextField, TextareaField } from '@/components/shared';
 
 interface Props {
   value: Hero

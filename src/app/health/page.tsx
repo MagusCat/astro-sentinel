@@ -1,9 +1,12 @@
 'use client'
 
 import React, { Suspense } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import HealthCheck from '@/features/health/components/health-check'
-import Logo from '@/components/shared/layout/logo'
+import { Button, Logo } from '@/components/shared';
+
 import { getActiveModules } from '@/lib/modules'
 
 const { adminEnabled, cmsEnabled } = getActiveModules()
@@ -21,12 +24,28 @@ function HealthCheckContent() {
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground mt-4">Sistema Operativo</h1>
         <p className="text-muted-foreground text-sm font-medium">Todos los servicios de Sentinel están funcionando correctamente.</p>
         <p className="text-sm text-muted-foreground">Módulos cargados: {loadedModulesLabel}</p>
+        <div className="pt-4">
+          <Button variant="outline" asChild className="gap-2">
+            <Link href="/dashboard">
+              <ArrowLeft className="w-4 h-4" />
+              Volver al Panel Principal
+            </Link>
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+          <Link href="/dashboard">
+            <ArrowLeft className="w-4 h-4" />
+            Volver al Panel Principal
+          </Link>
+        </Button>
+      </div>
       <div className="rounded-2xl border border-border/60 bg-muted/50 p-4 text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">Módulos cargados:</span> {loadedModulesLabel}
       </div>

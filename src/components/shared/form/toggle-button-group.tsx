@@ -78,7 +78,7 @@ export function ToggleButtonGroup({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              "relative z-10 flex-1 py-2.5 text-sm font-bold rounded-lg transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2",
+              "relative z-10 flex-1 px-3 py-2.5 text-sm font-bold rounded-lg transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap",
               isActive
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"

@@ -12,18 +12,14 @@ import { deriveHeroSocialLinks, deriveContactItems, buildWhatsapp } from '../der
 
 import CmsToolbar from './cms-toolbar'
 import BackupsModal from '@/features/cms/backups/components/backups-modal'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { ProgressBar } from '@/components/shared/feedback/progress-bar'
-import { LoadingState } from '@/components/shared/feedback/loading-state'
-import SessionLoading from '@/components/shared/layout/session-loading'
-import Logo from '@/components/shared/layout/logo'
+import { ConfirmDialog, LoadingState, Logo, ProgressBar, SessionLoading, Toast, ToastType } from '@/components/shared';
+
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { cn, formatDate } from '@/lib/utils'
 
 import CmsSidebarNav from './cms-sidebar-nav'
 import GlobalsEditor from '@/features/cms/editors/components/globals-editor'
+import HeaderEditor from '@/features/cms/editors/components/header-editor'
 import HeroEditor from '@/features/cms/editors/components/hero-editor'
 import AboutEditor from '@/features/cms/editors/components/about-editor'
 import ArtEditor from '@/features/cms/editors/components/art-editor'
@@ -97,7 +93,6 @@ export default function CmsShell({
     return () => clearTimeout(timer)
   }, [activeSection, displaySection])
 
-
   const loadContent = useCallback(async () => {
     setLoading(true)
     const [contentRes, dateRes] = await Promise.all([
@@ -120,7 +115,6 @@ export default function CmsShell({
       loadContent() 
     }
   }, [loadContent, initialContent])
-
 
   const updateDraft = <K extends keyof SiteContent>(section: K, value: SiteContent[K]) => {
     setDraft((prev) => prev ? { ...prev, [section]: value } : prev)
@@ -187,7 +181,6 @@ export default function CmsShell({
     handleAction(handleLogout)
   }
 
-
   const handleDiscard = () => {
     if (!content) return
     setDraft(JSON.parse(JSON.stringify(content)))
@@ -221,6 +214,10 @@ export default function CmsShell({
           <GlobalsEditor
             value={draft.globals}
             onChange={(v) => updateDraft('globals', v)}
+          />
+          <HeaderEditor
+            value={draft.header}
+            onChange={(v) => updateDraft('header', v)}
           />
           <ContactEditor
             value={draft.contact}

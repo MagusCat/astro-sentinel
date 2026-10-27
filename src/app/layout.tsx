@@ -1,9 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { PwaRegister } from "@/components/shared/pwa-register";
-import { NavigationIndicator } from "@/components/shared/feedback/navigation-indicator";
-import "../styles/globals.css";
+import { NavigationIndicator, PwaRegister } from '@/components/shared';
 
+import "../styles/globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -14,8 +14,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // No maximumScale / userScalable:false — blocking pinch-zoom fails WCAG 1.4.4.
   viewportFit: "cover",
   themeColor: "#f8fafc",
 };
@@ -30,7 +29,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,7 +40,9 @@ export default function RootLayout({
         className="antialiased font-sans"
         suppressHydrationWarning
       >
-        <NavigationIndicator />
+        <Suspense fallback={null}>
+          <NavigationIndicator />
+        </Suspense>
         <PwaRegister />
         {children}
       </body>

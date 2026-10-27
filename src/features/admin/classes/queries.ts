@@ -1,11 +1,11 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireRole, toActionError } from '@/lib/auth/guard'
 import { PlanData, ClassData, ClassPlanWithJoin } from './types'
 
 export async function getClassPlans(): Promise<PlanData[]> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole()
     const { data, error } = await supabase
       .from('class_plans')
       .select(`id, class_id, plan_name, duration_days, price, classes ( name )`)
@@ -31,7 +31,7 @@ export async function getClassPlans(): Promise<PlanData[]> {
 
 export async function getClassesList(): Promise<{ success: boolean; classes?: ClassData[]; error?: string }> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole()
     const { data, error } = await supabase
       .from('classes')
       .select('id, name, description, created_at')
@@ -42,7 +42,6 @@ export async function getClassesList(): Promise<{ success: boolean; classes?: Cl
 
     return { success: true, classes: data as ClassData[] }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al obtener disciplinas: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al obtener disciplinas.') }
   }
 }

@@ -1,8 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
 import { SiteContent } from '@/features/cms/core/types'
 import { BackupEntry } from './types'
 import { restoreBackupSchema, deleteBackupSchema, backupAuthorsSchema } from './schemas'
@@ -15,17 +14,12 @@ export async function restoreContentBackup(
   backupName: string
 ): Promise<{ success: boolean; content?: SiteContent; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = restoreBackupSchema.safeParse({ backupName })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const backupPath = `backups/${parsed.data.backupName}`
 
     const { data, error } = await supabase.storage
@@ -38,12 +32,13 @@ export async function restoreContentBackup(
     const restoredContent = JSON.parse(text) as SiteContent
 
     const res = await publishSiteContent(restoredContent)
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) {
+      return { success: false, error: res.error || 'Error al restaurar copia de respaldo.' }
+    }
 
     return { success: true, content: restoredContent }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al restaurar copia: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al restaurar copia de respaldo.') }
   }
 }
 
@@ -53,12 +48,7 @@ export async function listContentBackups(): Promise<{
   error?: string
 }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const { data, error } = await supabase.storage
       .from(CONTENT_BUCKET)
@@ -73,8 +63,7 @@ export async function listContentBackups(): Promise<{
 
     return { success: true, data: backups }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al listar versiones: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al listar versiones de respaldo.') }
   }
 }
 
@@ -82,17 +71,12 @@ export async function deleteContentBackup(
   backupName: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = deleteBackupSchema.safeParse({ backupName })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const backupPath = `backups/${parsed.data.backupName}`
 
     const { error } = await supabase.storage
@@ -103,8 +87,7 @@ export async function deleteContentBackup(
 
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar copia: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar copia de respaldo.') }
   }
 }
 
@@ -112,17 +95,12 @@ export async function getBackupAuthors(
   names: string[]
 ): Promise<{ success: boolean; data?: Record<string, string>; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = backupAuthorsSchema.safeParse({ names })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const authors: Record<string, string> = {}
 
     const CHUNK_SIZE = 5
@@ -149,7 +127,6 @@ export async function getBackupAuthors(
 
     return { success: true, data: authors }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al obtener autores: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al obtener autores de los respaldos.') }
   }
 }

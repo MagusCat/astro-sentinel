@@ -2,7 +2,8 @@ import { create } from 'zustand'
 
 interface NavigationState {
   isNavigating: boolean
-  setIsNavigating: (isNavigating: boolean) => void
+  transitioningTabId: string | null
+  setIsNavigating: (isNavigating: boolean, tabId?: string | null) => void
 }
 
 /**
@@ -13,5 +14,6 @@ interface NavigationState {
  */
 export const useNavigationStore = create<NavigationState>((set) => ({
   isNavigating: false,
-  setIsNavigating: (isNavigating) => set({ isNavigating }),
+  transitioningTabId: null,
+  setIsNavigating: (isNavigating, tabId = null) => set({ isNavigating, transitioningTabId: isNavigating ? tabId : null }),
 }))

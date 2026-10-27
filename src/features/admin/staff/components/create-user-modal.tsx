@@ -2,10 +2,7 @@ import React from 'react'
 import { Link as LinkIcon } from 'lucide-react'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { APP_ROLE } from '@/lib/auth/roles'
-import Modal from '@/components/shared/feedback/modal'
-import { TextField } from '@/components/shared/form/text-field'
-import { SelectField } from '@/components/shared/form/select-field'
-import { FormActions } from '@/components/shared/form/form-actions'
+import { FormActions, Modal, SelectField, TextField } from '@/components/shared';
 
 interface CreateForm {
   full_name: string

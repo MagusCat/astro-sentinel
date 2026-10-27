@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { Button } from "@/components/shared/form/button"
+import { Button } from '@/components/shared';
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -40,8 +40,6 @@ export function ConfirmDialog({
   }, [])
 
   if (!isOpen || !mounted) return null
-
-
 
   return createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

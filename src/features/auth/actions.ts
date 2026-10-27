@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { AuthenticatedUser } from './types'
 import {
   verifyPassword,
@@ -15,12 +14,60 @@ import {
   setDeviceCookie,
   getSessionToken,
   getDeviceToken,
-  deleteSessionCookie,
   deleteDeviceCookie,
-  deleteAllAuthCookies,
+  clearSessionAndSupabase,
+  clearAllAuthAndSupabase,
 } from '@/lib/cookies'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createVerifyClient } from '@/lib/supabase/verify'
+
+// ── Brute-force throttle (login_attempts)
+//
+// La tabla registra SOLO intentos FALLIDOS, persistidos en la BD porque un Map
+// en memoria no sobrevive al reciclaje de isolates en Cloudflare Workers. Un
+// login correcto limpia los fallos de esa clave, así que un operador legítimo
+// no se autobloquea. Falla ABIERTO: si la BD no responde, no deja a nadie fuera
+// (bcrypt sigue siendo el freso de fondo).
+const MAX_FAILED_ATTEMPTS = 5
+const WINDOW_MS = 15 * 60 * 1000 // 15 minutos
+const RATE_LIMITED_MSG = 'Demasiados intentos fallidos. Espere unos minutos e intente de nuevo.'
+
+async function isRateLimited(key: string): Promise<boolean> {
+  try {
+    const supabase = createAdminClient()
+    const since = new Date(Date.now() - WINDOW_MS).toISOString()
+
+    const { count } = await supabase
+      .from('login_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('attempt_key', key)
+      .gte('created_at', since)
+
+    return (count ?? 0) >= MAX_FAILED_ATTEMPTS
+  } catch (err) {
+    console.error('[Auth] Rate-limit check unavailable:', err instanceof Error ? err.message : String(err))
+    return false // fail-open
+  }
+}
+
+async function recordFailedAttempt(key: string): Promise<void> {
+  try {
+    const supabase = createAdminClient()
+    await supabase.from('login_attempts').insert({ attempt_key: key })
+  } catch (err) {
+    console.error('[Auth] Could not record failed attempt:', err instanceof Error ? err.message : String(err))
+  }
+}
+
+async function clearFailedAttempts(key: string): Promise<void> {
+  try {
+    const supabase = createAdminClient()
+    await supabase.from('login_attempts').delete().eq('attempt_key', key)
+  } catch (err) {
+    console.error('[Auth] Could not clear failed attempts:', err instanceof Error ? err.message : String(err))
+  }
+}
 
 // ── Device Authorization
 export async function isDeviceAuthorized(): Promise<boolean> {
@@ -65,41 +112,47 @@ export async function authorizeDevice(
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const rateKey = `device:${parsed.data.email}`
+    if (await isRateLimited(rateKey)) {
+      return { success: false, error: RATE_LIMITED_MSG }
+    }
+
+    // Verify credentials without persisting any Supabase session in the browser.
+    const verify = createVerifyClient()
     let authUserId: string | null = null
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const { data, error } = await verify.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
       })
-
       if (error) {
+        await recordFailedAttempt(rateKey)
         return { success: false, error: 'Credenciales inválidas.' }
       }
-
-      if (data.user) {
-        authUserId = data.user.id
-      }
+      if (data.user) authUserId = data.user.id
     } catch {
       return { success: false, error: 'Error de conexión. Por favor, verifique la conectividad de red.' }
     }
 
     if (!authUserId) {
+      await recordFailedAttempt(rateKey)
       return { success: false, error: 'Autorización de dispositivo rechazada.' }
     }
 
+    await clearFailedAttempts(rateKey)
+
     const deviceId = crypto.randomUUID()
 
-    const { error: insertError } = await supabase
+    // Register the device with the service role — the browser has no session.
+    const supabaseAdmin = createAdminClient()
+    const { error: insertError } = await supabaseAdmin
       .from('authorized_devices')
-      .insert({
-        device_id: deviceId,
-        authorized_by: authUserId,
-      })
+      .insert({ device_id: deviceId, authorized_by: authUserId })
 
     if (insertError) {
-      return { success: false, error: `Error de base de datos: ${insertError.message}` }
+      console.error('[Auth] Error authorizing device:', insertError.message)
+      return { success: false, error: 'Error interno del servidor al registrar la terminal.' }
     }
 
     const token = await createDeviceToken(deviceId)
@@ -107,8 +160,8 @@ export async function authorizeDevice(
 
     return { success: true }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error de autorización de dispositivo: ${errorMsg}` }
+    console.error('[Auth] Device authorization exception:', err)
+    return { success: false, error: 'Error de autorización de dispositivo.' }
   }
 }
 
@@ -119,14 +172,14 @@ export async function revokeDeviceAuthorization(): Promise<{ success: boolean; e
     if (token) {
       const deviceId = await verifyDeviceToken(token)
       if (deviceId) {
-        const supabase = await createClient()
-        const { error: updateError } = await supabase
+        const supabaseAdmin = createAdminClient()
+        const { error: deleteError } = await supabaseAdmin
           .from('authorized_devices')
           .delete()
           .eq('device_id', deviceId)
 
-        if (updateError) {
-          console.error('Error al revocar en BD (puede ser por permisos RLS):', updateError.message)
+        if (deleteError) {
+          console.error('[Auth] Error revoking device in DB:', deleteError.message)
         }
       }
     }
@@ -134,7 +187,7 @@ export async function revokeDeviceAuthorization(): Promise<{ success: boolean; e
     await deleteDeviceCookie()
     return { success: true }
   } catch (err) {
-    console.error('Error al revocar autorización de dispositivo:', err)
+    console.error('[Auth] Error revoking device authorization:', err)
     return { success: false, error: 'Error interno al revocar dispositivo.' }
   }
 }
@@ -151,20 +204,19 @@ export async function authenticateUser(
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
+    const rateKey = `user:${parsed.data.username}`
+    if (await isRateLimited(rateKey)) {
+      return { success: false, error: RATE_LIMITED_MSG }
+    }
+
     const deviceToken = await getDeviceToken()
     if (!deviceToken) {
-      return {
-        success: false,
-        error: 'No autorizado.'
-      }
+      return { success: false, error: 'No autorizado.' }
     }
 
     const deviceId = await verifyDeviceToken(deviceToken)
     if (!deviceId) {
-      return {
-        success: false,
-        error: 'El token de autorización es inválido o ha expirado.'
-      }
+      return { success: false, error: 'El token de autorización es inválido o ha expirado.' }
     }
 
     const supabaseAdmin = createAdminClient()
@@ -185,48 +237,47 @@ export async function authenticateUser(
       return { success: false, error: 'La autorización de esta terminal ha sido revocada remotamente.' }
     }
 
-    const supabase = await createClient()
-
-    const { data: user, error } = await supabase
+    const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('id, full_name, role, password_hash, is_active, username')
-      .eq('username', username)
+      .eq('username', parsed.data.username)
       .maybeSingle()
 
     if (error) {
+      console.error('[Auth] Error fetching user record:', error.message)
       return { success: false, error: 'Error interno del servidor.' }
     }
 
-    if (!user) {
+    // Constant-ish failure path: unknown user, inactive account, or an account
+    // with no local password (e.g. an admin linked only to Supabase Auth) all
+    // return the same generic message.
+    if (!user || !user.is_active || !user.password_hash) {
+      await recordFailedAttempt(rateKey)
       return { success: false, error: 'Usuario o contraseña inválidos.' }
     }
 
-    if (!user.is_active) {
-      return { success: false, error: 'La cuenta de usuario no está registrada.' }
-    }
-
-    const passwordMatch = await verifyPassword(password, user.password_hash)
+    const passwordMatch = await verifyPassword(parsed.data.password, user.password_hash)
     if (!passwordMatch) {
+      await recordFailedAttempt(rateKey)
       return { success: false, error: 'Usuario o contraseña inválidos.' }
     }
+
+    await clearFailedAttempts(rateKey)
 
     const authUser: AuthenticatedUser = {
       id: user.id,
       full_name: user.full_name,
       role: user.role,
-      username: user.username || ''
+      username: user.username || '',
     }
 
     const sessionToken = await createSessionToken(authUser)
     await setSessionCookie(sessionToken)
 
-    return {
-      success: true,
-      user: authUser
-    }
+    return { success: true, user: authUser }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error de conexión de autenticación: ${errorMsg}` }
+    console.error('[Auth] User authentication exception:', err)
+    return { success: false, error: 'Error de conexión de autenticación.' }
   }
 }
 
@@ -242,72 +293,69 @@ export async function authenticateAdmin(
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
-    let supabaseUser: { id: string; email?: string } | null = null
+    const rateKey = `admin:${parsed.data.email}`
+    if (await isRateLimited(rateKey)) {
+      return { success: false, error: RATE_LIMITED_MSG }
+    }
+
+    const verify = createVerifyClient()
+    let supabaseUserId: string | null = null
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const { data, error } = await verify.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
       })
-
       if (error) {
+        await recordFailedAttempt(rateKey)
         return { success: false, error: 'Credenciales inválidas.' }
       }
-
-      if (data.user) {
-        supabaseUser = data.user
-      }
+      if (data.user) supabaseUserId = data.user.id
     } catch {
       return { success: false, error: 'Error de conexión. Por favor, verifique la conectividad de red.' }
     }
 
-    if (!supabaseUser) {
+    if (!supabaseUserId) {
+      await recordFailedAttempt(rateKey)
       return { success: false, error: 'Credenciales rechazadas.' }
     }
 
-    let userRecord = null
+    const supabaseAdmin = createAdminClient()
+    const { data: userRecord, error: lookupError } = await supabaseAdmin
+      .from('users')
+      .select('id, full_name, role, is_active, username')
+      .eq('auth_user_id', supabaseUserId)
+      .maybeSingle()
 
-    try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('id, full_name, role, is_active, username')
-        .eq('auth_user_id', supabaseUser.id)
-        .maybeSingle()
-
-      if (user) {
-        userRecord = user
-      }
-    } catch (err) {
-      console.error('[Auth] Error fetching user record:', err)
+    if (lookupError) {
+      console.error('[Auth] Error fetching admin user record:', lookupError.message)
       return { success: false, error: 'Error interno al verificar credenciales.' }
     }
 
     if (!userRecord) {
-      return { success: false, error: 'Error al obtener información de usuario.' }
+      return { success: false, error: 'Credenciales rechazadas.' }
     }
 
     if (!userRecord.is_active) {
       return { success: false, error: 'La cuenta de administrador no está activa.' }
     }
 
+    await clearFailedAttempts(rateKey)
+
     const authUser: AuthenticatedUser = {
       id: userRecord.id,
       full_name: userRecord.full_name,
       role: userRecord.role,
-      username: userRecord.username || ''
+      username: userRecord.username || '',
     }
 
     const sessionToken = await createSessionToken(authUser)
     await setSessionCookie(sessionToken)
 
-    return {
-      success: true,
-      user: authUser
-    }
+    return { success: true, user: authUser }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error de conexión de administrador: ${errorMsg}` }
+    console.error('[Auth] Admin authentication exception:', err)
+    return { success: false, error: 'Error de conexión de administrador.' }
   }
 }
 
@@ -325,20 +373,20 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
 
 export async function logoutUser(): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteSessionCookie()
+    await clearSessionAndSupabase()
     return { success: true }
   } catch (err) {
-    console.error('Error al limpiar cookie de sesión:', err)
+    console.error('[Auth] Error clearing session cookie:', err)
     return { success: false, error: 'Error al limpiar sesión.' }
   }
 }
 
 export async function logoutUserFull(): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteAllAuthCookies()
+    await clearAllAuthAndSupabase()
     return { success: true }
   } catch (err) {
-    console.error('Error al limpiar sesión completa:', err)
+    console.error('[Auth] Error clearing full session:', err)
     return { success: false, error: 'Error al limpiar sesión completa.' }
   }
 }

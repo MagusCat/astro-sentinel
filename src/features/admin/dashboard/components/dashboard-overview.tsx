@@ -1,123 +1,135 @@
 'use client'
 
 import React from 'react'
-import { Users, Trophy, CreditCard, Clock, UserPlus } from 'lucide-react'
-import { DashboardListWidget } from '@/components/shared/data-display/dashboard-list-widget'
-import { MetricCard } from '@/components/shared/data-display/metric-card'
-import { StatusBadge } from '@/components/shared/data-display/status-badge'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
-import { OverviewStats } from '../types'
+import { Users, Trophy, CreditCard, Clock, TrendingUp, Package } from 'lucide-react'
+import { DashboardListWidget, InventoryHealthBar, MetricCard, PriceDisplay, Sparkline } from '@/components/shared';
+
+import { OverviewStats, DashboardSnapshots } from '../types'
 
 interface DashboardOverviewProps {
   stats: OverviewStats
+  snapshots: DashboardSnapshots | null
 }
 
-export default function DashboardOverview({ stats }: DashboardOverviewProps) {
+export default function DashboardOverview({ stats, snapshots }: DashboardOverviewProps) {
   return (
-    <div className="flex flex-col gap-8 w-full h-full flex-1 min-h-0 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-[var(--ease-haptic)]">
+    <div className="flex flex-col gap-8 pb-10 w-full max-w-full min-w-0">
       
-      {/* Metrics Grid — Robust 2-column layout for Mobile/Tablet, 4 for Desktop */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 w-full">
-
+      {/* Primary Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <MetricCard
-          title="Miembros Activos"
+          title="Membresías Activas"
           value={stats.activeMembershipsCount}
-          description="Suscripciones vigentes"
           icon={Users}
-          color="blue"
+          description="Total de alumnos vigentes"
+          trend={snapshots ? (
+            <div className="mt-4 border-t border-border/10 pt-4">
+              <Sparkline data={snapshots.membershipLifecycle.signups} color="var(--primary)" />
+              <p className="text-[10px] text-muted-foreground uppercase font-bold mt-2 tracking-tighter">Tendencia de ingresos</p>
+            </div>
+          ) : undefined}
         />
-
+        
         <MetricCard
-          title="Ingresos del Día"
-          value={`$${stats.dailyRevenue}`}
-          description="Caja diaria estimada"
+          title="Ingresos Hoy"
+          value={<PriceDisplay amount={stats.dailyRevenue} variant="neutral" className="text-lg" />}
           icon={CreditCard}
-          color="emerald"
+          description="Ventas brutas del día actual"
+          trend={snapshots ? (
+            <div className="mt-4 border-t border-border/10 pt-4">
+              <Sparkline data={snapshots.revenueTrend} color="var(--primary)" />
+              <p className="text-[10px] text-muted-foreground uppercase font-bold mt-2 tracking-tighter">Frecuencia de pagos</p>
+            </div>
+          ) : undefined}
         />
 
         <MetricCard
-          title="Total Clases"
-          value={stats.totalClassesCount}
-          description="Disciplinas activas"
+          title="Clase Líder"
+          value={stats.topClass}
           icon={Trophy}
-          color="purple"
+          description="Disciplina con mayor asistencia"
+          variant="highlight"
         />
 
         <MetricCard
-          title="Total Alumnos"
-          value={stats.totalClientsCount}
-          description="Registro histórico"
-          icon={Users}
-          color="sky"
+          title="Salud de Tienda"
+          value={snapshots?.inventoryHealth.healthy ?? 0}
+          icon={Package}
+          description="Productos con stock óptimo"
+          trend={snapshots ? (
+            <div className="mt-4 border-t border-border/10 pt-4">
+              <InventoryHealthBar {...snapshots.inventoryHealth} />
+              <p className="text-[10px] text-muted-foreground uppercase font-bold mt-2 tracking-tighter">Estado global de stock</p>
+            </div>
+          ) : undefined}
         />
       </div>
 
-
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-        <DashboardListWidget
-          className="lg:col-span-2"
-          title="Membresías Inactivas"
-          description="Atención requerida: usuarios con estados irregulares"
-          icon={Clock}
-          iconColorClass="text-rose-500"
-          items={stats.inactiveMemberships}
-          emptyMessage="No hay membresías inactivas registradas."
-          renderItem={(membership, idx) => (
-            <div key={idx} className="flex justify-between items-center p-3 border border-border/60 rounded-xl bg-card hover:bg-muted/30 hover:shadow-sm transition-all duration-500 ease-[var(--ease-haptic)]">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-bold text-foreground">{membership.clientName}</span>
-                <span className="text-xs text-muted-foreground/90 font-medium">
-                  {membership.className} • {membership.planName}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-tight">
-                  {membership.endDate ? new Date(membership.endDate).toLocaleDateString('es-ES') : 'N/A'}
-                </span>
-                <StatusBadge status={membership.status} />
-              </div>
-            </div>
-          )}
-        />
-
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2 min-h-0">
+      {/* Secondary Lists Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Recent Activity */}
+        <div className="space-y-6">
           <DashboardListWidget
             title="Últimos Pagos"
+            description="Transacciones procesadas recientemente"
             icon={CreditCard}
-            iconColorClass="text-emerald-500"
             items={stats.recentPayments}
             renderItem={(payment, idx) => (
-              <div key={idx} className="flex flex-col gap-1 p-2.5 lg:p-3 border border-border rounded-xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-foreground truncate max-w-[150px]">{payment.clientName}</span>
-                  <PriceDisplay amount={payment.totalAmount} variant="badge" />
+              <div key={`pay-${idx}`} className="flex justify-between items-center w-full group">
+                <div className="flex flex-col min-w-0 pr-2">
+                  <span className="font-bold text-foreground group-hover:text-primary transition-colors truncate">{payment.clientName}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{payment.paymentMethod}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground capitalize">{payment.paymentMethod}</span>
-                  <span className="text-sm text-muted-foreground font-mono">{new Date(payment.transactionDate).toLocaleDateString('es-ES')}</span>
+                <div className="flex flex-col items-end shrink-0">
+                  <PriceDisplay amount={payment.totalAmount} variant="badge" className="text-sm" />
+                  <span className="text-[10px] font-mono text-muted-foreground">{new Date(payment.transactionDate).toLocaleDateString('es-ES')}</span>
                 </div>
               </div>
             )}
           />
 
           <DashboardListWidget
-            title="Nuevos Clientes"
-            icon={UserPlus}
-            iconColorClass="text-indigo-500"
-            items={stats.recentClients}
-            renderItem={(client, idx) => (
-              <div key={idx} className="flex justify-between items-center p-2.5 lg:p-3 border border-border rounded-xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-200">
-                <div className="flex flex-col gap-0.5 min-w-0 pr-2">
-                  <span className="text-sm font-semibold text-foreground truncate">{client.fullName}</span>
-                  <span className="text-sm text-muted-foreground capitalize truncate">{client.registrationSource || 'Directo'}</span>
+            title="Próximos Vencimientos"
+            description="Clientes cuyas membresías expiran pronto"
+            icon={Clock}
+            items={stats.inactiveMemberships}
+            renderItem={(membership, idx) => (
+              <div key={`exp-${idx}`} className="flex justify-between items-center w-full">
+                <div className="flex flex-col min-w-0 pr-2">
+                  <span className="font-bold text-foreground truncate">{membership.clientName}</span>
+                  <span className="text-xs text-muted-foreground truncate">{membership.className} — {membership.planName}</span>
                 </div>
-                <span className="text-sm text-muted-foreground font-mono whitespace-nowrap shrink-0">{new Date(client.createdAt).toLocaleDateString('es-ES')}</span>
+                <span className="text-sm font-mono font-bold text-rose-500 uppercase shrink-0">{membership.status}</span>
               </div>
             )}
           />
         </div>
+
+        {/* Global Performance */}
+        <div className="space-y-6">
+          <DashboardListWidget
+            title="Ranking de Disciplinas"
+            description="Alumnos activos por categoría"
+            icon={TrendingUp}
+            items={stats.classHeadcounts}
+            renderItem={(headcount, idx) => (
+              <div key={`head-${idx}`} className="flex flex-col w-full gap-2 py-1">
+                <div className="flex justify-between items-end gap-2">
+                  <span className="font-bold text-sm text-foreground uppercase tracking-tight truncate min-w-0">{headcount.className}</span>
+                  <span className="font-mono font-black text-primary shrink-0">{headcount.activeStudents}</span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(var(--primary-rgb),0.4)]" 
+                    style={{ width: `${Math.min((headcount.activeStudents / (stats.activeMembershipsCount || 1)) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          />
+        </div>
+
       </div>
     </div>
   )

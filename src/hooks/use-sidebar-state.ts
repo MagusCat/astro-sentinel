@@ -3,46 +3,45 @@ import { useMediaQuery } from './use-media-query'
 import { useSidebarStore } from '@/store/sidebar-store'
 
 /**
- * useSidebarState — UI Bridge for SidebarStore
- * 
- * Consolidates Zustand store state with responsive logic and 
- * transition timing to prevent layout shifts.
+ * useSidebarState — puente UI del SidebarStore.
+ *
+ * `initialCollapsed` viene del servidor (cookie `sb_collapsed`). Antes de montar,
+ * se usa ese valor para que el primer render del cliente coincida con el HTML del
+ * servidor (sin mismatch de hidratación ni flash). Al montar, se siembra el store
+ * con el mismo valor y se pasa a leer del store — sin cambio visible.
  */
-export function useSidebarState() {
+export function useSidebarState(initialCollapsed = true) {
   const isMobile = useMediaQuery('(max-width: 767px)')
-  
-  // Use Zustand store for cross-component consistency
-  const { isCollapsed, toggleCollapse, isMounted, setIsMounted } = useSidebarStore()
-  
-  // Local state for transition control
+
+  const { isCollapsed: storeCollapsed, toggleCollapse, isMounted, setIsMounted, hydrate } = useSidebarStore()
+
   const [enableTransitions, setEnableTransitions] = useState(true)
   const lastViewportRef = useRef<'mobile' | 'desktop' | null>(null)
 
-  // useLayoutEffect runs before paint. 
-  // We synchronously kill transitions ONLY if the breakpoint changed.
+  // useLayoutEffect corre antes del paint: siembra el store desde el valor del
+  // servidor y marca montado. También mata las transiciones si cambia el breakpoint.
   useLayoutEffect(() => {
+    hydrate(initialCollapsed)
     setIsMounted(true)
+
     const currentViewport = isMobile ? 'mobile' : 'desktop'
-    
-    // If viewport shifts (e.g. 767px -> 768px), kill transitions to prevent visual jumping
     if (lastViewportRef.current !== null && lastViewportRef.current !== currentViewport) {
       setEnableTransitions(false)
-      const timer = setTimeout(() => {
-        setEnableTransitions(true)
-      }, 300)
+      const timer = setTimeout(() => setEnableTransitions(true), 300)
       return () => clearTimeout(timer)
     }
-    
     lastViewportRef.current = currentViewport
-  }, [isMobile, setIsMounted])
+    // initialCollapsed intencionadamente fuera de deps: solo siembra al montar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, setIsMounted, hydrate])
 
-  return { 
-    isCollapsed: isMobile ? false : isCollapsed, 
-    isMounted, 
-    enableTransitions, 
-    toggleCollapse 
+  // Antes de montar: valor del servidor (coincide con SSR). Después: store.
+  const effectiveCollapsed = isMounted ? storeCollapsed : initialCollapsed
+
+  return {
+    isCollapsed: isMobile ? false : effectiveCollapsed,
+    isMounted,
+    enableTransitions,
+    toggleCollapse,
   }
 }
-
-
-

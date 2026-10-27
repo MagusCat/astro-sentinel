@@ -1,11 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Modal from '@/components/shared/feedback/modal'
-import { TextField } from '@/components/shared/form/text-field'
-import { SelectField } from '@/components/shared/form/select-field'
-import { PhoneField } from '@/components/shared/form/phone-field'
-import { FormActions } from '@/components/shared/form/form-actions'
+import { FormActions, Modal, PhoneField, TextField } from '@/components/shared';
 
 import { ClientData } from '../types'
 
@@ -13,7 +9,6 @@ interface CreateClientForm {
   full_name: string
   phone_number: string
   email: string
-  registration_source: string
 }
 
 interface CreateClientModalProps {
@@ -35,7 +30,6 @@ export default function CreateClientModal({
     full_name: initialData?.full_name || '',
     phone_number: initialData?.phone_number || '',
     email: initialData?.email || '',
-    registration_source: initialData?.registration_source || '',
   })
   const [errors, setErrors] = useState<Record<string, string[]>>({})
 
@@ -93,21 +87,6 @@ export default function CreateClientModal({
           format="0000 0000"
           onChange={(val) => setForm({ ...form, phone_number: val })}
           error={errors.phone_number?.[0]}
-        />
-
-        <SelectField
-          label="Medio de Inscripción (Opcional)"
-          value={form.registration_source}
-          onChange={(e) => setForm({ ...form, registration_source: e.target.value })}
-          error={errors.registration_source?.[0]}
-          placeholder="No especificado"
-          options={[
-            { value: "Facebook", label: "Facebook" },
-            { value: "Instagram", label: "Instagram" },
-            { value: "WhatsApp", label: "WhatsApp" },
-            { value: "Recomendación", label: "Amigo / Recomendación" },
-            { value: "Otro", label: "Otro" }
-          ]}
         />
 
       </form>

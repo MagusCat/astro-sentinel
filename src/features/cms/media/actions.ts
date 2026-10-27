@@ -1,8 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
 import { APP_CONFIG } from '@/lib/config'
 import { StorageFile, BucketStats } from './types'
 import { uploadSiteImageSchema, deleteSiteImageSchema, bucketNameSchema } from './schemas'
@@ -16,17 +15,12 @@ export async function uploadSiteImage(
   mimeType: string
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = uploadSiteImageSchema.safeParse({ section, filename, mimeType })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const path = `${parsed.data.section}/${parsed.data.filename}`
 
     const { error: uploadError } = await supabase.storage
@@ -39,8 +33,7 @@ export async function uploadSiteImage(
 
     return { success: true, url: data.publicUrl }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al subir imagen: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al subir imagen.') }
   }
 }
 
@@ -49,17 +42,12 @@ export async function deleteSiteImage(
   filename: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = deleteSiteImageSchema.safeParse({ section, filename })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const path = `${parsed.data.section}/${parsed.data.filename}`
 
     const { error } = await supabase.storage.from(IMAGES_BUCKET).remove([path])
@@ -67,8 +55,7 @@ export async function deleteSiteImage(
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar imagen: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar imagen.') }
   }
 }
 
@@ -76,12 +63,7 @@ export async function listSiteImages(
   section?: string
 ): Promise<{ success: boolean; data?: StorageFile[]; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const { data, error } = await supabase.storage.from(IMAGES_BUCKET).list(section || '', {
       sortBy: { column: 'created_at', order: 'desc' }
     })
@@ -95,24 +77,18 @@ export async function listSiteImages(
 
     return { success: true, data: filesWithUrls }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al listar imágenes: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al listar imágenes.') }
   }
 }
 
 export async function getBucketStats(bucketName: string): Promise<{ success: boolean; data?: BucketStats; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
-
     const parsed = bucketNameSchema.safeParse(bucketName)
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     let totalSize = 0;
     let fileCount = 0;
@@ -135,7 +111,6 @@ export async function getBucketStats(bucketName: string): Promise<{ success: boo
 
     return { success: true, data: { totalSize, fileCount } }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al calcular estado: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al calcular estado del almacenamiento.') }
   }
 }

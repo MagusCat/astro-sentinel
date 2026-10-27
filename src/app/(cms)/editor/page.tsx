@@ -2,7 +2,8 @@ import React, { Suspense } from 'react'
 import { getCurrentUser } from '@/features/auth/actions'
 import CmsShell from '@/features/cms/core/components/cms-shell'
 import SetupRequired from '@/features/cms/core/components/setup-required'
-import SessionLoading from '@/components/shared/layout/session-loading'
+import { SessionLoading } from '@/components/shared';
+
 import { getSiteContent, getLastPublicationDate } from '@/features/cms/core/actions'
 import { formatDate } from '@/lib/utils'
 

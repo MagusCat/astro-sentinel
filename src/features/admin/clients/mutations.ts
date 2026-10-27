@@ -1,30 +1,28 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { revalidateTag } from 'next/cache'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
+import { DASHBOARD_CACHE_TAG } from '../dashboard/cache'
 import { createClientSchema, updateClientSchema } from './schemas'
 
 export async function saveNewClient(
-  clientData: { full_name: string; phone_number?: string; email?: string; registration_source?: string }
+  clientData: { full_name: string; phone_number?: string; email?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessDashboard(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Sesión o rol inválido.' }
-    }
+    // Reception, admin and maintainer can all register clients.
+    const { supabase } = await requireRole()
 
     const parsed = createClientSchema.safeParse(clientData)
     if (!parsed.success) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: parsed.error.issues[0]?.message || 'Datos de cliente inválidos.',
         validationErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>
       }
     }
 
     const clean = parsed.data
-    const supabase = await createClient()
 
     if (clean.email) {
       const { data: existingClient } = await supabase
@@ -34,8 +32,8 @@ export async function saveNewClient(
         .maybeSingle()
 
       if (existingClient) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'El correo electrónico ya está registrado con otro cliente.',
           validationErrors: { email: ['El correo electrónico ya está registrado.'] }
         }
@@ -47,39 +45,35 @@ export async function saveNewClient(
       .insert({
         full_name: clean.full_name,
         phone_number: clean.phone_number,
-        email: clean.email,
-        registration_source: clean.registration_source
+        email: clean.email
       })
 
     if (error) throw error
+
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al registrar cliente: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al registrar cliente.') }
   }
 }
 
 export async function updateClient(
   clientId: string,
-  clientData: { full_name: string; phone_number?: string; email?: string; registration_source?: string }
+  clientData: { full_name: string; phone_number?: string; email?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessDashboard(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Sesión o rol inválido.' }
-    }
+    const { supabase } = await requireRole()
 
     const parsed = updateClientSchema.safeParse(clientData)
     if (!parsed.success) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: parsed.error.issues[0]?.message || 'Datos de cliente inválidos.',
         validationErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>
       }
     }
 
     const clean = parsed.data
-    const supabase = await createClient()
 
     if (clean.email) {
       const { data: existingClient } = await supabase
@@ -90,8 +84,8 @@ export async function updateClient(
         .maybeSingle()
 
       if (existingClient) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'El correo electrónico ya está registrado con otro cliente.',
           validationErrors: { email: ['El correo electrónico ya está registrado.'] }
         }
@@ -103,16 +97,15 @@ export async function updateClient(
       .update({
         full_name: clean.full_name,
         phone_number: clean.phone_number,
-        email: clean.email,
-        registration_source: clean.registration_source
+        email: clean.email
       })
       .eq('id', clientId)
 
     if (error) throw error
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al actualizar cliente: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al actualizar cliente.') }
   }
 }
 
@@ -120,12 +113,8 @@ export async function deleteClient(
   clientId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado. Permisos insuficientes.' }
-    }
-
-    const supabase = await createClient()
+    // Deleting a client is a higher-privilege action than editing one.
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const { error: membershipsError } = await supabase
       .from('memberships')
@@ -140,9 +129,9 @@ export async function deleteClient(
       .eq('id', clientId)
     if (clientError) throw clientError
 
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar cliente: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar cliente.') }
   }
 }

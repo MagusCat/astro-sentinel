@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { AuthenticatedUser } from '@/features/auth/types'
 import { ClientData } from '@/features/admin/clients/types'
 import { PlanData, ClassData } from '@/features/admin/classes/types'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import { PageHeader } from '@/components/shared/layout/page-header'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
+import { Button, EmptyState, PageHeader, PriceDisplay } from '@/components/shared';
+
 import { Dumbbell, Calendar, ChevronRight } from 'lucide-react'
 import CheckoutModal from './checkout-modal'
 
@@ -38,7 +38,16 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
   if (activeClasses.length === 0 || activePlans.length === 0) {
     return (
       <div className="bg-card border border-border/40 p-6 rounded-xl shadow-sm w-full">
-        <EmptyState message="No hay disciplinas o planes configurados. Ve a 'Gestión de Planes' para crear opciones de compra." />
+        <EmptyState
+          message="No hay disciplinas o planes configurados. Ve a 'Gestión de Planes' para crear opciones de compra."
+          action={
+            <Button variant="default" size="sm" asChild>
+              <Link href="/dashboard?tab=plans">
+                Configurar Planes
+              </Link>
+            </Button>
+          }
+        />
       </div>
     )
   }
@@ -50,7 +59,7 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
         description="Selecciona el plan que el cliente desea adquirir para proceder con el cobro."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
         {activeClasses.map((cls) => {
           const classPlans = activePlans.filter((p) => p.class_id === cls.id)
 
@@ -59,7 +68,7 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
               
               {/* Header */}
               <div className="bg-muted/30 p-5 border-b border-border/10 flex items-start gap-4">
-                <div className="bg-primary/10 text-primary p-3 rounded-xl border border-primary/5">
+                <div className="bg-primary/10 text-primary p-3 rounded-xl border border-primary/5 shrink-0">
                   <Dumbbell className="w-6 h-6" />
                 </div>
                 <div className="min-w-0">
@@ -87,12 +96,12 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
                       className="group flex items-center justify-between bg-background border border-border/60 p-5 rounded-2xl hover:border-primary hover:bg-primary/5 transition-all duration-500 ease-[var(--ease-haptic)] text-left cursor-pointer active:scale-[0.98]"
                     >
                       <div className="flex flex-col gap-1.5 min-w-0 pr-2">
-                        <span className="font-extrabold text-foreground text-sm uppercase tracking-tight group-hover:text-primary transition-colors">
+                        <span className="font-extrabold text-foreground text-sm uppercase tracking-tight group-hover:text-primary transition-colors truncate">
                           {plan.plan_name}
                         </span>
-                        <div className="inline-flex items-center text-[11px] font-bold text-muted-foreground/80 gap-1.5">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {plan.duration_days} Días de vigencia
+                        <div className="inline-flex items-center text-[11px] font-bold text-muted-foreground/80 gap-1.5 min-w-0">
+                          <Calendar className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{plan.duration_days} Días de vigencia</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
@@ -109,7 +118,6 @@ export default function CheckoutPanel({ classes, plans, clients, activeUser, onR
           )
         })}
       </div>
-
 
       {selectedClass && selectedPlan && (
         <CheckoutModal

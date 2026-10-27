@@ -1,10 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Database, AlertTriangle, ArrowRight, ExternalLink } from 'lucide-react'
-import { Button } from '@/components/shared/form/button'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import Logo from '@/components/shared/layout/logo'
+import Link from 'next/link'
+import { Database, AlertTriangle, ArrowRight, ExternalLink, ArrowLeft } from 'lucide-react'
+import { Button, Logo, SectionCard } from '@/components/shared';
 
 /**
  * SetupRequired — CMS Initialization View
@@ -13,7 +12,19 @@ import Logo from '@/components/shared/layout/logo'
  * Provides clear instructions to the administrator on how to resolve the issue.
  */
 export default function SetupRequired() {
-  const supabaseConsoleUrl = `https://supabase.com/dashboard/project/_/editor`
+  let supabaseConsoleUrl = 'https://supabase.com/dashboard'
+  try {
+    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (rawUrl) {
+      const hostname = new URL(rawUrl).hostname
+      const projectRef = hostname.split('.')[0]
+      if (projectRef && projectRef !== 'localhost' && projectRef !== '127') {
+        supabaseConsoleUrl = `https://supabase.com/dashboard/project/${projectRef}/editor`
+      }
+    }
+  } catch {
+    // fallback to dashboard
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 animate-in fade-in duration-700 ease-[var(--ease-haptic)]">
@@ -47,15 +58,15 @@ export default function SetupRequired() {
                 <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 flex flex-col gap-3 group hover:bg-muted/50 transition-all duration-500">
                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-1 rounded-md w-fit">Opción A (Recomendado)</span>
                   <p className="text-xs font-semibold text-foreground/80 leading-relaxed">
-                    Ejecuta el script SQL de inicialización ubicado en:
-                    <code className="block mt-2 p-2 bg-background border border-border/60 rounded-lg text-primary font-mono">_docs/cms/supabase-rls-fix.sql</code>
+                    Aplica las migraciones de la base de datos ubicadas en:
+                    <code className="block mt-2 p-2 bg-background border border-border/60 rounded-lg text-primary font-mono">supabase/migrations/</code>
                   </p>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 flex flex-col gap-3 group hover:bg-muted/50 transition-all duration-500">
                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-1 rounded-md w-fit">Opción B</span>
                   <p className="text-xs font-semibold text-foreground/80 leading-relaxed">
-                    Crea manualmente los buckets <span className="text-primary font-bold">site-content</span> y <span className="text-primary font-bold">site-images</span> en tu panel de Supabase con acceso público.
+                    Crea manualmente los buckets <span className="text-primary font-bold">site-content</span> y <span className="text-primary font-bold">site-images</span> en tu panel de Supabase (lectura pública: alimentan el sitio web público). La escritura la hace la app con el service role.
                   </p>
                 </div>
               </div>
@@ -80,6 +91,19 @@ export default function SetupRequired() {
               >
                 Reintentar Conexión
                 <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground text-sm font-semibold gap-2"
+                asChild
+              >
+                <Link href="/dashboard">
+                  <ArrowLeft className="w-4 h-4" />
+                  Regresar al Panel Principal
+                </Link>
               </Button>
             </div>
           </div>

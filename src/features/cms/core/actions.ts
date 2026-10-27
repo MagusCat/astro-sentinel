@@ -1,8 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
 import { SiteContent, CmsPublishResult, UploadImageConfig } from './types'
 import { DEFAULT_CONTENT } from './default-content'
 import { APP_CONFIG } from '@/lib/config'
@@ -10,10 +9,84 @@ import { uploadImageSchema } from './schemas'
 import { normalizeContent } from './normalize'
 import { revalidatePath } from 'next/cache'
 import { getServiceConfig } from '@/lib/config'
+import { z } from 'zod'
+
+const siteContentSchema = z.object({
+  globals: z.object({
+    siteTitle: z.string().min(1, 'El título del sitio es requerido.'),
+    siteDescription: z.string().optional().default(''),
+    contactPhone: z.string().optional().default(''),
+    contactEmail: z.string().optional().default(''),
+    contactAddress: z.string().optional().default(''),
+    socialLinks: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  header: z.object({
+    navItems: z.array(z.any()).optional().default([]),
+    contactItem: z.any().optional(),
+  }).passthrough(),
+  hero: z.object({
+    title: z.string().min(1, 'El título principal es requerido.'),
+    subtitle: z.string().optional().default(''),
+    description: z.string().optional().default(''),
+    socialLinks: z.array(z.any()).optional().default([]),
+    carouselImages: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  about: z.object({
+    heading: z.string().min(1, 'El encabezado de Sobre Nosotros es requerido.'),
+    paragraph_1: z.string().optional().default(''),
+    paragraph_2: z.string().optional().default(''),
+  }).passthrough(),
+  art: z.object({
+    heading: z.string().min(1, 'El encabezado de Arte es requerido.'),
+    items: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  principles: z.object({
+    heading: z.string().min(1, 'El encabezado de Principios es requerido.'),
+    description: z.string().optional().default(''),
+    items: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  schedule: z.object({
+    heading: z.string().min(1, 'El encabezado de Horarios es requerido.'),
+    dayLabels: z.record(z.string()).optional().default({}),
+    classes: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  gallery: z.object({
+    heading: z.string().min(1, 'El encabezado de Galería es requerido.'),
+    images: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  comments: z.object({
+    heading: z.string().min(1, 'El encabezado de Testimonios es requerido.'),
+    items: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  faq: z.object({
+    heading: z.string().min(1, 'El encabezado de FAQ es requerido.'),
+    description: z.string().optional().default(''),
+    faqs: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  contact: z.object({
+    heading: z.string().min(1, 'El encabezado de Contacto es requerido.'),
+    description: z.string().optional().default(''),
+    whatsapp: z.object({
+      number: z.string().optional().default(''),
+      message: z.string().optional().default(''),
+      title: z.string().optional().default(''),
+    }).passthrough().optional(),
+    mapEmbedUrl: z.string().optional().default(''),
+    mapLink: z.string().optional().default(''),
+  }).passthrough(),
+  footer: z.object({
+    copyright: z.union([z.number(), z.string()]),
+    owner: z.string().optional().default(''),
+    footerItems: z.array(z.any()).optional().default([]),
+  }).passthrough(),
+  _metadata: z.object({
+    lastModifiedBy: z.string().optional(),
+  }).passthrough().optional(),
+}).passthrough()
 
 export async function getSiteContent(): Promise<{ success: boolean; content?: SiteContent; error?: string; isBucketMissing?: boolean }> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const { data, error } = await supabase.storage
       .from(APP_CONFIG.buckets.content)
@@ -50,21 +123,30 @@ export async function getSiteContent(): Promise<{ success: boolean; content?: Si
 
     return { success: true, content }
   } catch (err) {
-    console.error('getSiteContent error:', err)
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: msg, isBucketMissing: msg.includes('Bucket not found') }
+    const isBucketMissing = err instanceof Error && err.message.includes('Bucket not found')
+    const fallback = isBucketMissing
+      ? 'Infraestructura de almacenamiento no inicializada.'
+      : 'Error al obtener contenido del sitio.'
+    return {
+      success: false,
+      error: toActionError(err, fallback),
+      isBucketMissing,
+    }
   }
 }
 
 
 export async function publishSiteContent(newContent: SiteContent): Promise<CmsPublishResult> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
-    const supabase = await createClient()
+    const parsed = siteContentSchema.safeParse(newContent)
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message || 'Estructura de contenido inválida.'
+      }
+    }
 
     const { data: currentFile } = await supabase.storage
       .from(APP_CONFIG.buckets.content)
@@ -84,7 +166,7 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
         })
     }
 
-    const newJson = JSON.stringify(newContent, null, 2)
+    const newJson = JSON.stringify(parsed.data, null, 2)
     const { error: uploadError } = await supabase.storage
       .from(APP_CONFIG.buckets.content)
       .upload(APP_CONFIG.keys.contentJson, newJson, {
@@ -123,14 +205,13 @@ export async function publishSiteContent(newContent: SiteContent): Promise<CmsPu
 
     return { success: true, backupKey, deployHookTriggered: !!deployHookUrl, publicUrl: finalPublicUrl }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al publicar contenido: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al publicar contenido.') }
   }
 }
 
 export async function getLastPublicationDate(): Promise<{ date: string | null }> {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
     const { data, error } = await supabase.storage
       .from(APP_CONFIG.buckets.content)
       .list('', { search: APP_CONFIG.keys.contentJson })
@@ -150,17 +231,12 @@ export async function uploadImage(
   config?: UploadImageConfig
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessCms(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Permisos de editor CMS requeridos.' }
-    }
+    const { user: currentUser, supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const parsed = uploadImageSchema.safeParse({ folder, maxSizeMB: config?.maxSizeMB })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
-
-    const supabase = await createClient()
 
     const file = formData.get('file') as File
     if (!file) {
@@ -192,7 +268,6 @@ export async function uploadImage(
 
     return { success: true, url: publicUrl }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al subir imagen: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al subir imagen.') }
   }
 }

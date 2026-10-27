@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { History } from 'lucide-react'
-import Modal from '@/components/shared/feedback/modal'
+import { Modal } from '@/components/shared';
+
 import { listContentBackups } from '../actions'
 
 interface BackupsModalProps {

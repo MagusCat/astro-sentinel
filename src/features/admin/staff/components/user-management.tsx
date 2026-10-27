@@ -2,20 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { AuthenticatedUser } from '@/features/auth/types'
-import { Plus, Edit2, Trash2, Power, PowerOff } from 'lucide-react'
+import { Plus, Edit2, Trash2, Power, PowerOff, History } from 'lucide-react'
 import { LocalUser } from '../types'
 import { getUsersList } from '../queries'
-import { updateUserData, deleteUserData } from '../mutations'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import Modal from '@/components/shared/feedback/modal'
-import { FormActions } from '@/components/shared/form/form-actions'
-import { DataTable } from '@/components/shared/data-display/data-table'
-import { PageHeader } from '@/components/shared/layout/page-header'
-import { TableSkeleton } from '@/components/shared/feedback/skeleton'
-import { Button } from '@/components/shared/form/button'
+import { updateUserData, deleteUserData, saveNewUser } from '../mutations'
+import { Button, DataTable, FormActions, Modal, PageHeader, TableSkeleton, Toast, ToastType } from '@/components/shared';
+
 import CreateUserModal from './create-user-modal'
 import EditUserModal from './edit-user-modal'
+import UserMovementsModal from './user-movements-modal'
 import { RoleBadge } from '@/features/auth/components/role-badge'
 import { APP_ROLE } from '@/lib/auth/roles'
 
@@ -44,6 +39,7 @@ export default function UserManagement({ activeUser, refreshTrigger, setLoading:
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [showMovements, setShowMovements] = useState(false)
   const [selectedUser, setSelectedUser] = useState<LocalUser | null>(null)
   const [userToDelete, setUserToDelete] = useState<LocalUser | null>(null)
 
@@ -88,7 +84,6 @@ export default function UserManagement({ activeUser, refreshTrigger, setLoading:
     setLoadingProp?.(loading)
     return () => setLoadingProp?.(false)
   }, [loading, setLoadingProp])
-
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -293,6 +288,18 @@ export default function UserManagement({ activeUser, refreshTrigger, setLoading:
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => {
+                          setSelectedUser(user)
+                          setShowMovements(true)
+                        }}
+                        title="Ver Movimientos"
+                      >
+                        <History className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className={`h-8 w-8 ${user.is_active ? 'text-muted-foreground hover:text-foreground' : 'text-emerald-500 hover:text-emerald-600'}`}
                         disabled={actionLoading || !canToggleStatus}
                         onClick={() => handleToggleActive(user)}
@@ -352,6 +359,16 @@ export default function UserManagement({ activeUser, refreshTrigger, setLoading:
           onSubmit={handleEditSubmit}
           onClose={() => setIsEditOpen(false)}
           errors={editErrors}
+        />
+      )}
+
+      {showMovements && selectedUser && (
+        <UserMovementsModal
+          user={selectedUser}
+          onClose={() => {
+            setShowMovements(false)
+            setSelectedUser(null)
+          }}
         />
       )}
 

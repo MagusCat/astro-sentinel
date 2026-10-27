@@ -4,17 +4,14 @@ import React from 'react'
 import { WebGlobals, SocialLink } from '../../core/types'
 import { isAutoInjectedItem } from '../../core/derive'
 import { Plus, Trash2, Settings, Share2, MapPin } from 'lucide-react'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { TextField } from '@/components/shared/form/text-field'
-import { SelectField } from '@/components/shared/form/select-field'
-import { PhoneField } from '@/components/shared/form/phone-field'
+import { PhoneField, SectionCard, SelectField, TextField } from '@/components/shared';
+
 import { CMS_SOCIAL_NETWORKS } from '../../core/config'
 
 interface Props {
   value: WebGlobals
   onChange: (v: WebGlobals) => void
 }
-
 
 function extractUsername(url: string, template: string): string {
   if (!url) return ''

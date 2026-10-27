@@ -1,5 +1,5 @@
 import React from 'react'
-import SessionLoading from '@/components/shared/layout/session-loading'
+import { SessionLoading } from '@/components/shared';
 
 /**
  * CMS Loading State

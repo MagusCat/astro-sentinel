@@ -40,10 +40,9 @@ yarn-error.log*
 .vercel
 
 # agents
-/docs
-/_docs
 /.agents
 .agent/
+GEMINI.md
 
 # local workspace / generated artifacts
 build.log

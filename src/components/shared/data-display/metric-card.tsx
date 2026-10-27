@@ -4,12 +4,14 @@ import { cn } from '@/lib/utils'
 
 export interface MetricCardProps {
   title: string
-  value: string | number
+  value: string | number | React.ReactNode
   description?: string
   icon: LucideIcon
   iconClassName?: string
   color?: 'blue' | 'purple' | 'sky' | 'amber' | 'cyan' | 'emerald' | 'primary' | 'destructive'
   className?: string
+  variant?: 'default' | 'highlight'
+  trend?: React.ReactNode
 }
 
 export function MetricCard({
@@ -19,7 +21,9 @@ export function MetricCard({
   icon: Icon,
   iconClassName,
   color = 'primary',
-  className
+  className,
+  variant = 'default',
+  trend
 }: MetricCardProps) {
   const colorMap = {
     blue: 'border-l-blue-500 text-blue-500',
@@ -33,12 +37,13 @@ export function MetricCard({
   }
 
   const selectedColor = colorMap[color]
-  const borderClass = selectedColor.split(' ')[0]
+  const borderClass = variant === 'highlight' ? 'border-primary bg-primary/5' : selectedColor.split(' ')[0]
   const textClass = selectedColor.split(' ')[1]
 
   return (
     <div className={cn(
-      "@container bg-card border-l-4 border-y border-r border-border p-4 @[250px]:p-6 rounded-[2rem] relative overflow-hidden group transition-all duration-700 ease-[var(--ease-haptic)] hover:shadow-2xl hover:-translate-y-1 hover:border-r-border/80 w-full h-full min-h-[140px]",
+      "@container border-l-4 border-y border-r border-border p-4 @[250px]:p-6 rounded-4xl relative overflow-hidden group transition-all duration-700 ease-[var(--ease-haptic)] hover:shadow-2xl hover:-translate-y-1 hover:border-r-border/80 w-full h-full min-h-[140px]",
+      variant === 'default' ? 'bg-card' : 'bg-primary/5 border-primary',
       borderClass,
       className
     )}>
@@ -48,14 +53,16 @@ export function MetricCard({
             <p className="text-[10px] @[200px]:text-[11px] @[300px]:text-xs font-black uppercase tracking-[0.15em] text-muted-foreground/60 mb-1">
               {title}
             </p>
-            <h3 className="text-2xl @[250px]:text-3xl @[350px]:text-4xl font-black text-foreground tracking-tighter leading-none">
+            <div className="text-2xl @[250px]:text-3xl @[350px]:text-4xl font-black text-foreground tracking-tighter leading-none">
               {value}
-            </h3>
+            </div>
           </div>
           <div className={cn("p-2.5 rounded-2xl bg-muted/30 group-hover:bg-muted/50 transition-colors duration-500", !Icon && "hidden")}>
             <Icon className={cn("w-5 h-5 @[250px]:w-6 @[250px]:h-6 group-hover:scale-110 transition-transform duration-500", textClass, iconClassName)} />
           </div>
         </div>
+
+        {trend}
 
         {description && (
           <div className="mt-auto pt-2 border-t border-border/5">
@@ -72,7 +79,4 @@ export function MetricCard({
       </div>
     </div>
   )
-
-
-
 }

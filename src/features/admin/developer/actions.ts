@@ -1,21 +1,15 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
 import { verifyDeviceToken } from '@/lib/auth/session'
 import { getDeviceToken } from '@/lib/cookies'
 import { ConnectedDevice } from './types'
 import { revokeDeviceSchema } from './schemas'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
 
 export async function getAuthorizedDevices(): Promise<{ success: boolean; data?: ConnectedDevice[]; currentDeviceId?: string; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessDeveloper(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Se requieren permisos de mantenimiento.' }
-    }
-
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.MAINTAINER)
 
     let currentDeviceId: string | undefined = undefined
     try {
@@ -37,7 +31,7 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
     }
 
     const authUserIds = Array.from(new Set((data || []).map(d => d.authorized_by).filter(Boolean)))
-    const { data: usersData } = authUserIds.length > 0 
+    const { data: usersData } = authUserIds.length > 0
       ? await supabase.from('users').select('auth_user_id, full_name, username').in('auth_user_id', authUserIds)
       : { data: [] }
 
@@ -53,24 +47,19 @@ export async function getAuthorizedDevices(): Promise<{ success: boolean; data?:
 
     return { success: true, data: devices, currentDeviceId }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al consultar dispositivos: ${errorMsg}` }
+    return { success: false, error: toActionError(err, 'Error al consultar dispositivos.') }
   }
 }
 
 export async function revokeDeviceById(deviceId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !Roles.canAccessDeveloper(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: Se requieren permisos de mantenimiento.' }
-    }
+    const { supabase } = await requireRole(APP_ROLE.MAINTAINER)
 
     const parsed = revokeDeviceSchema.safeParse({ deviceId })
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message || 'Datos inválidos.' }
     }
 
-    const supabase = await createClient()
     const { error } = await supabase
       .from('authorized_devices')
       .delete()
@@ -82,7 +71,6 @@ export async function revokeDeviceById(deviceId: string): Promise<{ success: boo
 
     return { success: true }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al revocar dispositivo: ${errorMsg}` }
+    return { success: false, error: toActionError(err, 'Error al revocar dispositivo.') }
   }
 }

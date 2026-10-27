@@ -1,77 +1,63 @@
+'use client'
+
 import React from 'react'
 import { cn } from '@/lib/utils'
+import { formatMoney, baseToLocal } from '@/lib/format'
+import { useCurrency } from '@/lib/currency-context'
 
 export interface PriceDisplayProps {
   amount: number | string
   currency?: string
+  locale?: string
+  showSecondary?: boolean
   className?: string
   variant?: 'default' | 'badge' | 'primary-badge' | 'highlight' | 'neutral'
 }
 
-/**
- * PriceDisplay - Centralized component for rendering currency and pricing.
- * Ensures all monetary values look consistent and premium across Sentinel.
- */
+const VARIANT_CLASSES: Record<NonNullable<PriceDisplayProps['variant']>, string> = {
+  badge:
+    'inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold font-mono text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 shadow-sm/5',
+  'primary-badge':
+    'inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold font-mono text-primary bg-primary/10 border border-primary/20 shadow-sm/5',
+  highlight: 'text-2xl font-extrabold text-foreground font-mono tracking-tight',
+  neutral: 'font-bold font-mono text-foreground',
+  default: 'font-bold font-mono text-emerald-600',
+}
+
 export function PriceDisplay({
   amount,
-  currency = '$',
+  currency,
+  locale,
+  showSecondary = false,
   className,
-  variant = 'default'
+  variant = 'default',
 }: PriceDisplayProps) {
-  const numericAmount = typeof amount === 'string' ? Number(amount) : amount
-  const formatted = `${currency}${isNaN(numericAmount) ? '0.00' : numericAmount.toFixed(2)}`
+  const { base, secondary: secondaryCurrency } = useCurrency()
 
-  if (variant === 'badge') {
-    return (
-      <span className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold font-mono text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 shadow-sm/5",
-        className
-      )}>
-        {formatted}
-      </span>
-    )
+  const resolvedCurrency = currency ?? base.code
+  const resolvedLocale = locale ?? (currency ? undefined : base.locale)
+  const formatted = formatMoney(amount, resolvedCurrency, resolvedLocale ?? base.locale)
+
+  const isBase = resolvedCurrency === base.code
+  const secondary =
+    showSecondary && secondaryCurrency && isBase
+      ? formatMoney(
+          baseToLocal(amount, secondaryCurrency.unitsPerBase),
+          secondaryCurrency.code,
+          secondaryCurrency.locale
+        )
+      : null
+
+  if (!secondary) {
+    return <span className={cn(VARIANT_CLASSES[variant], className)}>{formatted}</span>
   }
 
-  if (variant === 'primary-badge') {
-    return (
-      <span className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold font-mono text-primary bg-primary/10 border border-primary/20 shadow-sm/5",
-        className
-      )}>
-        {formatted}
-      </span>
-    )
-  }
-
-  if (variant === 'highlight') {
-    return (
-      <span className={cn(
-        "text-2xl font-extrabold text-foreground font-mono tracking-tight",
-        className
-      )}>
-        {formatted}
-      </span>
-    )
-  }
-
-  if (variant === 'neutral') {
-    return (
-      <span className={cn(
-        "font-bold font-mono text-foreground",
-        className
-      )}>
-        {formatted}
-      </span>
-    )
-  }
-
-  // default variant (emerald text color for completed payments / transactions)
   return (
-    <span className={cn(
-      "font-bold font-mono text-emerald-600",
-      className
-    )}>
-      {formatted}
+    <span className={cn('inline-flex items-baseline gap-1.5', className)}>
+      <span className={VARIANT_CLASSES[variant]}>{formatted}</span>
+      <span className="text-[11px] font-mono font-semibold text-muted-foreground/70">
+        {secondary}
+      </span>
     </span>
   )
 }

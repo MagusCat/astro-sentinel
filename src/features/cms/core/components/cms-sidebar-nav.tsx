@@ -6,7 +6,8 @@ import { AuthenticatedUser } from '@/features/auth/types'
 import { getRoleLabel } from '@/features/auth/components/role-badge'
 import { CmsSection } from '../types'
 import { CMS_SECTIONS, CMS_SYSTEM_SECTIONS } from '../config'
-import { AppSidebar, AppSidebarGroup, AppSidebarItem } from '@/components/shared/layout/app-sidebar'
+import { AppSidebar, AppSidebarGroup, AppSidebarItem, Logo } from '@/components/shared';
+
 import { cn } from '@/lib/utils'
 import { getActiveModules } from '@/lib/modules'
 
@@ -58,8 +59,6 @@ function DirtyBanner({ isDirty }: { isDirty: boolean }) {
     </div>
   )
 }
-
-import Logo from '@/components/shared/layout/logo'
 
 export default function CmsSidebarNav({
   activeUser,

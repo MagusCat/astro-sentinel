@@ -14,12 +14,12 @@ export const Slot = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLEleme
       return null
     }
 
-    const child = children as React.ReactElement<{ className?: string; ref?: React.Ref<HTMLElement> }>
+    const child = children as React.ReactElement<{ className?: string }> & { ref?: React.Ref<HTMLElement> }
 
     return React.cloneElement(child, {
       ...props,
       ...child.props,
-      // @ts-expect-error - Merging refs is structurally valid but difficult for TS to track through cloneElement
+      // @ts-expect-error - ref is a valid runtime prop for cloneElement but not in the element's props type
       ref: ref ? (node: HTMLElement | null) => {
         if (typeof ref === 'function') {
           ref(node)

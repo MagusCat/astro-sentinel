@@ -5,8 +5,7 @@ import { Gallery, GalleryImage } from '../../core/types'
 import { Images, Plus } from 'lucide-react'
 import { ImageCard } from '../../core/components/image-card'
 import { CMS_LIMITS } from '../../core/config'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import { TextField } from '@/components/shared/form/text-field'
+import { SectionCard, TextField } from '@/components/shared';
 
 interface Props {
   value: Gallery

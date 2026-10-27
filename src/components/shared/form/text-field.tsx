@@ -7,6 +7,7 @@ interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
   error?: string
   containerClassName?: string
   tooltip?: string
+  helperText?: string
 }
 
 /**
@@ -19,7 +20,7 @@ interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
  *   </div>
  */
 export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
-  ({ label, error, containerClassName, className, id, tooltip, ...props }, ref) => {
+  ({ label, error, containerClassName, className, id, tooltip, helperText, ...props }, ref) => {
     const generatedId = useId()
     const inputId = id || generatedId
     return (
@@ -47,6 +48,8 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
         />
         {error ? (
           <span className="text-xs text-destructive font-semibold ml-1">{error}</span>
+        ) : helperText ? (
+          <span className="text-xs text-muted-foreground ml-1">{helperText}</span>
         ) : null}
       </div>
     )

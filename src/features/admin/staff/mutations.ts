@@ -1,35 +1,27 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
+import { requireRole, toActionError } from '@/lib/auth/guard'
 import { hashPassword, verifyPassword } from '@/lib/auth/session'
 import { createUserSchema, updateUserSchema } from './schemas'
 import { LOGICAL_DELETE_MARKER } from './constants'
 import { enforceStaffUpdatePolicies } from './policies'
-import { Roles } from '@/lib/auth/roles'
+import { Roles, APP_ROLE } from '@/lib/auth/roles'
 
 export async function saveNewUser(
   userData: { full_name: string; username: string; password_raw: string; role: string; auth_user_id?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
+    const { user: currentUser, supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
+
     const parsed = createUserSchema.safeParse(userData)
     if (!parsed.success) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: parsed.error.issues[0]?.message || 'Datos inválidos.',
         validationErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>
       }
     }
     const clean = parsed.data
-
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !currentUser.role) {
-      return { success: false, error: 'Acceso denegado: Sesión inválida.' }
-    }
-
-    if (!Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: No autorizado.' }
-    }
 
     if (!Roles.canCreateRole(currentUser.role, clean.role)) {
       return { success: false, error: 'Acceso denegado: No tienes permisos para registrar usuarios con ese rol.' }
@@ -38,8 +30,6 @@ export async function saveNewUser(
     if (Roles.roleRequiresAuthLink(clean.role) && !clean.auth_user_id?.trim()) {
       return { success: false, error: 'El ID de Supabase Auth es obligatorio para vincular la cuenta del Administrador.' }
     }
-
-    const supabase = await createClient()
 
     const { data: existingUser } = await supabase
       .from('users')
@@ -67,8 +57,7 @@ export async function saveNewUser(
     if (error) throw error
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al registrar usuario: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al registrar usuario.') }
   }
 }
 
@@ -77,16 +66,7 @@ export async function updateUserData(
   updatedFields: { full_name?: string; password_raw?: string; current_password_raw?: string; is_active?: boolean; role?: string; auth_user_id?: string }
 ): Promise<{ success: boolean; error?: string; validationErrors?: Record<string, string[]> }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !currentUser.role) {
-      return { success: false, error: 'Acceso denegado: Sesión inválida.' }
-    }
-
-    if (!Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: No autorizado.' }
-    }
-
-    const supabase = await createClient()
+    const { user: currentUser, supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const { data: targetUser, error: fError } = await supabase
       .from('users')
@@ -100,8 +80,8 @@ export async function updateUserData(
 
     const parsedUpdate = updateUserSchema.safeParse(updatedFields)
     if (!parsedUpdate.success) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: parsedUpdate.error.issues[0]?.message || 'Datos inválidos.',
         validationErrors: parsedUpdate.error.flatten().fieldErrors as Record<string, string[]>
       }
@@ -144,8 +124,7 @@ export async function updateUserData(
     if (uError) throw uError
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al actualizar usuario: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al actualizar usuario.') }
   }
 }
 
@@ -153,16 +132,7 @@ export async function deleteUserData(
   targetUserId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser || !currentUser.role) {
-      return { success: false, error: 'Acceso denegado: Sesión inválida.' }
-    }
-
-    if (!Roles.canManageStaff(currentUser.role)) {
-      return { success: false, error: 'Acceso denegado: No autorizado.' }
-    }
-
-    const supabase = await createClient()
+    const { user: currentUser, supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
     const { data: targetUser, error: fError } = await supabase
       .from('users')
@@ -194,7 +164,6 @@ export async function deleteUserData(
     if (dError) throw dError
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al eliminar usuario: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al eliminar usuario.') }
   }
 }

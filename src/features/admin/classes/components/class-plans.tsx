@@ -2,18 +2,12 @@
 
 import React, { useState } from 'react'
 import { Plus, RefreshCw, Trash2, Calendar, Edit2, Settings2 } from 'lucide-react'
-import { Button } from '@/components/shared/form/button'
+import { Button, ConfirmDialog, EmptyState, PageHeader, PriceDisplay, SectionCard, Toast, ToastType } from '@/components/shared';
+
 import { PlanData, ClassData } from '../types'
 import { deleteClass, deleteClassPlan } from '../mutations'
 import CreateClassModal from './create-class-modal'
 import CreatePlanModal from './create-plan-modal'
-import { ConfirmDialog } from '@/components/shared/feedback/confirm-dialog'
-import { EmptyState } from '@/components/shared/feedback/empty-state'
-import { PageHeader } from '@/components/shared/layout/page-header'
-import { SectionCard } from '@/components/shared/data-display/section-card'
-import Toast from '@/components/shared/feedback/toast'
-import type { ToastType } from '@/components/shared/feedback/toast'
-import { PriceDisplay } from '@/components/shared/data-display/price-display'
 
 interface ClassPlansProps {
   plans: PlanData[]
@@ -65,7 +59,7 @@ export default function ClassPlans({ plans, classes, onReload, isLoading }: Clas
   }
 
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6 h-full flex-1 min-w-0">
       <PageHeader
         title="Clases y Planes"
         description="Gestión de clases y planes de pago asociados"

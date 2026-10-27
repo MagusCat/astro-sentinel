@@ -1,9 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { HealthStatus } from './types'
 import { getServiceConfig } from '@/lib/config'
 
+/**
+ * Liveness probe. Intentionally callable without a session (the PWA shell and
+ * the login screen poll it), so it must never leak internal detail: it reports
+ * only booleans and generic messages, never raw errors or row counts.
+ */
 export async function runHealthCheck(): Promise<HealthStatus> {
   let serviceConfigured = false
   try {
@@ -29,41 +34,33 @@ export async function runHealthCheck(): Promise<HealthStatus> {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
-    const { error: sessionError } = await supabase.auth.getSession()
-    if (sessionError) {
-      return {
-        serviceConfigured,
-        handshakeOk: false,
-        connectionOk: false,
-        message: `Error de enlace API: ${sessionError.message}`,
-        timestamp: new Date().toISOString()
-      }
-    }
-
-    const { count, error: statusError } = await supabase
+    const { error: statusError } = await supabase
       .from('_status')
       .select('*', { count: 'exact', head: true })
 
     const connectionOk = !statusError
+    if (statusError) {
+      console.error('[Health] DB check failed:', statusError.message)
+    }
 
     return {
       serviceConfigured,
       handshakeOk: true,
       connectionOk,
       message: connectionOk
-        ? `Estado de base de datos verificado. Se encontraron ${count ?? 0} registros de estado activos.`
-        : `Error en verificación de base de datos: ${statusError?.message || 'Error desconocido del catálogo de base de datos'}`,
+        ? 'Estado de base de datos verificado.'
+        : 'No se pudo verificar la base de datos.',
       timestamp: new Date().toISOString()
     }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+    console.error('[Health] Exception:', err instanceof Error ? err.message : String(err))
     return {
       serviceConfigured,
       handshakeOk: false,
       connectionOk: false,
-      message: `Excepción del servicio de base de datos: ${errorMsg}`,
+      message: 'No se pudo contactar con el servicio de base de datos.',
       timestamp: new Date().toISOString()
     }
   }

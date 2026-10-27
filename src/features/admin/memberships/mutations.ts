@@ -1,86 +1,72 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/features/auth/actions'
-import { Roles } from '@/lib/auth/roles'
+import { revalidateTag } from 'next/cache'
+import { requireRole, toActionError } from '@/lib/auth/guard'
+import { APP_ROLE } from '@/lib/config/domain'
+import { DASHBOARD_CACHE_TAG } from '../dashboard/cache'
 import { freezeMembershipSchema, unfreezeMembershipSchema } from './schemas'
+import { z } from 'zod'
 
 export async function freezeMembership(
   membershipId: string,
   targetDate: string
 ): Promise<{ success: boolean; error?: string }> {
-  const currentUser = await getCurrentUser()
-  if (!currentUser?.role || !Roles.canManageStaff(currentUser.role)) {
-    return { success: false, error: 'Acceso denegado: Solo administradores pueden gestionar membresías.' }
-  }
-
-  const parsed = freezeMembershipSchema.safeParse({ membershipId, targetDate })
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0]?.message }
-  }
-
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
-    const { error: rpcError } = await supabase
-      .rpc('freeze_membership', { 
-        p_membership_id: membershipId, 
-        p_target_date: targetDate 
-      })
-
-    if (rpcError) {
-      console.error(rpcError)
-      return { success: false, error: rpcError.message }
+    const parsed = freezeMembershipSchema.safeParse({ membershipId, targetDate })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message }
     }
 
+    const { error: rpcError } = await supabase
+      .rpc('freeze_membership', {
+        p_membership_id: parsed.data.membershipId,
+        p_target_date: parsed.data.targetDate
+      })
+
+    if (rpcError) throw rpcError
+
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al congelar membresía: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al congelar membresía.') }
   }
 }
 
 export async function unfreezeMembership(
   membershipId: string
 ): Promise<{ success: boolean; newEndDate?: string; error?: string }> {
-  const currentUser = await getCurrentUser()
-  if (!currentUser?.role || !Roles.canManageStaff(currentUser.role)) {
-    return { success: false, error: 'Acceso denegado: Solo administradores pueden gestionar membresías.' }
-  }
-
-  const parsed = unfreezeMembershipSchema.safeParse({ membershipId })
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0]?.message }
-  }
-
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
 
-    const { data: newEndDate, error: rpcError } = await supabase
-      .rpc('unfreeze_membership', { p_membership_id: membershipId })
-
-    if (rpcError) {
-      console.error(rpcError)
-      return { success: false, error: rpcError.message }
+    const parsed = unfreezeMembershipSchema.safeParse({ membershipId })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message }
     }
 
+    const { data: newEndDate, error: rpcError } = await supabase
+      .rpc('unfreeze_membership', { p_membership_id: parsed.data.membershipId })
+
+    if (rpcError) throw rpcError
+
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true, newEndDate: newEndDate as string }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al descongelar membresía: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al descongelar membresía.') }
   }
 }
 
 export async function cancelMembership(
   membershipId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const currentUser = await getCurrentUser()
-  if (!currentUser?.role || !Roles.canManageStaff(currentUser.role)) {
-    return { success: false, error: 'Acceso denegado: Solo administradores pueden cancelar membresías.' }
-  }
-
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole(APP_ROLE.ADMIN, APP_ROLE.MAINTAINER)
+
+    const parsedId = z.string().uuid().safeParse(membershipId)
+    if (!parsedId.success) {
+      return { success: false, error: 'ID de membresía inválido.' }
+    }
 
     const { data: membership, error: fetchError } = await supabase
       .from('memberships')
@@ -104,14 +90,11 @@ export async function cancelMembership(
       .update({ status: 'cancelled' })
       .eq('id', membershipId)
 
-    if (updateError) {
-      console.error(updateError)
-      return { success: false, error: 'Error al cancelar la membresía.' }
-    }
+    if (updateError) throw updateError
 
+    revalidateTag(DASHBOARD_CACHE_TAG)
     return { success: true }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `Error al cancelar membresía: ${msg}` }
+    return { success: false, error: toActionError(err, 'Error al cancelar membresía.') }
   }
 }

@@ -21,24 +21,24 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "@container bg-card border border-border/40 p-5 @[1024px]:p-6 rounded-[1.5rem] @[1024px]:rounded-[2rem] flex flex-col @[1024px]:flex-row @[1024px]:items-center justify-between gap-6 shadow-sm w-full transition-all duration-700 ease-[var(--ease-haptic)]",
+        "bg-card border border-border/40 p-5 md:p-6 rounded-3xl md:rounded-4xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6 shadow-sm w-full transition-all duration-700 ease-[var(--ease-haptic)]",
         className
       )}
       {...props}
     >
       <div className="flex-1 min-w-0">
-        <h3 className="text-lg @[1024px]:text-xl text-foreground tracking-tight font-black leading-tight uppercase">
+        <h3 className="text-lg md:text-xl text-foreground tracking-tight font-black leading-tight uppercase">
           {title}
         </h3>
         {description && (
-          <div className="text-[11px] @[1024px]:text-xs text-muted-foreground mt-1 font-bold tracking-tight leading-relaxed max-w-2xl">
+          <div className="text-[11px] md:text-xs text-muted-foreground mt-1 font-bold tracking-tight leading-relaxed max-w-2xl">
             {description}
           </div>
         )}
       </div>
       
       {actions && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full @[1024px]:w-auto @[1024px]:flex-1 @[1024px]:justify-end">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full lg:w-auto lg:flex-1 lg:justify-end">
           {actions}
         </div>
       )}

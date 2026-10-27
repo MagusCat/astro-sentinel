@@ -31,7 +31,8 @@ export function SectionCard({
   return (
     <Card
       size={size}
-      className={cn("shadow-sm transition-all duration-300 hover:shadow-md hover:border-border/80 flex flex-col", className)}
+      // Card owns the transition (duration-700 ease-haptic); no override here.
+      className={cn("flex flex-col", className)}
       {...props}
     >
       {(title || description || titleAction) && (
